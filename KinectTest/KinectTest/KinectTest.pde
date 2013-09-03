@@ -22,14 +22,22 @@ float        zoomF =0.5f;
 float        rotX = radians(180);  // by default rotate the hole scene 180deg around the x-axis, 
                                    // the data from openni comes upside down
 float        rotY = radians(0);
-color[]      userColors = { color(255,0,0), color(0,255,0), color(0,0,255), color(255,255,0), color(255,0,255), color(0,255,255) };
+//color[]      userColors = { color(255,0,0), /*color(0,255,0), */color(0,0,255), color(255,255,0), color(255,0,255), color(0,255,255) };
+color[]      userColors = { color(255,100,100), color(100,255,100), color(100,100,255), color(255,255,100), color(255,100,255), color(100,255,255) };
 color[]      userCoMColors = { color(255,100,100), color(100,255,100), color(100,100,255), color(255,255,100), color(255,100,255), color(100,255,255) };
+
+// steps to jump through the map.  Larger value == faster, smaller == more accurate.
+int steps = 10;  // skip lots of points to make this faster
+
+int DEPTH_HEIGHT;
+int DEPTH_WIDTH;
+int A_BIG_NUMBER = 100000;
 
 void setup()
 {
   size(1024,768,P3D);  // strange, get drawing error in the cameraFrustum if i use P3D, in opengl there is no problem
   context = new SimpleOpenNI(this);
-   
+
   // turn on mirror
   context.setMirror(true);
 
@@ -74,69 +82,82 @@ void draw()
   scale(zoomF);
   
   int[]   depthMap = context.depthMap();
-  int     steps   = 10;  // skip lots of points to make this faster
   int     index;
   PVector realWorldPoint;
  
+  // set up constants to speed up the below
+  DEPTH_HEIGHT = context.depthHeight();
+  DEPTH_WIDTH = context.depthWidth();
+  
   translate(0,0,-1000);  // set the rotation center of the scene 1000 infront of the camera
 
   int userCount = context.getNumberOfUsers();
   int[] userMap = null;
-  if(userCount > 0)
-  {
+
+  int user1MinX = 10000;
+  int user1MaxX = 0;
+  int[][] userSizes = null;
+  
+  if(userCount > 0) {
     userMap = context.getUsersPixels(SimpleOpenNI.USERS_ALL);
+    userSizes = getUserSizes(userCount, userMap);
   }
   
-  for(int y=0;y < context.depthHeight();y+=steps)
-  {
-    for(int x=0;x < context.depthWidth();x+=steps)
-    {
-      index = x + y * context.depthWidth();
-      if(depthMap[index] > 0)
-      { 
+  for(int y=0;y < DEPTH_HEIGHT;y+=steps) {
+    for(int x=0;x < DEPTH_WIDTH;x+=steps) {
+      index = x + y * DEPTH_WIDTH;
+      if(depthMap[index] > 0) { 
         // get the realworld points
         realWorldPoint = context.depthMapRealWorld()[index];
         
         // check if there is a user
-        if(userMap != null && userMap[index] != 0)
-        {  // calc the user color
+        if(userMap != null && userMap[index] != 0) {  
+          // if so, draw in the user's color
           int colorIndex = userMap[index] % userColors.length;
           stroke(userColors[colorIndex]); 
         }
         else
-          // default color
+          // otherwise draw in the default color
           stroke(100); 
-        point(realWorldPoint.x,realWorldPoint.y,realWorldPoint.z);
+          point(realWorldPoint.x,realWorldPoint.y,realWorldPoint.z);
       }
     } 
   } 
   
   // draw the center of mass
   PVector centerOfMass = new PVector();
-  PVector bbMin = new PVector();
-  PVector bbMax = new PVector();
   color userColor;
   pushStyle();
-    strokeWeight(15);
-    for(int userId=1;userId <= userCount;userId++)
-    {
-      userColor = userCoMColors[userId % userCoMColors.length];
-      stroke(userColor);
+  for(int userId=1;userId <= userCount;userId++) {
+    // figure out color for this user
+    userColor = userCoMColors[userId % userCoMColors.length];
+    stroke(userColor);
+    noFill();
 
-/*      
-      // get the bounding box for this user
-      context.getBoundingBox(userId, bbMin, bbMax);
+    // get the center of mass
+    context.getCoM(userId, centerOfMass);
 
-      // draw bounding box
-      box(bbMin.x, bbMin.y, bbMin.z);
-      box(bbMax.x, bbMax.y, bbMax.z);
-*/
-      // get the center of mass
-      context.getCoM(userId, centerOfMass);
-      
-      // draw center of mass      
+    // print size for each user
+    int[] userSize = userSizes[userId];
+    if (userSize[0] > -1) {
+      strokeWeight(1);
+      int userLeft = userSize[0];
+      int userTop = userSize[3];
+      int userWidth = userSize[2];
+      int userHeight = userSize[5]; 
+      println("user "+userId+"  width: "+userWidth+"  height:"+userHeight);
+      pushMatrix();
+      translate(centerOfMass.x,centerOfMass.y,centerOfMass.z);
+      rect(-(userWidth/2), -(userHeight/2), userWidth, userHeight);
+      popMatrix();
+
+      // draw center of mass as a point      
+      strokeWeight(15);
       point(centerOfMass.x,centerOfMass.y,centerOfMass.z);
-    }  
+    } else {
+      println("USER "+userId+" IS BOGUS MAN!!!");
+    }
+  }  
   popStyle();
   
   /*
@@ -160,8 +181,58 @@ void draw()
   */ 
   
   // draw the kinect cam
-  context.drawCamFrustum();
+  //context.drawCamFrustum();
 }
+
+
+int[][] getUserSizes(int userCount, int[] userMap) {
+  if (userCount == 0) {
+   return null; 
+  }
+  
+  int[] minX = new int[userCount+1];
+  int[] minY = new int[userCount+1];
+  int[] maxX = new int[userCount+1];
+  int[] maxY = new int[userCount+1];
+  
+  // set up arrays
+  for(int u=1; u <= userCount; u++) {
+     minX[u] = A_BIG_NUMBER;
+     maxX[u] = 0;
+     minY[u] = A_BIG_NUMBER;
+     maxY[u] = 0;
+  } 
+  
+   //figure out min/max size for user 1
+  for(int y=0;y < DEPTH_HEIGHT;y+=steps) {
+    for(int x=0;x < DEPTH_WIDTH;x+=steps) {
+      int index = x + y * DEPTH_WIDTH;
+      // what user does this belong to
+      int userNum = userMap[index];
+      if (userNum > 0 && userNum <= userCount) { 
+        if (x < minX[userNum]) minX[userNum] = x;
+        if (x > maxX[userNum]) maxX[userNum] = x; 
+        if (y < minY[userNum]) minY[userNum] = y;
+        if (y > maxY[userNum]) maxY[userNum] = y; 
+      }
+    }
+  }
+  
+  // generate output
+  int[][] results = new int[userCount+1][6];
+  int[] nullResult = {-1, -1, -1, -1, -1, -1 };
+  for (int u=1; u <= userCount; u++) {
+    if (minX < A_BIG_NUMBER && minY < A_BIG_NUMBER) {
+      int deltaX = maxX[u] - minX[u];
+      int deltaY = maxY[u] - minY[u];
+      int[] userResult = {minX[u], maxX[u], deltaX, minY[u], maxY[u], deltaY};
+      results[u] = userResult;
+    } else {
+      results[u] = nullResult;
+    }
+  }
+  return results;
+} 
 
 
 // -----------------------------------------------------------------
