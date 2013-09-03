@@ -115,11 +115,14 @@ void draw()
           // if so, draw in the user's color
           int colorIndex = userMap[index] % userColors.length;
           stroke(userColors[colorIndex]); 
+          strokeWeight(2);
         }
-        else
+        else {
           // otherwise draw in the default color
-          stroke(100); 
-          point(realWorldPoint.x,realWorldPoint.y,realWorldPoint.z);
+          stroke(100);
+          strokeWeight(1);
+        } 
+        point(realWorldPoint.x,realWorldPoint.y,realWorldPoint.z);
       }
     } 
   } 
@@ -148,18 +151,19 @@ void draw()
       println("user "+userId+"  width: "+userWidth+"  height:"+userHeight);
       pushMatrix();
       translate(centerOfMass.x,centerOfMass.y,centerOfMass.z);
-      rect(-(userWidth/2), -(userHeight/2), userWidth, userHeight);
-      popMatrix();
+      box(userWidth, userHeight, 100);
+//      rect(-(userWidth/2), -(userHeight/2), userWidth, userHeight);
 
       // draw center of mass as a point      
       strokeWeight(15);
-      point(centerOfMass.x,centerOfMass.y,centerOfMass.z);
+      point(0,0,0);  // draw at 0,0,0 cause we already translated
+      popMatrix();
     } else {
       println("USER "+userId+" IS BOGUS MAN!!!");
     }
   }  
   popStyle();
-  
+    
   /*
   // draw the floor
   PVector floorCenter = new PVector();
@@ -222,7 +226,7 @@ int[][] getUserSizes(int userCount, int[] userMap) {
   int[][] results = new int[userCount+1][6];
   int[] nullResult = {-1, -1, -1, -1, -1, -1 };
   for (int u=1; u <= userCount; u++) {
-    if (minX < A_BIG_NUMBER && minY < A_BIG_NUMBER) {
+    if (minX[u] < A_BIG_NUMBER && minY[u] < A_BIG_NUMBER) {
       int deltaX = maxX[u] - minX[u];
       int deltaY = maxY[u] - minY[u];
       int[] userResult = {minX[u], maxX[u], deltaX, minY[u], maxY[u], deltaY};
