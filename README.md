@@ -26,7 +26,8 @@
 
 ###Code Snippets:
 
-```spiroLight.applyForce(force);``` 
+```spiroLight.applyForce(force);
+``` 
 
 - // with zero net force, object remains still or at constant velocity.  spiroLight object receives the force and hands it to the object's method applyForce(PVector force) where the force gets accumulated by acceleration with acceleration.add(force) (such that force informs acceleration, acceleration informs velocity, velocity informs location)
 
