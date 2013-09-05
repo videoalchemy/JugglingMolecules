@@ -46,8 +46,9 @@ location.add(velocity);
 - What is the NORMAL force?  Always = 1 (in our processing world)
 
 - Friction Algorithm (what is mag and direction of friction (always against the direction of velocity)):  Friction Force = -1 X (unit direction velocity vector) X the NORMAL force X the coefficient of friction
->
-```PVector friction = velocity.get();  // get a copy of velocity vector
+
+```
+PVector friction = velocity.get();  // get a copy of velocity vector
 friction.normalize();  // normalize the copied velocity vector to get its direction
 friction.mult(-1);   // now take the direction and put it in the opposite direction (because friction acts AGAINST the direction of velocity)
 float coefficientOfFriction = .001;  // set the strength of the friction
