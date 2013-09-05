@@ -8,6 +8,7 @@
 - **ToDo(General):**
 	
 - **ToDo(Jason):**
+	- [] Create a Vector Field as function of depth
 	- [] Build Library for Depth related Forces
 	- [] upload diagrams
 
