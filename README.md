@@ -8,6 +8,12 @@
 - **ToDo(General):**
 	
 - **ToDo(Jason):**
+	- [] If movement, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
+	- [] dancer is mask for reference image
+	- [] flow field points to spirolight, unless located on dancer within min-max range
+	- [] if dancer in field, then vector mag is depth and direction points to the edge.  once at the edge, particle moves toward spirolight according to bacground flow field
+	- [] flow field vectors increase in magnitude as they approach spirolight such that particles accelerate toward the light
+	- [] particle steering force and maxspeed change relative to their proximity to spirolight
 	- [] Create a Vector Field as function of depth
 	- [] Build Library for Depth related Forces
 	- [] upload diagrams
