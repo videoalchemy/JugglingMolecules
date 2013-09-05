@@ -1,5 +1,9 @@
 ###OmiCron-SpiroLight
 
+###Requirements:
+- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
+- Kinect Depth Sensor
+
 ###ToDo:
 - **ToDo(General):**
 	
