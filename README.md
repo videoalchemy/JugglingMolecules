@@ -139,3 +139,11 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 	- To see this function in action, execute the following statement:
 
 >```spirograph(53, -29, 40, 30, gray)```
+
+###Future:
+- [Flow no.1 The Kinect Projector Dance](http://princemio.net/portfolio/flow-1-kinect-projector-dance/)
+	- Software Used for the project:
+		- ofxOpenNI – created by gameoverhack – openNi wrapper to read captrued data from the kinect camera in realtime.
+		- ofxCV – created by Kyle McDonald – fast openCV wrapper.
+		- ofxFluidSolver – created by Memo Atken. After Years, it is still one of my favourite calculation models to illustrate continous flow of a dancer and graphics.
+		- ofxUI – created by rezaali – having worked a lot in processing, i completly fell in love with this GUI library as it speeds up my tweaking processes. Its easy to use and fast to bind to variables.
