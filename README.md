@@ -1,6 +1,6 @@
 ###OmiCron-SpiroLight
 - an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
-- the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with it's large knobs and glowing buttons.  Its controls are mapped to the parameters of a spirograph like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field. 
+- the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with its large knobs and glowing buttons.  Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
 
 ###Requirements:
 - [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
@@ -32,7 +32,7 @@
 	- [] If movement, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
 	- [] dancer is mask for reference image
 	- [] flow field points to spirolight, unless located on dancer within min-max range
-	- [] if dancer in field, then vector mag is depth and direction points to the edge.  once at the edge, particle moves toward spirolight according to bacground flow field
+	- [] if dancer in field, then vector mag is depth and direction points to the edge.  once at the edge, particle moves toward spirolight according to background flow field
 	- [] flow field vectors increase in magnitude as they approach spirolight such that particles accelerate toward the light
 	- [] particle steering force and maxspeed change relative to their proximity to spirolight
 	- [] Create a Vector Field as function of depth
@@ -41,6 +41,9 @@
 
 
 - **ToDo(Owen):**
+	- [] Particle System!  particle.lookup(PVector particleLocation); // will return a PVector force derived from the Flow Field state at that particle's location.  USE THE FORCE to inform acceleration to inform velocity to inform location.   
+
+
 - **ToDo(Installation):**
 
 
