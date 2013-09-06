@@ -8,6 +8,24 @@
 - **ToDo(General):**
 	
 - **ToDo(Jason):**
+	- [] Map OmiCron Controls to the 3 tiered CenterPiece-SpiroLight
+		- [] Tier 1 = Red, Tier 2 = Green, Tier 3 = Blue
+		- [] Each of the 3 omiCron buttons will change ratios (angular velocities, magnitude) for that color
+			- eg Green Line From Tier 1 to Tier 2, and Green Line from Tier 2 to Tier 3 are:  
+				- 1:1 in length, 1:1 in angular velocity, and are IN PHASE 
+				- 1:2 in length, 1:-2 in angular velocity, and are out of phase by 90degrees
+				- 1:sqrt2 in length, 1:1.618 in angular velocity, and are out of phase by 180
+		- [] Knobs: Red(Left and Right) Green(L,R), Blue(L,R) control the rotational velocity and distance to next teir.
+		- [] Ohmite Knob controls the parameters of the flow field (somehow) and/or z-axis rotation
+	- [] Add remainder of tier 2 and 3
+	- [] Make closest point in point cloud the desired target such that: 
+	
+	```steering force = desired velocity - current velocity```
+
+	- [] Create an array of PImages, each containing the previous frame to create a 5 sec sample of dancer + depth.  then rotate along the z-axis (see La Danse Kinect on vimeo).
+	- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
+	- [] particles flock to silioutette when standing still
+	- [] particles flock / swarm together toward movement
 	- [] If movement, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
 	- [] dancer is mask for reference image
 	- [] flow field points to spirolight, unless located on dancer within min-max range
@@ -74,6 +92,21 @@ friction.mult(coefficientOfFriction)  // the direction of friction and multiply 
 	- y = radius * sin(theta)
 	- x = radius * cos(theta)
 
+- The following statement will create a user defined function that will create Spirograph patterns:
+
+```
+spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
+{
+    t = vectorin(0, 0.05, 2 * pi * v_nRotations);:
+    x = (v_R + v_r) * cos(t) + v_p * cos((v_R + v_r) * t / v_r);:
+    y = (v_R + v_r)* sin(t) + v_p * sin((v_R + v_r) * t / v_r);:
+    plot(x, y, s_color):
+}
+```
+	- To see this function in action, execute the following statement:
+
+>```spirograph(53, -29, 40, 30, gray)```
+
 
 ###Spirograph Definitions:
 - **Hypocycloids:**
@@ -132,19 +165,8 @@ friction.mult(coefficientOfFriction)  // the direction of friction and multiply 
 - [Spirographs Explained | Sam Brenner from ITP](http://samjbrenner.com/notes/processing-spirograph/)
 - [Simple Spirograph | Web App from Aquilax's Dev Blog](http://dev.horemag.net/2008/03/03/spirograph-with-processing/)
 - [Mathiversity | Spirograph Web App](http://mathiversity.com/Spirograph)
-- The following statement will create a user defined function that will create Spirograph patterns:
-```
-spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
-{
-    t = vectorin(0, 0.05, 2 * pi * v_nRotations);:
-    x = (v_R + v_r) * cos(t) + v_p * cos((v_R + v_r) * t / v_r);:
-    y = (v_R + v_r)* sin(t) + v_p * sin((v_R + v_r) * t / v_r);:
-    plot(x, y, s_color):
-}
-```
-	- To see this function in action, execute the following statement:
+- [Spirograph Web App](http://www.eddaardvark.co.uk/nc/sprog/index.html#x)
 
->```spirograph(53, -29, 40, 30, gray)```
 
 ###Future:
 - [Flow no.1 The Kinect Projector Dance](http://princemio.net/portfolio/flow-1-kinect-projector-dance/)
