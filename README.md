@@ -1,13 +1,16 @@
 ###OmiCron-SpiroLight
+- an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
+- the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with it's large knobs and glowing buttons.  Its controls are mapped to the parameters of a spirograph like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field. 
 
 ###Requirements:
 - [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
 - Kinect Depth Sensor
+- Processing 2.0.3
+- SimpleOpenNI 1.96
 
 ###ToDo:
-- **ToDo(General):**
-	
 - **ToDo(Jason):**
+	- [] Start by rebuilding CenterPiece-SpiroLight (with OmiCron controls and stationary centerpiece.)
 	- [] Map OmiCron Controls to the 3 tiered CenterPiece-SpiroLight
 		- [] Tier 1 = Red, Tier 2 = Green, Tier 3 = Blue
 		- [] Each of the 3 omiCron buttons will change ratios (angular velocities, magnitude) for that color
