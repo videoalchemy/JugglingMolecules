@@ -38,9 +38,9 @@ class Mover {
     //topspeed = 5; original
 
     //randomized
-    topspeed = random (3, 12);
-    accelerationScalar = random(.2, .4);
-    rotationRate = random (.03, .07);
+    topspeed = random (7, 22);
+    accelerationScalar = random(.2, 1);
+    rotationRate = random (.03, .08);
     r = int(random(125, 255));
     g = int(random(125, 255));
     b = int(random(0, 255));
@@ -111,19 +111,20 @@ class Mover {
     stroke(0, 255, 0);
     strokeWeight(2);
     line(0, 0, 10*topspeed, 10*topspeed);
+
     //*******GREEN CIRCLE on GREEN LINE
     translate(10*topspeed, 10*topspeed); //translates are additive within a popMatrix();
     fill(0, 255, 100);
     ellipse(0, 0, 20, 20);
-    
+
     //******Yellow Line from Green Circle on Gree Line
     pushMatrix();
     rotate(-rotationAmount*(1.6));
     rotate(-PI); // to place the line out of phase
-    stroke(255,255,0);
-    line (0,0, 11*topspeed,0);
+    stroke(255, 255, 0);
+    line (0, 0, 11*topspeed, 0);
     popMatrix();
-    
+
     popMatrix();
 
     pushMatrix();
@@ -168,6 +169,19 @@ class Mover {
     //line(0, 0, 20, 20);
     //point(topspeed+6*abs(velocity.x), topspeed+6*abs(velocity.y));
 
+    /*
+    // ***Adding a sphere
+     pushMatrix();
+     translate(width/2,height/2,100);
+     pushStyle();
+     fill(0, 0, 255);
+     blendMode(ADD);
+     lights();
+     sphere(50);
+     popStyle();
+     popMatrix();
+     //************************
+     */
 
     popMatrix();
     popMatrix();

@@ -1,5 +1,8 @@
 /**
- * Acceleration with Vectors 
+ * CenterPiece_SpiroLight
+ 
+ 
+ Acceleration with Vectors 
  * by Daniel Shiffman.  
  * 
  * Demonstration of the basics of motion with vector.
@@ -25,11 +28,13 @@ smooth();
 
 void draw() {
   // background(0);
+  // lights();
+   
    blendMode(ADD);
 
   pushStyle();
   blendMode(BLEND);
-  fill(0, 5);
+  fill(0, 3);
   rect(0, 0, width, height);
 
   popStyle();
