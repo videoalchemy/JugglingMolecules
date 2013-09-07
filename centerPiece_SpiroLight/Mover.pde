@@ -1,13 +1,3 @@
-/**
- * Acceleration with Vectors 
- * by Daniel Shiffman.  
- * 
- * Demonstration of the basics of motion with vector.
- * A "Mover" object stores location, velocity, and acceleration as vectors
- * The motion is controlled by affecting the acceleration (in this case towards the mouse)
- */
-
-
 class Mover {
 
   // The Mover tracks location, velocity, and acceleration 
