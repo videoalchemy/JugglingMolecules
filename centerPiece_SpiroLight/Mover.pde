@@ -19,17 +19,24 @@ class Mover {
   float aVelocity = 0;
   float aAcceleration = 0;
 
+  //noise for wondering
+  PVector noff;
 
   Mover(float _topspeed, float _accelerationScalar, float _rotationRate, int _r, int _g, int _b) {
     // Start in the center
     location = new PVector(width/2, height/2);
     velocity = new PVector(0, 0);
+
+    acceleration = new PVector();
+    noff = new PVector(random(1000), random(1000));
+    
+    
     rotationAmount = 0;
     //topspeed = 5; original
 
     //randomized
     topspeed = random (7, 22);
-    accelerationScalar = random(.2, 1);
+    accelerationScalar = random(.2, .5);
     rotationRate = random (.03, .08);
     r = int(random(125, 255));
     g = int(random(125, 255));
@@ -45,11 +52,15 @@ class Mover {
   }
 
   void update() {
-
-    // Compute a vector that points from location to mouse
+/*
+    //**********Perlin Noise Following
     PVector mouse = new PVector(mouseX, mouseY);
-    PVector acceleration = PVector.sub(mouse, location);
-    // Set magnitude of acceleration
+    acceleration.x = map(noise(noff.x), 0, 1, -1, 1);
+    acceleration.y = map(noise(noff.y), 0, 1, -1, 1);
+    acceleration.mult(0.1);
+
+    noff.add(0.01, 0.01, 0);
+
     acceleration.setMag(accelerationScalar);//original = .2
 
     // Velocity changes according to acceleration
@@ -58,6 +69,29 @@ class Mover {
     velocity.limit(topspeed);
     // Location changes by velocity
     location.add(velocity);
+    // Stay on the screen
+    location.x = constrain(location.x, 0, width-1);
+    location.y = constrain(location.y, 0, height-1);
+    //************************************
+*/
+
+    
+    //*********FOLLOW MOUSE
+     // Compute a vector that points from location to mouse
+     PVector mouse = new PVector(mouseX, mouseY);
+     PVector acceleration = PVector.sub(mouse, location);
+     // Set magnitude of acceleration
+     acceleration.setMag(accelerationScalar);//original = .2
+     // Velocity changes according to acceleration
+     velocity.add(acceleration);
+     // Limit the velocity by topspeed
+     velocity.limit(topspeed);
+     // Location changes by velocity
+     location.add(velocity);
+     //********************************
+     
+
+
 
     //angularMotion
     aAcceleration = acceleration.x / 10.0;
@@ -69,6 +103,18 @@ class Mover {
     acceleration.mult(0);
   }
 
+  /*
+  void updateAngularVelocity() {
+   //angularMotion
+   aAcceleration = acceleration.x / 10.0;
+   aVelocity += aAcceleration;
+   aVelocity = constrain(aVelocity, -0.1, 0.1);
+   angle += abs(aVelocity);  //so circle continues to rotate
+   rotationAmount = rotationAmount + rotationRate;
+   
+   acceleration.mult(0);
+   }
+   */
 
 
   void displayWithoutBackground() {
