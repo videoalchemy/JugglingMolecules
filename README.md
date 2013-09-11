@@ -85,6 +85,9 @@
 			- Whichever arm is path following along body will have perlin noise generated organic branching.
 		- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
 		- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
+	- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
+		- Use the Frame Differencing already used to inform the particle system
+		- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
 
 - **SpiroLight Parameters and Controls:**
 	- Inner sphere of 3D Hypotrochoid:
@@ -129,6 +132,8 @@
 
 
 ###Kinect + Dancer:
+- **Optical Flow with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
+	- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
 - We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
 - [] Make closest point in point cloud the desired target such that: 
 
@@ -229,6 +234,7 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 
 
 ###Examples:
+- [Spirograph Web App worth checking out](http://www.benjoffe.com/code/toys/spirograph)
 - [Epicycles On Epicycles, Cable Knots on Cable Knots | vimeo](https://vimeo.com/7757058)
 - [The 3D Spirograph Project | vimeo](https://vimeo.com/2228788)
 	- The visual math of epicycloids. Nested rotational orbits produce emergent spiral designs in 3D.
