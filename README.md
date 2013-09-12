@@ -76,19 +76,9 @@
 			- Evade closest point Dancer
 		3. NULL USER MODE:  Perlin Noise (which can be used to inform all the arms and rotations)
 		4. OMICRON ONLY MODE: (or FP-13 Mode) or Touch OSC:  No Kinect Attached, no dancer.  Forces mapped to RedKnob Left and Right for (x,y)
-	- **SpiroLight with FlowField.**  
-		- Instead of constant angular velocity, SpiroLight joints can respond to the Flow Field with their own steering force.  The joints are vehicles that check in a ask, 'does the flow field bellow have information for me?  If not, then keep steady pace, otherwise, use flow field as desired velocity'.  Everytime spirolight sweeps over the dancer, the movements will adjust.  Or the colors will change to show the outline of the body.  If assign color variation to optical flow and sillouette, then the resulting blendMode(ADD) would be sufficient to change all the underlying pixels, effectively showing the dancers body.
-	- **Specific Arms Always remain in contact with the DANCER and EDGE DETECT PATH FOLLOW.**  
-		- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
-		- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
-			- AND the closer the arm, the greater the connetion, the brighter.
-			- Whichever arm is path following along body will have perlin noise generated organic branching.
-		- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
-		- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
-	- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
-		- Use the Frame Differencing already used to inform the particle system
-		- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
-
+- **SpiroLight with FlowField.**  
+	- Instead of constant angular velocity, SpiroLight joints can respond to the Flow Field with their own steering force.  The joints are vehicles that check in a ask, 'does the flow field bellow have information for me?  If not, then keep steady pace, otherwise, use flow field as desired velocity'.  Everytime spirolight sweeps over the dancer, the movements will adjust.  Or the colors will change to show the outline of the body.  If assign color variation to optical flow and sillouette, then the resulting blendMode(ADD) would be sufficient to change all the underlying pixels, effectively showing the dancers body.
+	
 - **SpiroLight Parameters and Controls:**
 	- Inner sphere of 3D Hypotrochoid:
 		- diameter -> User-N's distance from Kinect 
@@ -130,29 +120,99 @@
 		- http://mathworld.wolfram.com/Epitrochoid.html
 		- Coin outside of ring; tracing a point either inside or outside the perimeter of coin
 
+###SpiroLight + Dancer:
+- **Specific Arms Always remain in contact with the DANCER and EDGE DETECT PATH FOLLOW.**  
+		- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
+		- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
+			- AND the closer the arm, the greater the connetion, the brighter.
+			- Whichever arm is path following along body will have perlin noise generated organic branching.
+		- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
+		- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
+	- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
+		- Use the Frame Differencing already used to inform the particle system
+		- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
+
 
 ###Kinect + Dancer:
-- **Optical Flow with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
-	- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
-- We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
-- [] Make closest point in point cloud the desired target such that: 
+- **Optical Flow:**
+	- Using Optical Flow:
+		- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
+		- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
+		- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
+		- [] If movement > threshold, calc magnitude and orientation of gradient, 
+		- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
+	- Examples of Optical FLow:
+		- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
+		- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
+	- Pseudo Code:
+		1. Smooth Image with gausian blur
+		2. Compute derivative of filtered image
+		3. Find magnitude and orientation of gradient
+		4. Apply 'non-maximum' suppression
+		
+- **Point Cloud:**
+	- We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
+	- [] Make closest point in point cloud the desired target such that: 
+	- [] Create a Vector Field as function of depth
+	- [] Build Library for Depth related Forces
+	- [] In the abscence of movement (frame differencing < threshold), then SpiroLight moves towards Dancer (b/c it seeks dancer's closest point to sensor)
+	- [] Assign a movie to the depth greyScale such that changing grey plays movie back or forward.  Use this to mask out the dancer's white outline.
 
-```steering force = desired velocity - current velocity```
+>```steering force = desired velocity - current velocity```
 
-- [] Create an array of PImages, each containing the previous frame to create a 5 sec sample of dancer + depth.  then rotate along the z-axis (see La Danse Kinect on vimeo).
-- [] How will CenterPiece-SpiroLight interact with the dancer's body?
-	- blendMode(ADD)
-- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
-- [] particles flock to silioutette when standing still
-- [] particles flock / swarm together toward movement
-- [] If movement, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
-- [] dancer is mask for reference image
+
+###FlowField Calculation:
+- accumulate forces from a variety of causes:  **spiroLight-Field**, **dancer-Field**, **noise-Field**
+	1. **(spiroLight-Field)**  SpiroLight's Affect on the Flow Field:
+		- affects the flowfield like iron flakes in a magnetic field.  
+		- Particles located further away follow a longer circuitous route. 
+		- Field Vector Magnitudes along the path to SpiroLight increase as their distance to Spirolight decreases (particles accelerate as they approach)
+	2. **(dancer-Field)**  Dancer's affect on the FlowField:
+		- Dancers generate their own FlowField inside the Global Field.  Once calculated, the dancer's vector field is (ADDED?? SUBTRACTED?) to/from the SpiroLight Field 
+		- Flow Vectors within the boundary of the dancer's body align themselves with the magnitude and orientation of the body's depth gradients (pointing uphill)
+		- Dancer's Flow Vectors
+- Future Fields: **flowMap-Field**, **feedbackLoop-Field**, **windSensor-Field**
+	- **flowMap-Field**
+		- Use a reference image as a map to inform the field.  (ex. set direction according to brightness)
+		- Examples:
+			- [Flow Maps:  The Evolution of a Pattern Language  |  screenshots from a Processing sketch on flickr](http://www.flickr.com/photos/jaycody9/sets/72157629880409223/)
+			- []
+
+	- **feedbackLoop-Field**
+		- feedback loop generated via a vector field?  probably not the best implementation.  A get() and set() feedback loop likely effective
+		- however, a feedback layer can be produced that is specific to a certain kind of particle while ignoring other particles.  Perhaps particles generated in the negative diretion or a feeback pattern that only affects the frame differencing frames.
+
+	- **windSensor-Field** 
+		- or **anemos-Field**
+		- anemometer - a device used for measuring wind speed; from the Greek word ANEMOS, meaning wind
+		- we'd use Gill Instrument's WindMaster 3-Axis Ultrasonic Wind Speed and Direction Sensor  [dataSheet](http://www.gillinstruments.com/data/datasheets/WindMaster-Web-Datasheet.pdf)
+			- provides wind speed and direction data
+			- wind speed (0-45m/s and 0-65m/s)
+			- 0-359º wind direction range (no dead band)
+			- wind direction (0-359º) data. 
+			- 3-vector outputs (U, V, W), 
+			- data logging software
+			- Speed of sound and sonic temperature outputs.
+			- Optional analogue inputs and outputs are available with either 12 or 14 bit resolution.
+			- This 3D sonic anemometer is ideally suited to the measurement of air turbulence around bridges, buildings, wind turbine sites, building ventilation control systems, meteorological and flux measurement sites.
+			- [3-Axis Wind Speed Sensor Brochure](http://www.gillinstruments.com/data/datasheets/3_AXIS_web.pdf)
+			
+- How do we create one field from multiple fields?
 - [] flow field points to spirolight, unless located on dancer within min-max range
 - [] if dancer in field, then vector mag is depth and direction points to the edge.  once at the edge, particle moves toward spirolight according to background flow field
 - [] flow field vectors increase in magnitude as they approach spirolight such that particles accelerate toward the light
 - [] particle steering force and maxspeed change relative to their proximity to spirolight
-- [] Create a Vector Field as function of depth
-- [] Build Library for Depth related Forces
+
+###Feedback Loop as PGraphic Layer
+- Frame Difference Seeds Feedback Loop
+	- create new Pgraphic to hold only the frame differencing information such that currentPgraphic - previousPGraphic = differencePGraphic.  Then get() pixels from this layer and updatePixels with itself, creating a feedback loop
+	- assign noise as velocity of Feedback Layer
+- [] Create an array of PImages, each containing the previous frame to create a 5 sec sample of dancer + depth.  then rotate along the z-axis (see La Danse Kinect on vimeo).
+- [] How will CenterPiece-SpiroLight interact with the dancer's body?
+	- blendMode(ADD)
+
+- [] dancer is mask for reference image
+
 - [] upload diagrams
 - [] PNGs with Alpha Layer for particles AND for ellipses of spiroLight.
 - **Kinect Ideas**
