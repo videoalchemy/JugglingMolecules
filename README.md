@@ -149,7 +149,7 @@
 		2. Compute derivative of filtered image
 		3. Find magnitude and orientation of gradient
 		4. Apply 'non-maximum' suppression
-		
+
 - **Point Cloud:**
 	- We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
 	- [] Make closest point in point cloud the desired target such that: 
@@ -160,6 +160,10 @@
 
 >```steering force = desired velocity - current velocity```
 
+- **Kinect-Projector Calibration**
+	- [Kinect Projector Dance  |  YouTube Demo of the calibration tool](http://youtu.be/FnulH8TrZVo)
+	- [Interactive Projection Mapping Test  |  YouTube  LOOK FOR FEEDBACK LOOP at 2:20](http://www.youtube.com/watch?v=e_QdqYWWZJI)
+	- [Kinect Calibration Tool and Tutorials |  by prince_MIO](http://princemio.net/portfolio/kinect_projector_dance/)
 
 ###FlowField Calculation:
 - accumulate forces from a variety of causes:  **spiroLight-Field**, **dancer-Field**, **noise-Field**
