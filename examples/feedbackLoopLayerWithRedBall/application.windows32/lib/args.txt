@@ -1,0 +1,3 @@
+ -Xms64m -Xmx2070m
+feedback_02
+feedback_02.jar,core.jar,gluegen-rt.jar,jogl.jar,opengl.jar,video.jar
