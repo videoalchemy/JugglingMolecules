@@ -52,6 +52,8 @@
 - [] Knobs: Red(Left and Right) Green(L,R), Blue(L,R) control the rotational velocity and distance to next teir.
 - [] Ohmite Knob controls the parameters of the flow field (somehow) and/or z-axis rotation
 - [] Add remainder of tier 2 and 3
+- Create SpiroLight structure from Fractal Recursion??
+	- [Fractal Recursion  |  Shiffman](https://vimeo.com/64424402) 
 - **OmiCron Structure:**
 	- [] Add extra lights to the bottom of OmiCron (since the device WILL be in an open field)
 		- [] use a second Arduino??  Yes.
@@ -141,10 +143,32 @@
 		- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
 		- [] If movement > threshold, calc magnitude and orientation of gradient, 
 		- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
+		- **Color Code the Optical Flow**
+			- see the UCF Computer Vision lect at minute 4.  Movement left to right right to left are different colors.  
+			- Method is known as color coding vectors when velocity is mapped to the color intensity
+		- Use Optical FLow to create Motion Based Segmentation (show me only what's moving)
+		- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
+	
 	- Examples of Optical FLow:
 		- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
 		- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
-	- Pseudo Code:
+		- [Structure From Motion Using Optical Flow  |  Shows Image, Smoothed Image, MotionVectors  YouTube](http://www.youtube.com/watch?v=qhoC-YetpnM)
+		- [UCF Computer Vision lect.6 Optical Flow](http://www.youtube.com/watch?v=5VyLAH8BhF8)
+		- [OpenCV Optical Flow Tutorial for the Lucas-Kanade Algorithm](http://dasl.mem.drexel.edu/~noahKuntz/openCVTut9.html)
+			- The LK tracker uses three assumptions, brightness constancy between the same pixels from one frame to the next, small movements between frames (requiring image pyramids to track larger movements), and spatial coherence, thats points near each other are on the same surface. Then the basic concept of the tracker is to estimate the velocity of a moving pixel by the ratio of the derivative of the intensity over time divided by the derivative of the intensity over space. 
+		- [Optical FLow Estimation Tutorial  |  pdf](http://www.cs.toronto.edu/pub/jepson/teaching/vision/2503/opticalFlow.pdf)
+		- [Computing Optical Flow with the OpenCV Library  |  Stavans, Stanford AI Lab](http://robots.stanford.edu/cs223b05/notes/CS%20223-B%20T1%20stavens_opencv_optical_flow.pdf)
+		- [Calculating Small Optical Flow  |  tutorial pdf](http://www.cs.umd.edu/~djacobs/CMSC426/OpticalFlow.pdf)
+		- [SimpleFlow: A Non-iterative, Sublinear Optical Flow Algorithm  |  Computer Graphics UC Berkeley](http://graphics.berkeley.edu/papers/Tao-SAN-2012-05/)
+		- [Optical FLow and the Methods of Calculating  |  wikipedia](http://en.wikipedia.org/wiki/Optical_flow)
+		- [Images of Optical FLow](https://www.google.com/search?q=optical+flow&safe=off&tbm=isch&tbo=u&source=univ&sa=X&ei=3lcxUrneJeqWigLPxICADg&ved=0CEUQsAQ&biw=2128&bih=1203&sei=HFgxUsvZKOfgiALE9ICwBw#imgdii=_)
+
+
+
+	- Pseudo Code for Optical Flow:
+		- Horn & Shunck Optical Flow Algorithm
+			- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
+			- Taylor Series
 		1. Smooth Image with gausian blur
 		2. Compute derivative of filtered image
 		3. Find magnitude and orientation of gradient
@@ -214,14 +238,11 @@
 - [] Create an array of PImages, each containing the previous frame to create a 5 sec sample of dancer + depth.  then rotate along the z-axis (see La Danse Kinect on vimeo).
 - [] How will CenterPiece-SpiroLight interact with the dancer's body?
 	- blendMode(ADD)
-
 - [] dancer is mask for reference image
 
-- [] upload diagrams
-- [] PNGs with Alpha Layer for particles AND for ellipses of spiroLight.
-- **Kinect Ideas**
-	- [] Kinect:  Users Center of Mass linked to spiroCenter Location
-	- [] Kinect: User's horizontal distance informs the spiroCenter's gravitational constant
+
+
+
 
 ###Code:
 - Use createGraphics() to return a PGraphics object.  Unlike the main drawing surface, this surface retains transparency!  That means SpiroLight can fade without fading the particle system
