@@ -189,6 +189,12 @@
 	- [Interactive Projection Mapping Test  |  YouTube  LOOK FOR FEEDBACK LOOP at 2:20](http://www.youtube.com/watch?v=e_QdqYWWZJI)
 	- [Kinect Calibration Tool and Tutorials |  by prince_MIO](http://princemio.net/portfolio/kinect_projector_dance/)
 
+- **Kinect Tutorials:**
+	- [Kinect Depth Selection in Processing](http://vimeo.com/17087533)
+	- [Kinect Interaction](http://www.vimeo.com/groups/kinect)
+	- [Background Replacement with Kinect](http://vimeo.com/17270320)
+	- [Augmented Reality and Information Visualization](http://www.youtube.com/watch?v=z-aBUyrhcj0&feature=related)
+
 ###FlowField Calculation:
 - accumulate forces from a variety of causes:  **spiroLight-Field**, **dancer-Field**, **noise-Field**
 	1. **(spiroLight-Field)**  SpiroLight's Affect on the Flow Field:
