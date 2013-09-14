@@ -32,8 +32,6 @@ import netP5.*;
 
 OscP5 oscP5;
 
-//------------------ControlP5
-ControlP5 controlP5;
 public int MaxForce = 50;
 public int MaxSpeed = 50;
 public int SeekStrength = 50;
@@ -51,81 +49,143 @@ ParticleManager particleManager;
 Kinecter kinecter;
 OpticalFlow flowfield;
 
+
+// background color (black)
 color bgColor = color(0);
+
+// Amount to "dim" the background each round by applying partially opaque background
+// TODO: make touchOSC setting for this
 int overlayAlpha = 20;  // original = 10 fades background colour, 
                         // low numbers <10 aren't great for on screen because 
                         // it leaves color residue (it's ok when projected though).
 
-int sw = 1024, sh = 768;
-float invWidth, invHeight;
-int kWidth=640, kHeight = 480; // use by optical flow and particles
-float invKWidth, invKHeight; // inverse of screen dimensions
+//////////////////////////////
+///// Screen setup
+//////////////////////////////
 
-boolean drawOpticalFlow=true; 
-boolean showSettings=true; 
+// projector size
+int windowWidth = 1280;
+int windowHeight = 800;
 
-//--------------------------------------------iPhone_touchOSC recepticles
-float faderRed = 255;
-float faderGreen=255;
-float faderBlue=255;
-float faderAlpha=255;
-//---------------------------------------------noise parameters
+// rear screen projection?
+boolean rearScreenProject = false;
+
+
+//////////////////////////////
+///// Kinect size
+//////////////////////////////
+// size of the kinect
+int kWidth=640, kHeight = 480;     // use by optical flow and particles
+float invKWidth = 1.0f/kWidth;     // inverse of screen dimensions
+float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
+
+
+//////////////////////////////
+///// Configuration screen
+//////////////////////////////
+// set to true to show setup screen before flow (requires keyboard)
+boolean showSettings=true;
+// set to true to show red force lines during setup screen
+boolean drawOpticalFlow=true;
+
+
+//////////////////////////////
+///// R,B,B,alpha for ALL particles, coming from TouchOSC
+//////////////////////////////
+float faderRed = 255;  //0-255
+float faderGreen=255;  //0-255
+float faderBlue=255;   //0-255
+float faderAlpha=200;  //0-255
+
+//////////////////////////////
+///// Perlin noise generation, coming from TouchOSC
+//////////////////////////////
+// cloud variation, low values have long stretching clouds that move long distances,
+//high values have detailed clouds that don't move outside smaller radius.
 float noiseStrengthOSC= 3; //1-300;
+
+// cloud strength multiplier,
+//eg. multiplying low strength values makes clouds more detailed but move the same long distances.
 float noiseScaleOSC = 5; //1-400
+
+// turbulance, or how often to change the 'clouds' - third parameter of perlin noise: time. 
 float zNoiseVelocityOSC = .10; // .005 - .3
-//---------------------------------------------touchOSC, the other parameters
-float viscosityOSC = .999;
-float forceMultiOSC = 5; //1-300
+
+
+//////////////////////////////
+///// How much particles pay attention to the noise, coming from TouchOSC
+//////////////////////////////
+//how much particle slows down in fluid environment
+float viscosityOSC = .999;  //0-1  ???
+
+// force to apply to input - mouse, touch etc.
+float forceMultiOSC = 5;   //1-300
+
+// how fast to return to the noise after force velocities
 float accFrictionOSC = .095;  //.001-.999
+
+// how fast to return to the noise after force velocities
 float accLimiterOSC = .005;  // - .999
-//-------------------------------------------
-int generateRateOSC = 10; //2-200
-float  generateSpreadOSC= 25; //1-50
-//------------------------------------------
-int minimumDepthOSC = 100;
-int maximumDepthOSC = 1000;  
+
+
+//////////////////////////////
+///// creating particles
+//////////////////////////////
+
+// Maximum number of particles that can be active at once.
+// More particles = more detail because less "recycling"
+// Fewer particles = faster.
+int maxParticleCount = 20000;
+
+// how many particles to emit when mouse/tuio blob move
+int generateRateOSC = 2; //2-200
+
+// random offset for particles emitted, so they don't all appear in the same place
+float  generateSpreadOSC = 25; //1-50
+
+
+
+//////////////////////////////
+///// flowfield
+//////////////////////////////
+
+// resolution of the flow field.
+// Smaller means more coarse flowfield = faster but less precise
+// Larger means finer flowfield = slower but better tracking of edges
+int flowfieldResolution = 30;  // 1..50 ?
+
+
 
 void setup() {
-  size(sw, sh, OPENGL );//OPENGL
-  hint( ENABLE_OPENGL_4X_SMOOTH );
-  
-   //start oscP5 listening for incoming messages at port 8000
-  oscP5 = new OscP5(this, 8000);
-
-  background(bgColor);
-  frameRate(30);
-
-  // to avoid dividing by zero errors (thanks memo)
-  invWidth = 1.0f/sw;
-  invHeight = 1.0f/sh;  
-  invKWidth = 1.0f/kWidth;
-  invKHeight = 1.0f/kHeight;
+  // set up with OPENGL rendering context == faster
+  size(windowWidth, windowHeight, OPENGL);
 
   // finding the right noise seed makes a difference!
   noiseSeed(26103); 
+  
+  // TouchOSC control bridge
+  //start oscP5 listening for incoming messages at port 8000
+  oscP5 = new OscP5(this, 8000);
 
-  // create the particles: 20000-40000 runs smooth at 30fps on latest macbook pro. 
-  // drop this amount if running slow. press any key to print fps.
-  particleManager = new ParticleManager(30000);//original 30000
+  background(bgColor);
+  frameRate(60);
+
+  particleManager = new ParticleManager(maxParticleCount);
 
   // helper class for kinect
   kinecter = new Kinecter(this);
 
-  // optical flow from kinect depth image. parameter indicates flowfield gridsize
-  // smaller is more detailed but heavier on cpu
-  flowfield = new OpticalFlow(10);//15=original
-
+  // create the flowfield
+  flowfield = new OpticalFlow(flowfieldResolution);
 }
 
 
 
 void draw() {
-  
-  // fades black rectangle over the top
+  // partially fade the screen by drawing a semi-opaque rectangle over everything
   easyFade();
 
-  if (showSettings) 
-  {    
+  if (showSettings) {    
     // updates the kinect raw depth + pixels
     kinecter.updateKinectDepth(true);
 
@@ -135,30 +195,31 @@ void draw() {
     // want to see the optical flow after depth image drawn.
     flowfield.update();
   }
-  else
-  {
+  
+  // show the flowfield
+  else {
     // updates the kinect raw depth
     kinecter.updateKinectDepth(false);
 
     // updates the optical flow vectors from the kinecter depth image 
     // (want to update optical flow before particles)!!
     flowfield.update();
-    particleManager.updateAndRenderGL();
+    particleManager.updateAndRender();
   }
 }
 
 
-
-void easyFade()
-{
+// Partially fade the screen by drawing a translucent black rectangle over everything.
+void easyFade() {
   fill(bgColor, overlayAlpha);
   noStroke();
   rect(0, 0, width, height);//fade background
 }
 
 
-void instructionScreen()
-{
+
+// Show the instruction screen
+void instructionScreen() {
   // show kinect depth image
   image(kinecter.depthImg, 0, 0); 
 
@@ -174,6 +235,8 @@ void instructionScreen()
 }
 
 
+
+// Handle keypress to adjust parameters
 void keyPressed() {
   println("*** FRAMERATE: " + frameRate);
 

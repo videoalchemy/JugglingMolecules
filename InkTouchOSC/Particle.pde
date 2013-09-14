@@ -23,8 +23,8 @@ class Particle {
   float angle, stepSize;
   float zNoise;
 
-  float accFriction;// = 0.9;//0.75; // set from manager now
-  float accLimiter;// = 0.5;
+  float accFriction;  // = 0.9;//0.75; // set from manager now
+  float accLimiter;   // = 0.5;
 
   int MIN_STEP = 4;
   int MAX_STEP = 6;
@@ -47,7 +47,6 @@ class Particle {
   float sat = 0.0f;
 
   public Particle(float x,float y, float noiseZ) {
-
     stepSize = random(MIN_STEP, MAX_STEP);
 
     location = new PVector(x,y);
@@ -75,8 +74,7 @@ class Particle {
   }
 
   
-  public boolean checkAlive()
-  {
+  public boolean checkAlive() {
     return (life < lifeLimit);
   }
 
@@ -84,30 +82,9 @@ class Particle {
    
     prevLocation = location.get();
 
-    if(acceleration.mag() < accLimiter)
-    {
+    if (acceleration.mag() < accLimiter) {
       life++;
       angle = noise(location.x / particleManager.noiseScale, location.y / particleManager.noiseScale, zNoise);
-      
-      // white ink with a bit of grey for this version.
-      float g = angle * particleManager.greyscaleMult;
-      
-      // -----------------evTherapy additions :: may 2012 :: adding atan2(vel.y/vel.x) to give color based on angle
-      
-      
-      //tint (0,0,255,acceleration.mag() * 255);//4 May:: turnd this off
-      tint (50,acceleration.mag() * 255);//4 May:: turnd this off//100 is original
-     // tint (255);
-      clr = color (g+particleManager.greyscaleOffset,g+particleManager.greyscaleOffset,g+particleManager.greyscaleOffset); //IHS original
-       //clr = color (255*abs(location.y-(height/2))/(height/2),0,255*abs(location.y-(height/2))/(height/2));
-     //clr = color(255*location.x/width,255*location.y/height,255); //4 may::turned this on
-      //clr = color(g+particleManager.greyscaleOffset); //ORIGINAL
-      //float dirAtan = map (atan2(velocity.y,velocity.x),-PI,PI,0,255);
-      
-     // clr = color(255,0,0); //ORIGINAL
-      //println(acceleration.mag());
-      //println(g+hsbColourOffset);
-      
       angle *= particleManager.noiseStrength;
       
       velocity.x = cos(angle);
@@ -115,12 +92,12 @@ class Particle {
       velocity.mult(stepSize);
      
     }
-    else
-    {
+    else {
       // normalise an invert particle position for lookup in flowfield
-      flowFieldLocation.x = norm(sw - location.x, 0, sw);
+      float x = (rearScreenProject ? width - location.x : location.x);
+      flowFieldLocation.x = norm(x, 0, width);
       flowFieldLocation.x *= kWidth;// - (test.x * wscreen);
-      flowFieldLocation.y = norm(location.y, 0, sh);
+      flowFieldLocation.y = norm(location.y, 0, height);
       flowFieldLocation.y *= kHeight;      
       
       desired = flowfield.lookup(flowFieldLocation);
@@ -129,7 +106,6 @@ class Particle {
       steer = PVector.sub(desired, velocity);
       steer.limit(stepSize);  // Limit to maximum steering force      
       acceleration.add(steer);
-
     }
 
     acceleration.mult(accFriction);
@@ -143,16 +119,40 @@ class Particle {
     //Friction Force = -c * (velocity unit vector) //stepSize = constrain(stepSize - .05, 0,10);
     //Viscous Force = -c * (velocity vector)
     stepSize *= particleManager.viscosity;
-
   }
 
-  void renderGL(GL gl, float r, float g, float b, float a) {
-   
-      gl.glColor4f(r, g, b, a);
-      gl.glVertex2f(width-prevLocation.x-1,prevLocation.y);
-      gl.glVertex2f(width-location.x-1,location.y);
-    
-    
+  // 2-d render using processing P2D rendering context
+  // r,g,b,a are floats from 0..255
+  void render(float r, float g, float b, float a) {
+      // drawing coordinates
+      float startX = (rearScreenProject ? width - (prevLocation.x-1) : (prevLocation.x-1)); 
+      float endX   = (rearScreenProject ? width - (location.x-1)     : (location.x-1));
+      float startY = prevLocation.y;
+      float endY   = location.y;
+      stroke(r, g, b, a);
+      line(startX, startY, endX, endY);
   }
+  
+ 
+// Render using openGL
+// NOTE: not working in processing 2
+// NOTE: NOT USED AT ALL
+void renderGL(GL2 gl, float r, float g, float b, float a) {
+    // scale r,g,b,a from 0..255 -> 0..1
+    r = map(r, 0, 255, 0, 1);
+    g = map(g, 0, 255, 0, 1);
+    b = map(b, 0, 255, 0, 1);
+    a = map(a, 0, 255, 0, 1);
+    
+    // drawing coordinates
+    float startX = width-prevLocation.x-1;
+    float startY = prevLocation.y;
+    float endX   = width-location.x-1;
+    float endY   = location.y;
+
+    gl.glColor4f(r, g, b, a);
+    gl.glVertex2f(startX, startY);
+    gl.glVertex2f(endX, endY);
+  }  
 }
 
