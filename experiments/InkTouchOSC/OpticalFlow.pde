@@ -203,9 +203,9 @@ class OpticalFlow {
 
   // 2nd sweep : differentiations by x and y
   void difXY() {
-    for(int ix=1;ix<cols-1;ix++) {
-      for(int iy=1;iy<rows-1;iy++) {
-        int ig=iy*cols+ix;
+    for (int ix = 1; ix < cols-1; ix++) {
+      for (int iy = 1; iy<rows-1; iy++) {
+        int ig = iy * cols + ix;
         // compute x difference
         dxr[ig] = par[ig+1]-par[ig-1];
         // compute y difference
@@ -223,21 +223,19 @@ class OpticalFlow {
       for (int iy = 1; iy < rows-1; iy++) {
         int y0 = iy * resolution+resolution/2;
         int ig = iy * cols+ix;
-        //y0Z=iy*resolution+resolution/2;
-        //igz=iy*cols+ix;
 
         // prepare vectors fx, fy, ft
         getnext9(dxr,fx,ig,0); // dx red
         getnext9(dyr,fy,ig,0); // dy red
         getnext9(dtr,ft,ig,0); // dt red
 
-        // solve for (flowx, flowy) such that
-        // fx flowx + fy flowy + ft = 0
+        // solve for (flowx, flowy) such that:
+        //   fx flowx + fy flowy + ft = 0
         solveSectFlow(ig);
 
         // smoothing
-        sflowx[ig]+=(flowx[ig]-sflowx[ig])*wflow;
-        sflowy[ig]+=(flowy[ig]-sflowy[ig])*wflow;
+        sflowx[ig] += (flowx[ig] - sflowx[ig]) * wflow;
+        sflowy[ig] += (flowy[ig] - sflowy[ig]) * wflow;
 
         float u = df * sflowx[ig];
         float v = df * sflowy[ig];
@@ -252,11 +250,10 @@ class OpticalFlow {
           if (a >= minDrawParticlesFlowVelocity) { 
             
             // display flow when debugging
-            if (drawOpticalFlow) {
+            if (showOpticalFlow) {
               stroke(opticalFlowLineColor);
               //line(x0,y0,x0+u,y0+v);
 
-// TODO: reverse...
               float startX = width - (((float) x0) * kToWindowWidth);
               float startY = ((float) y0) * kToWindowHeight;
               float endX   = width - (((float) (x0+u)) * kToWindowWidth);
@@ -277,37 +274,12 @@ class OpticalFlow {
     }
   }
   
-/*
-  // Draw every vector
-  void display() {
-    for (int i = 0; i < cols; i++) {
-      for (int j = 0; j < rows; j++) {
-        drawVector(field[i][j],i*resolution,j*resolution,resolution-2);
-      }
-    }
-  }
-
-  // Renders a vector object 'v' as an arrow and a location 'x,y'
-  void drawVector(PVector v, float x, float y, float scayl) {
-    pushMatrix();
-    float arrowsize = 4;
-    // Translate to location to render vector
-    translate(x,y);
-    stroke(100);
-    // Call vector heading function to get direction (note that pointing up is a heading of 0) and rotate
-    rotate(v.heading2D());
-    // Calculate length of vector & scale it to be bigger or smaller if necessary
-    float len = v.mag()*scayl;
-    // Draw three lines to make an arrow (draw pointing up since we've rotate to the proper direction)
-    line(0,0,len,0);
-    line(len,0,len-arrowsize,+arrowsize/2);
-    line(len,0,len-arrowsize,-arrowsize/2);
-    popMatrix();
-  }
-*/
-  PVector lookup(PVector lookup) {
-    int i = (int) constrain(lookup.x/resolution,0,cols-1);
-    int j = (int) constrain(lookup.y/resolution,0,rows-1);
+  
+  // Look up the vector at a particular world location.
+  // Automatically translates into kinect size.
+  PVector lookup(PVector worldLocation) {
+    int i = (int) constrain(worldLocation.x/resolution,0,cols-1);
+    int j = (int) constrain(worldLocation.y/resolution,0,rows-1);
     return field[i][j].get();
   }
 

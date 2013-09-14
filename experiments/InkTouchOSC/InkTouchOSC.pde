@@ -59,21 +59,42 @@ int overlayAlpha = 20;  // original = 10 fades background colour,
 int windowWidth = 1280;
 int windowHeight = 800;
 
-// rear screen projection?
-boolean rearScreenProject = true;
-
 
 //////////////////////////////
-///// Configuration screen
+///// Master controls for what we're showing on the screen
 //////////////////////////////
-// set to true to show setup screen before flow (requires keyboard)
+
+// set to true to show setup screen OVER the rest of the screen
+// TODO: from OSC
 boolean showSettings=false;
 
-// set to true to show red force lines during setup screen
-boolean drawOpticalFlow=true;
+// set to true to show force lines
+// TODO: from OSC
+boolean showOpticalFlow=false;
 
 // color for optical flow lines
+// TODO: from OSC
 color opticalFlowLineColor = color(255, 0, 0, 30);
+
+// set to true to show the depth image
+// TODO: from OSC
+boolean showDepthImage = true;
+
+// `tint` color for the depth image
+color depthImageColor = color(255, 256);
+
+// set to true to show particles
+// TODO: from OSC
+boolean showParticles=true;
+
+
+// blend mode for the depth image
+// TODO: from OSC
+int depthImageBlendMode = DARKEST;
+//int depthImageBlendMode = DARKEST;
+//int depthImageBlendMode = DARKEST;
+//int depthImageBlendMode = DARKEST;
+//int depthImageBlendMode = DARKEST;
 
 
 //////////////////////////////
@@ -139,7 +160,7 @@ int maxParticleCount = 20000;
 int generateRateOSC = 10; //2-200
 
 // random offset for particles emitted, so they don't all appear in the same place
-float  generateSpreadOSC = 2; //1-50
+float generateSpreadOSC = 20; //1-50
 
 // Should all particles be the same color?
 // (more efficient if so)
@@ -187,31 +208,40 @@ void setup() {
 
 
 void draw() {
+  pushStyle();
+  pushMatrix();
+
+
   // partially fade the screen by drawing a semi-opaque rectangle over everything
   easyFade();
 
-  if (showSettings) {    
-    // updates the kinect raw depth + pixels
-    kinecter.updateKinectDepth(true);
+  // updates the kinect raw depth + kinecter.depthImg
+  kinecter.updateKinectDepth(true);
 
-    // display instructions for adjusting kinect depth image
-    instructionScreen();
+  // update the optical flow vectors from the kinecter depth image 
+  // also draws the force vectors if `showOpticalFlow` is true
+  flowfield.update();
 
-    // want to see the optical flow after depth image drawn.
-    flowfield.update();
+  // show the flowfield particles
+  if (showParticles) particleManager.updateAndRender();
+    
+  if (showDepthImage) {
+    pushStyle();
+    pushMatrix();
+//    blendMode(depthImageBlendMode);
+    scale(-1,1);
+    tint(0, 12);
+    image(kinecter.depthImg, 0, 0, -width, height);
+    popMatrix();
+    popStyle();
   }
-  
-  // show the flowfield
-  else {
-    // updates the kinect raw depth
-    kinecter.updateKinectDepth(true);
-    // updates the optical flow vectors from the kinecter depth image 
-    // (want to update optical flow before particles)!!
-    flowfield.update();
-    particleManager.updateAndRender();
-//TODO: reverse screen
-    image(kinecter.depthImg, width, 0, -width, height);
-  }
+
+  // display instructions for adjusting kinect depth image on top of everything else
+  if (showSettings) drawInstructionScreen();
+
+
+  popStyle();
+  popMatrix();
 }
 
 
@@ -222,99 +252,4 @@ void easyFade() {
   rect(0, 0, width, height);//fade background
 }
 
-
-
-// Show the instruction screen
-void instructionScreen() {
-  // show kinect depth image
-  image(kinecter.depthImg, width, 0, -width, height);
-
-  // instructions under depth image in gray box
-  fill(50);
-  rect(0, 490, 640, 85);
-  fill(255);
-  text("Press keys 'a' and 'z' to adjust minimum depth: " + kinecter.minDepth, 5, 505);
-  text("Press keys 's' and 'x' to adjust maximum depth: " + kinecter.maxDepth, 5, 520);
-
-  text("> Adjust depths until you get a white silhouette of your whole body with everything else black.", 5, 550);
-  text("PRESS SPACE TO CONTINUE", 5, 565);
-}
-
-
-
-// Handle keypress to adjust parameters
-void keyPressed() {
-  println("*** FRAMERATE: " + frameRate);
-
-  if (keyCode == UP) {
-    kinecter.kAngle++;
-    kinecter.kAngle = constrain(kinecter.kAngle, 0, 30);
-    kinecter.kinect.tilt(kinecter.kAngle);
-  } 
-  else if (keyCode == DOWN) {
-    kinecter.kAngle--;
-    kinecter.kAngle = constrain(kinecter.kAngle, 0, 30);
-    kinecter.kinect.tilt(kinecter.kAngle);
-  }
-  else if (keyCode == 32) { 
-    // space bar for settings to adjust kinect depth
-    background(bgColor);
-    if (!showSettings) {
-      //controlP5.show();
-      showSettings = true;
-      drawOpticalFlow = true;
-    }
-    else {
-      //controlP5.hide();
-      showSettings = false;
-      drawOpticalFlow = false;
-    }
-  }
-  else if (keyCode == 65) {
-    // a pressed add to minimum depth
-    kinecter.minDepth = constrain(kinecter.minDepth + 10, 0, kinecter.thresholdRange);
-    println("minimum depth: " + kinecter.minDepth);
-  }
-  else if (keyCode == 90) {
-    // z pressed subtract to minimum depth
-    kinecter.minDepth = constrain(kinecter.minDepth - 10, 0, kinecter.thresholdRange);
-    println("minimum depth: " + kinecter.minDepth);
-  }
-  else if (keyCode == 83) {
-    // s pressed add to maximum depth
-    kinecter.maxDepth = constrain(kinecter.maxDepth + 10, 0, kinecter.thresholdRange);
-    println("maximum depth: " + kinecter.maxDepth);
-  }
-  else if (keyCode == 88) {
-    // x pressed subtract to maximum depth
-    kinecter.maxDepth = constrain(kinecter.maxDepth - 10, 0, kinecter.thresholdRange);
-    println("maximum depth: " + kinecter.maxDepth);
-  }
-  else if (key == 'f') {
-    // d pressed add to maximum depth
-    kinecter.maxDepth = constrain(kinecter.maxDepth + 1, 0, kinecter.thresholdRange);
-    println("maximum depth: " + kinecter.maxDepth);
-  }
-   else if (key == 'v') {
-    // c pressed add to maximum depth
-    kinecter.maxDepth = constrain(kinecter.maxDepth - 1, 0, kinecter.thresholdRange);
-    println("maximum depth: " + kinecter.maxDepth);
-  }
-   else if (key == 'd') {
-    // a pressed add to minimum depth
-    kinecter.minDepth = constrain(kinecter.minDepth + 1, 0, kinecter.thresholdRange);
-    println("minimum depth: " + kinecter.minDepth);
-  }
-  else if (key == 'c') {
-    // z pressed subtract to minimum depth
-    kinecter.minDepth = constrain(kinecter.minDepth - 1, 0, kinecter.thresholdRange);
-    println("minimum depth: " + kinecter.minDepth);
-  }
-  
-}
-
-void stop() {
-  kinecter.quit();
-  super.stop();
-}
 
