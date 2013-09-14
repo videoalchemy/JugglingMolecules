@@ -72,6 +72,15 @@ boolean rearScreenProject = false;
 
 
 //////////////////////////////
+///// Configuration screen
+//////////////////////////////
+// set to true to show setup screen before flow (requires keyboard)
+boolean showSettings=false;
+// set to true to show red force lines during setup screen
+boolean drawOpticalFlow=true;
+
+
+//////////////////////////////
 ///// Kinect size
 //////////////////////////////
 // size of the kinect
@@ -79,14 +88,6 @@ int kWidth=640, kHeight = 480;     // use by optical flow and particles
 float invKWidth = 1.0f/kWidth;     // inverse of screen dimensions
 float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
 
-
-//////////////////////////////
-///// Configuration screen
-//////////////////////////////
-// set to true to show setup screen before flow (requires keyboard)
-boolean showSettings=true;
-// set to true to show red force lines during setup screen
-boolean drawOpticalFlow=true;
 
 
 //////////////////////////////

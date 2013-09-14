@@ -25,66 +25,21 @@ void oscEvent (OscMessage theOscMessage) {
   String addr = theOscMessage.addrPattern();  //never did fully understand string syntaxxx
   float val = theOscMessage.get(0).floatValue(); // this is returning the get float from bellow
 
-  if (addr.equals("/color/faderRed")) {  //remove the if statement and put it in draw
-    faderRed = val; //assign received value.  then call function in draw to pass parameter
-    //print(faderRed);
-  }
-  else if (addr.equals("/color/faderGreen")) {
-    faderGreen = val;// assigned receive val. prepare to pass parameter in called function: end of draw
-  }
-  else if (addr.equals("/color/faderBlue")) {
-    faderBlue = val;// assigned received val from tilt and prepare to pass in function
-  }
-  else if (addr.equals("/color/faderAlpha")) {
-    faderAlpha = val;
-  }
-  else if (addr.equals("/P_Manager/viscosity")) {
-    viscosityOSC = val;
-  }
-  
-  
-  else if (addr.equals("/P_Manager/forceMulti")) {
-    forceMultiOSC= val;
-  }
-  else if (addr.equals("/P_Manager/accFriction")) {
-    accFrictionOSC = val;
-  }
-  else if (addr.equals("/P_Manager/accLimiter")) {
-    accLimiterOSC = val;
-  }
-  
-  
-  else if (addr.equals("/P_Manager/noiseStrength")) {
-    noiseStrengthOSC = val;
-  }
-  else if (addr.equals("/P_Manager/noiseScale")) {
-    noiseScaleOSC =val; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/P_Manager/zNoise")) {
-   zNoiseVelocityOSC = val ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/P_Manager/genSpread")) {
-    generateSpreadOSC = val ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  
-  
-  /*
-  else if (addr.equals("/1/hotspotFL")) {
-    hotspotFL.checkOSC(val) ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/1/hotspotF")) {
-    hotspotF.checkOSC(val) ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/1/hotspotFR")) {
-    hotspotFR.checkOSC(val) ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/1/hotspotMR")) {
-    hotspotMR.checkOSC(val) ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  else if (addr.equals("/1/hotspotBR")) {
-    hotspotBR.checkOSC(val) ; //check out this vector, bro IF Val = 1, then isHit returns positive
-  }
-  */
+  if      (addr == "/color/faderRed")          faderRed = val;
+  else if (addr == "/color/faderGreen")        faderGreen = val;
+  else if (addr == "/color/faderBlue")         faderBlue = val;
+  else if (addr == "/color/faderAlpha")        faderAlpha = val;
+  else if (addr == "/P_Manager/viscosity")     viscosityOSC = val;
+
+  else if (addr == "/P_Manager/forceMulti")    forceMultiOSC= val;
+  else if (addr == "/P_Manager/accFriction")   accFrictionOSC = val;
+  else if (addr == "/P_Manager/accLimiter")    accLimiterOSC = val;
+
+  else if (addr == "/P_Manager/noiseStrength") noiseStrengthOSC = val;
+  else if (addr == "/P_Manager/noiseScale")    noiseScaleOSC = val;
+  else if (addr == "/P_Manager/zNoise")        zNoiseVelocityOSC = val;
+  else if (addr == "/P_Manager/genSpread")     generateSpreadOSC = val;
+
 }
 
 

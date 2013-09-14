@@ -96,7 +96,7 @@ class Particle {
       // normalise an invert particle position for lookup in flowfield
       float x = (rearScreenProject ? width - location.x : location.x);
       flowFieldLocation.x = norm(x, 0, width);
-      flowFieldLocation.x *= kWidth;// - (test.x * wscreen);
+      flowFieldLocation.x *= kWidth; // - (test.x * wscreen);
       flowFieldLocation.y = norm(location.y, 0, height);
       flowFieldLocation.y *= kHeight;      
       
