@@ -52,7 +52,7 @@ class ParticleManager {
   
   // offset for particles emitted
   float generateSpread; 
-
+  
   public ParticleManager(int numParticles) {
     particleCount = numParticles;
     particles =new Particle[particleCount];
@@ -76,6 +76,7 @@ class ParticleManager {
     
     // NOTE: doing pushStyle()/popStyle() on the outside of the loop makes this much much faster
     pushStyle();
+    float red, green, blue, alpha;
     for (int i = 0; i < particleCount; i++) {
       Particle particle = particles[i]; 
       if (particle.checkAlive()) {
@@ -83,16 +84,19 @@ class ParticleManager {
         
         // adjust particlar color by R/G/B fader amount
         //   NOTE:  ">> 16 & 0xFF" bidness is fast color decomposition, see: http://processing.org/reference/red_.html
-//        color clr   = particle.clr;
-//        float red   = (clr >> 16 & 0xFF) * (faderRed/255);
-//        float green = (clr >> 8 & 0xFF)  * (faderGreen/255);
-//        float blue  = (clr & 0xFF)       * (faderBlue/255);
-//        float alpha = (lineAlpha)        * (faderAlpha/255);
-
-        float red   = faderRed;
-        float green = faderGreen;
-        float blue  = faderBlue;
-        float alpha = faderAlpha;
+        if (individuallyColoredParticles) {
+          color clr   = particle.clr;
+          red   = (faderRed/255)   * (clr >> 16 & 0xFF);
+          green = (faderGreen/255) * (clr >> 8 & 0xFF); 
+          blue  = (faderBlue/255)  * (clr & 0xFF);
+        } 
+        // all particles same color -- faster
+        else {
+          red   = faderRed;
+          green = faderGreen;
+          blue  = faderBlue;
+        }
+        alpha = faderAlpha;
         particle.render(red, green, blue, alpha);
       }
     }

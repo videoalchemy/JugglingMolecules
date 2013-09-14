@@ -27,18 +27,10 @@ Movement Ink::
 */
 
 
-import oscP5.*;  // ipad action
+import oscP5.*;  // TouchOSC
 import netP5.*;
 
 OscP5 oscP5;
-
-public int MaxForce = 50;
-public int MaxSpeed = 50;
-public int SeekStrength = 50;
-public int SeparationStrength = 50;
-public int Allignment = 50;
-public int Cohesion = 50;
-public int Indirection = 0;
 
 import processing.video.*;
 import processing.opengl.*;
@@ -68,7 +60,7 @@ int windowWidth = 1280;
 int windowHeight = 800;
 
 // rear screen projection?
-boolean rearScreenProject = false;
+boolean rearScreenProject = true;
 
 
 //////////////////////////////
@@ -76,8 +68,12 @@ boolean rearScreenProject = false;
 //////////////////////////////
 // set to true to show setup screen before flow (requires keyboard)
 boolean showSettings=false;
+
 // set to true to show red force lines during setup screen
 boolean drawOpticalFlow=true;
+
+// color for optical flow lines
+color opticalFlowLineColor = color(255, 0, 0, 30);
 
 
 //////////////////////////////
@@ -87,7 +83,8 @@ boolean drawOpticalFlow=true;
 int kWidth=640, kHeight = 480;     // use by optical flow and particles
 float invKWidth = 1.0f/kWidth;     // inverse of screen dimensions
 float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
-
+float kToWindowWidth  = ((float) windowWidth)  * invKWidth;    // multiplier for kinect size to window size
+float kToWindowHeight = ((float) windowHeight) * invKHeight;   // multiplier for kinect size to window size
 
 
 //////////////////////////////
@@ -96,37 +93,37 @@ float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
 float faderRed = 255;  //0-255
 float faderGreen=255;  //0-255
 float faderBlue=255;   //0-255
-float faderAlpha=200;  //0-255
+float faderAlpha=50;  //0-255
 
 //////////////////////////////
 ///// Perlin noise generation, coming from TouchOSC
 //////////////////////////////
 // cloud variation, low values have long stretching clouds that move long distances,
 //high values have detailed clouds that don't move outside smaller radius.
-float noiseStrengthOSC= 3; //1-300;
+float noiseStrengthOSC= 100; //1-300;
 
 // cloud strength multiplier,
 //eg. multiplying low strength values makes clouds more detailed but move the same long distances.
-float noiseScaleOSC = 5; //1-400
+float noiseScaleOSC = 100; //1-400
 
 // turbulance, or how often to change the 'clouds' - third parameter of perlin noise: time. 
-float zNoiseVelocityOSC = .10; // .005 - .3
+float zNoiseVelocityOSC = .008; // .005 - .3
 
 
 //////////////////////////////
 ///// How much particles pay attention to the noise, coming from TouchOSC
 //////////////////////////////
 //how much particle slows down in fluid environment
-float viscosityOSC = .999;  //0-1  ???
+float viscosityOSC = .995;  //0-1  ???
 
 // force to apply to input - mouse, touch etc.
-float forceMultiOSC = 5;   //1-300
+float forceMultiOSC = 50;   //1-300
 
 // how fast to return to the noise after force velocities
-float accFrictionOSC = .095;  //.001-.999
+float accFrictionOSC = .075;  //.001-.999
 
 // how fast to return to the noise after force velocities
-float accLimiterOSC = .005;  // - .999
+float accLimiterOSC = .35;  // - .999
 
 
 //////////////////////////////
@@ -139,12 +136,14 @@ float accLimiterOSC = .005;  // - .999
 int maxParticleCount = 20000;
 
 // how many particles to emit when mouse/tuio blob move
-int generateRateOSC = 2; //2-200
+int generateRateOSC = 10; //2-200
 
 // random offset for particles emitted, so they don't all appear in the same place
-float  generateSpreadOSC = 25; //1-50
+float  generateSpreadOSC = 2; //1-50
 
-
+// Should all particles be the same color?
+// (more efficient if so)
+boolean individuallyColoredParticles = true;
 
 //////////////////////////////
 ///// flowfield
@@ -153,7 +152,12 @@ float  generateSpreadOSC = 25; //1-50
 // resolution of the flow field.
 // Smaller means more coarse flowfield = faster but less precise
 // Larger means finer flowfield = slower but better tracking of edges
-int flowfieldResolution = 30;  // 1..50 ?
+int flowfieldResolution = 15;  // 1..50 ?
+
+  
+ // setting both to the same value is intereseting
+float minDrawParticlesFlowVelocity = 10;// 1-20 ???
+float minRegisterFlowVelocity = 10.0f; //  2-10 ???
 
 
 
@@ -200,12 +204,13 @@ void draw() {
   // show the flowfield
   else {
     // updates the kinect raw depth
-    kinecter.updateKinectDepth(false);
-
+    kinecter.updateKinectDepth(true);
     // updates the optical flow vectors from the kinecter depth image 
     // (want to update optical flow before particles)!!
     flowfield.update();
     particleManager.updateAndRender();
+//TODO: reverse screen
+    image(kinecter.depthImg, width, 0, -width, height);
   }
 }
 
@@ -222,7 +227,7 @@ void easyFade() {
 // Show the instruction screen
 void instructionScreen() {
   // show kinect depth image
-  image(kinecter.depthImg, 0, 0); 
+  image(kinecter.depthImg, width, 0, -width, height);
 
   // instructions under depth image in gray box
   fill(50);
@@ -251,67 +256,56 @@ void keyPressed() {
     kinecter.kAngle = constrain(kinecter.kAngle, 0, 30);
     kinecter.kinect.tilt(kinecter.kAngle);
   }
-  else if (keyCode == 32) 
-  { 
+  else if (keyCode == 32) { 
     // space bar for settings to adjust kinect depth
     background(bgColor);
-    if (!showSettings) 
-    {
+    if (!showSettings) {
       //controlP5.show();
       showSettings = true;
       drawOpticalFlow = true;
     }
-    else
-    {
+    else {
       //controlP5.hide();
       showSettings = false;
       drawOpticalFlow = false;
     }
   }
-  else if (keyCode == 65)
-  {
+  else if (keyCode == 65) {
     // a pressed add to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth + 10, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (keyCode == 90)
-  {
+  else if (keyCode == 90) {
     // z pressed subtract to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth - 10, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (keyCode == 83)
-  {
+  else if (keyCode == 83) {
     // s pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth + 10, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-  else if (keyCode == 88)
-  {
+  else if (keyCode == 88) {
     // x pressed subtract to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth - 10, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-  else if (key == 'f')
-  {
+  else if (key == 'f') {
     // d pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth + 1, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-   else if (key == 'v')
-  {
+   else if (key == 'v') {
     // c pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth - 1, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-   else if (key == 'd')
-  {
+   else if (key == 'd') {
     // a pressed add to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth + 1, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (key == 'c')
-  {
+  else if (key == 'c') {
     // z pressed subtract to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth - 1, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);

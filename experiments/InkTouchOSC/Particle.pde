@@ -27,7 +27,7 @@ class Particle {
   float accLimiter;   // = 0.5;
 
   int MIN_STEP = 4;
-  int MAX_STEP = 6;
+  int MAX_STEP = 8;
 
   PVector location;
   PVector prevLocation;
@@ -42,7 +42,7 @@ class Particle {
   color clr = color(255);
   
   int life = 0;
-  int lifeLimit = 2; // 400 = original
+  int lifeLimit = 400; // 400 = original
 
   float sat = 0.0f;
 
@@ -71,6 +71,11 @@ class Particle {
     life = 0;
     
     zNoise = noiseZ;
+    
+    int r = (int) map(x, 0, width, 0, 255);
+    int g = (int) map(y, 0, width, 0, 255);
+    int b = (int) map(x+y, 0, width+height, 0, 255);
+    clr = color(r,g,b);
   }
 
   
@@ -79,13 +84,14 @@ class Particle {
   }
 
   public void update() {
-   
     prevLocation = location.get();
 
     if (acceleration.mag() < accLimiter) {
       life++;
       angle = noise(location.x / particleManager.noiseScale, location.y / particleManager.noiseScale, zNoise);
       angle *= particleManager.noiseStrength;
+
+//EXTRA CODE HERE
       
       velocity.x = cos(angle);
       velocity.y = sin(angle);
@@ -94,7 +100,8 @@ class Particle {
     }
     else {
       // normalise an invert particle position for lookup in flowfield
-      float x = (rearScreenProject ? width - location.x : location.x);
+//      float x = (rearScreenProject ? width - location.x : location.x);
+      float x = width-location.x;
       flowFieldLocation.x = norm(x, 0, width);
       flowFieldLocation.x *= kWidth; // - (test.x * wscreen);
       flowFieldLocation.y = norm(location.y, 0, height);
@@ -125,8 +132,10 @@ class Particle {
   // r,g,b,a are floats from 0..255
   void render(float r, float g, float b, float a) {
       // drawing coordinates
-      float startX = (rearScreenProject ? width - (prevLocation.x-1) : (prevLocation.x-1)); 
-      float endX   = (rearScreenProject ? width - (location.x-1)     : (location.x-1));
+//      float startX = (rearScreenProject ? width - (prevLocation.x-1) : (prevLocation.x-1)); 
+//      float endX   = (rearScreenProject ? width - (location.x-1)     : (location.x-1));
+      float startX = prevLocation.x;
+      float endX   = location.x;
       float startY = prevLocation.y;
       float endY   = location.y;
       stroke(r, g, b, a);

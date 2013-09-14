@@ -27,12 +27,6 @@
  **/
 
 class OpticalFlow {
-  
-  // setting both to the same value is intereseting
-  float minDrawParticlesFlowVelocity = 10.0f;//original is 20.0f
-//float minRegisterFlowVelocity = 2.0f;  // ORIGINAL CODE
-  float minRegisterFlowVelocity = 10.0f; //original i 1.0f
-
   // A flow field is a two dimensional array of PVectors
   PVector[][] field;
 
@@ -102,6 +96,7 @@ class OpticalFlow {
   }
 
   void init() {
+    // NOTE: we seed noise during startup
     // Reseed noise so we get a new flow field every time
     //noiseSeed((int)random(10000));
     float xoff = 0;
@@ -119,14 +114,9 @@ class OpticalFlow {
   }
 
   void update() {
-    //clockNow = millis();
-    //clockDiff = clockNow - clockPrev;
-    //clockPrev = clockNow; 
-
     difT();
     difXY();
     solveFlow();
-    //drawColorFlow();
   }
 
   // calculate average pixel value (r,g,b) for rectangle region
@@ -151,44 +141,9 @@ class OpticalFlow {
     }
     n = (x2-x1+1)*(y2-y1+1); // number of pixels
     // the results are stored in static variables
-    ar = sumg/n; 
+    ar = sumg / n; 
     ag = ar; 
     ab = ar;
-  }
-
-  // calculate average pixel value (r,g,b) for rectangle region
-  void pixave(int x1, int y1, int x2, int y2) {
-    float sumr,sumg,sumb;
-    color pix;
-    int r,g,b;
-    int n;
-
-    if(x1<0) x1=0;
-    if(x2>=kWidth) x2=kWidth-1;
-    if(y1<0) y1=0;
-    if(y2>=kHeight) y2=kHeight-1;
-
-    sumr=sumg=sumb=0.0;
-    for(int y=y1; y<=y2; y++) {
-      for(int i=kWidth*y+x1; i<=kWidth*y+x2; i++) {
-        pix= kinecter.depthImg.pixels[i];
-        b=pix & 0xFF; // blue
-        pix = pix >> 8;
-        g=pix & 0xFF; // green
-        pix = pix >> 8;
-        r=pix & 0xFF; // red
-        //if( random(0, 150000) > 149000 && r > 0) println("r " + r + " b " + b + " g " + g);
-        // averaging the values
-        sumr += b;//r;//g;//r;
-        sumg += b;//r;//g;
-        sumb += b;//r;//g;//b;
-      }
-    }
-    n = (x2-x1+1)*(y2-y1+1); // number of pixels
-    // the results are stored in static variables
-    ar = sumr/n; 
-    ag=sumg/n; 
-    ab=sumb/n;
   }
 
   // extract values from 9 neighbour grids
@@ -210,8 +165,8 @@ class OpticalFlow {
     float a,u,v,w;
 
     // prepare covariances
-    xx=xy=yy=xt=yt=0.0;
-    for(int i=0;i<fm;i++) {
+    xx = xy = yy = xt = yt = 0.0;
+    for (int i = 0; i < fm; i++) {
       xx += fx[i]*fx[i];
       xy += fx[i]*fy[i];
       yy += fy[i]*fy[i];
@@ -230,21 +185,17 @@ class OpticalFlow {
   }
 
   void difT() {
-    for(int ix=0;ix<cols;ix++) {
-      int x0=ix*resolution+resolution/2;
-      for(int iy=0;iy<rows;iy++) {
-        int y0=iy*resolution+resolution/2;
-        int ig=iy*cols+ix;
+    for (int ix = 0; ix < cols; ix++) {
+      int x0 = ix * resolution + resolution/2;
+      for (int iy = 0; iy < rows; iy++) {
+        int y0 = iy * resolution + resolution/2;
+        int ig = iy * cols + ix;
         // compute average pixel at (x0,y0)
         pixaveGreyscale(x0-avSize,y0-avSize,x0+avSize,y0+avSize);
         // compute time difference
         dtr[ig] = ar-par[ig]; // red
-        //dtg[ig] = ag-pag[ig]; // green
-        //dtb[ig] = ab-pab[ig]; // blue
         // save the pixel
         par[ig]=ar;
-        //pag[ig]=ag;
-        //pab[ig]=ab;
       }
     }
   }
@@ -256,13 +207,9 @@ class OpticalFlow {
       for(int iy=1;iy<rows-1;iy++) {
         int ig=iy*cols+ix;
         // compute x difference
-        dxr[ig] = par[ig+1]-par[ig-1]; // red
-        //dxg[ig] = pag[ig+1]-pag[ig-1]; // green
-        //dxb[ig] = pab[ig+1]-pab[ig-1]; // blue
+        dxr[ig] = par[ig+1]-par[ig-1];
         // compute y difference
-        dyr[ig] = par[ig+cols]-par[ig-cols]; // red
-        //dyg[ig] = pag[ig+cols]-pag[ig-cols]; // green
-        //dyb[ig] = pab[ig+cols]-pab[ig-cols]; // blue
+        dyr[ig] = par[ig+cols]-par[ig-cols];
       }
     }
   }
@@ -271,24 +218,18 @@ class OpticalFlow {
 
   // 3rd sweep : solving optical flow
   void solveFlow() {
-    for(int ix=1;ix<cols-1;ix++) {
-      int x0=ix*resolution+resolution/2;
-      for(int iy=1;iy<rows-1;iy++) {
-        int y0=iy*resolution+resolution/2;
-        int ig=iy*cols+ix;
+    for (int ix = 1; ix < cols-1; ix++) {
+      int x0 = ix * resolution + resolution/2;
+      for (int iy = 1; iy < rows-1; iy++) {
+        int y0 = iy * resolution+resolution/2;
+        int ig = iy * cols+ix;
         //y0Z=iy*resolution+resolution/2;
         //igz=iy*cols+ix;
 
         // prepare vectors fx, fy, ft
         getnext9(dxr,fx,ig,0); // dx red
-        //getnext9(dxg,fx,ig,9); // dx green
-        //getnext9(dxb,fx,ig,18);// dx blue
         getnext9(dyr,fy,ig,0); // dy red
-        //getnext9(dyg,fy,ig,9); // dy green
-        //getnext9(dyb,fy,ig,18);// dy blue
         getnext9(dtr,ft,ig,0); // dt red
-        //getnext9(dtg,ft,ig,9); // dt green
-        //getnext9(dtb,ft,ig,18);// dt blue
 
         // solve for (flowx, flowy) such that
         // fx flowx + fy flowy + ft = 0
@@ -298,26 +239,29 @@ class OpticalFlow {
         sflowx[ig]+=(flowx[ig]-sflowx[ig])*wflow;
         sflowy[ig]+=(flowy[ig]-sflowy[ig])*wflow;
 
-        float u=df*sflowx[ig];
-        float v=df*sflowy[ig];
-        //float u=df*sflowx[ig];
-        //float v=df*sflowy[ig];
+        float u = df * sflowx[ig];
+        float v = df * sflowy[ig];
 
         float a=sqrt(u*u+v*v);
 
         // register new vectors
-        if(a>= minRegisterFlowVelocity) 
-        {
+        if (a >= minRegisterFlowVelocity) {
           field[ix][iy] = new PVector(u,v);
 
           // REMOVED FROM drawColorFlow() to here
-          if(a>=minDrawParticlesFlowVelocity) { 
+          if (a >= minDrawParticlesFlowVelocity) { 
             
             // display flow when debugging
-            if (drawOpticalFlow) 
-            {
-              stroke(255.0f, 0.0f, 0.0f);
-              line(x0,y0,x0+u,y0+v);
+            if (drawOpticalFlow) {
+              stroke(opticalFlowLineColor);
+              //line(x0,y0,x0+u,y0+v);
+
+// TODO: reverse...
+              float startX = width - (((float) x0) * kToWindowWidth);
+              float startY = ((float) y0) * kToWindowHeight;
+              float endX   = width - (((float) (x0+u)) * kToWindowWidth);
+              float endY   = ((float) (y0+v)) * kToWindowHeight;
+              line(startX, startY, endX, endY);
             } 
 
             // same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
@@ -332,55 +276,8 @@ class OpticalFlow {
       }
     }
   }
-
-  // dont need to seperate from solveFlow
-  void drawColorFlow() {
-    for(int ix=0;ix<cols;ix++) {
-      int x0=ix*resolution+resolution/2;
-      //int lerpyCount = 0;
-      for(int iy=0;iy<rows;iy++) {
-        int y0=iy*resolution+resolution/2;
-        int ig=iy*cols+ix;
-
-        float u=df*sflowx[ig];
-        float v=df*sflowy[ig];
-
-        // draw the line segments for optical flow
-        float a=sqrt(u*u+v*v);
-        //if(a>=50) { // draw only if the length >=2.0
-        //----------------------------------------------------------------------------evTherpay::6May 
-        if(a>=minRegisterFlowVelocity) { // draw only if the length >=2.0
-          //float r=0.5*(1.0+u/(a+0.1));
-          //float g=0.5*(1.0+v/(a+0.1));
-          //float b=0.5*(2.0-(r+g));
-
-          //stroke(255*r,255*g,255*b);//////////----------------------------------------
-
-          // draw the optical flow field red!
-          if (drawOpticalFlow) 
-          {
-            stroke(255.0f, 0.0f, 0.0f);
-            line(x0,y0,x0+u,y0+v);
-          }
-
-
-          // same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)  ORIGINAL
-          float mouseNormX = (x0+u) * invKWidth;// / kWidth;
-          float mouseNormY = (y0+v) * invKHeight; // kHeight;
-          float mouseVelX = ((x0+u) - x0) * invKWidth;// / kWidth;
-          float mouseVelY = ((y0+v) - y0) * invKHeight;// / kHeight;    
-//     
-//       float mouseNormX = (x0+u) * kWidth;// / kWidth;
-//          float mouseNormY = (y0+v) * kHeight; // kHeight;
-//          float mouseVelX = ((x0+u) - x0) * kWidth;// / kWidth;
-//          float mouseVelY = ((y0+v) - y0) * kHeight;// / kHeight;         
-
-          particleManager.addForce(1-mouseNormX, mouseNormY, -mouseVelX, mouseVelY);
-        }
-      }
-    }
-  }
-
+  
+/*
   // Draw every vector
   void display() {
     for (int i = 0; i < cols; i++) {
@@ -407,7 +304,7 @@ class OpticalFlow {
     line(len,0,len-arrowsize,-arrowsize/2);
     popMatrix();
   }
-
+*/
   PVector lookup(PVector lookup) {
     int i = (int) constrain(lookup.x/resolution,0,cols-1);
     int j = (int) constrain(lookup.y/resolution,0,rows-1);
