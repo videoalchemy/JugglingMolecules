@@ -204,12 +204,13 @@ void draw() {
   // show the flowfield
   else {
     // updates the kinect raw depth
-    kinecter.updateKinectDepth(false);
-
+    kinecter.updateKinectDepth(true);
     // updates the optical flow vectors from the kinecter depth image 
     // (want to update optical flow before particles)!!
     flowfield.update();
     particleManager.updateAndRender();
+//TODO: reverse screen
+    image(kinecter.depthImg, width, 0, -width, height);
   }
 }
 
@@ -226,7 +227,7 @@ void easyFade() {
 // Show the instruction screen
 void instructionScreen() {
   // show kinect depth image
-  image(kinecter.depthImg, 0, 0, width, height); 
+  image(kinecter.depthImg, width, 0, -width, height);
 
   // instructions under depth image in gray box
   fill(50);
