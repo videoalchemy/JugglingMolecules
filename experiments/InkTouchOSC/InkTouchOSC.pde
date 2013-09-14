@@ -60,7 +60,7 @@ int windowWidth = 1280;
 int windowHeight = 800;
 
 // rear screen projection?
-boolean rearScreenProject = false;
+boolean rearScreenProject = true;
 
 
 //////////////////////////////
@@ -69,7 +69,7 @@ boolean rearScreenProject = false;
 // set to true to show setup screen before flow (requires keyboard)
 boolean showSettings=false;
 // set to true to show red force lines during setup screen
-boolean drawOpticalFlow=true;
+boolean drawOpticalFlow=false;
 
 
 //////////////////////////////
@@ -88,37 +88,37 @@ float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
 float faderRed = 255;  //0-255
 float faderGreen=255;  //0-255
 float faderBlue=255;   //0-255
-float faderAlpha=200;  //0-255
+float faderAlpha=50;  //0-255
 
 //////////////////////////////
 ///// Perlin noise generation, coming from TouchOSC
 //////////////////////////////
 // cloud variation, low values have long stretching clouds that move long distances,
 //high values have detailed clouds that don't move outside smaller radius.
-float noiseStrengthOSC= 3; //1-300;
+float noiseStrengthOSC= 340; //1-300;
 
 // cloud strength multiplier,
 //eg. multiplying low strength values makes clouds more detailed but move the same long distances.
-float noiseScaleOSC = 5; //1-400
+float noiseScaleOSC = 400; //1-400
 
 // turbulance, or how often to change the 'clouds' - third parameter of perlin noise: time. 
-float zNoiseVelocityOSC = .10; // .005 - .3
+float zNoiseVelocityOSC = .008; // .005 - .3
 
 
 //////////////////////////////
 ///// How much particles pay attention to the noise, coming from TouchOSC
 //////////////////////////////
 //how much particle slows down in fluid environment
-float viscosityOSC = .999;  //0-1  ???
+float viscosityOSC = .995;  //0-1  ???
 
 // force to apply to input - mouse, touch etc.
-float forceMultiOSC = 5;   //1-300
+float forceMultiOSC = 50;   //1-300
 
 // how fast to return to the noise after force velocities
-float accFrictionOSC = .095;  //.001-.999
+float accFrictionOSC = .075;  //.001-.999
 
 // how fast to return to the noise after force velocities
-float accLimiterOSC = .005;  // - .999
+float accLimiterOSC = .35;  // - .999
 
 
 //////////////////////////////
@@ -128,15 +128,17 @@ float accLimiterOSC = .005;  // - .999
 // Maximum number of particles that can be active at once.
 // More particles = more detail because less "recycling"
 // Fewer particles = faster.
-int maxParticleCount = 20000;
+int maxParticleCount = 30000;
 
 // how many particles to emit when mouse/tuio blob move
-int generateRateOSC = 2; //2-200
+int generateRateOSC = 10; //2-200
 
 // random offset for particles emitted, so they don't all appear in the same place
-float  generateSpreadOSC = 25; //1-50
+float  generateSpreadOSC = 15; //1-50
 
-
+// Should all particles be the same color?
+// (more efficient if so)
+boolean individuallyColoredParticles = true;
 
 //////////////////////////////
 ///// flowfield
@@ -145,7 +147,7 @@ float  generateSpreadOSC = 25; //1-50
 // resolution of the flow field.
 // Smaller means more coarse flowfield = faster but less precise
 // Larger means finer flowfield = slower but better tracking of edges
-int flowfieldResolution = 30;  // 1..50 ?
+int flowfieldResolution = 15;  // 1..50 ?
 
 
 
