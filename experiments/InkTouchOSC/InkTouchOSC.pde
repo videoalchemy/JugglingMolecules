@@ -68,8 +68,12 @@ boolean rearScreenProject = true;
 //////////////////////////////
 // set to true to show setup screen before flow (requires keyboard)
 boolean showSettings=false;
+
 // set to true to show red force lines during setup screen
-boolean drawOpticalFlow=false;
+boolean drawOpticalFlow=true;
+
+// color for optical flow lines
+color opticalFlowLineColor = color(255, 0, 0, 30);
 
 
 //////////////////////////////
@@ -79,7 +83,8 @@ boolean drawOpticalFlow=false;
 int kWidth=640, kHeight = 480;     // use by optical flow and particles
 float invKWidth = 1.0f/kWidth;     // inverse of screen dimensions
 float invKHeight = 1.0f/kHeight;   // inverse of screen dimensions
-
+float kToWindowWidth  = ((float) windowWidth)  * invKWidth;    // multiplier for kinect size to window size
+float kToWindowHeight = ((float) windowHeight) * invKHeight;   // multiplier for kinect size to window size
 
 
 //////////////////////////////
@@ -95,11 +100,11 @@ float faderAlpha=50;  //0-255
 //////////////////////////////
 // cloud variation, low values have long stretching clouds that move long distances,
 //high values have detailed clouds that don't move outside smaller radius.
-float noiseStrengthOSC= 340; //1-300;
+float noiseStrengthOSC= 100; //1-300;
 
 // cloud strength multiplier,
 //eg. multiplying low strength values makes clouds more detailed but move the same long distances.
-float noiseScaleOSC = 400; //1-400
+float noiseScaleOSC = 100; //1-400
 
 // turbulance, or how often to change the 'clouds' - third parameter of perlin noise: time. 
 float zNoiseVelocityOSC = .008; // .005 - .3
@@ -128,13 +133,13 @@ float accLimiterOSC = .35;  // - .999
 // Maximum number of particles that can be active at once.
 // More particles = more detail because less "recycling"
 // Fewer particles = faster.
-int maxParticleCount = 30000;
+int maxParticleCount = 20000;
 
 // how many particles to emit when mouse/tuio blob move
 int generateRateOSC = 10; //2-200
 
 // random offset for particles emitted, so they don't all appear in the same place
-float  generateSpreadOSC = 15; //1-50
+float  generateSpreadOSC = 2; //1-50
 
 // Should all particles be the same color?
 // (more efficient if so)
@@ -148,6 +153,11 @@ boolean individuallyColoredParticles = true;
 // Smaller means more coarse flowfield = faster but less precise
 // Larger means finer flowfield = slower but better tracking of edges
 int flowfieldResolution = 15;  // 1..50 ?
+
+  
+ // setting both to the same value is intereseting
+float minDrawParticlesFlowVelocity = 10;// 1-20 ???
+float minRegisterFlowVelocity = 10.0f; //  2-10 ???
 
 
 
@@ -216,7 +226,7 @@ void easyFade() {
 // Show the instruction screen
 void instructionScreen() {
   // show kinect depth image
-  image(kinecter.depthImg, 0, 0); 
+  image(kinecter.depthImg, 0, 0, width, height); 
 
   // instructions under depth image in gray box
   fill(50);
