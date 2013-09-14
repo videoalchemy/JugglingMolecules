@@ -30,8 +30,8 @@ class OpticalFlow {
   
   // setting both to the same value is intereseting
   float minDrawParticlesFlowVelocity = 10.0f;//original is 20.0f
-//  float minRegisterFlowVelocity = 2.0f;  // ORIGINAL CODE
-float minRegisterFlowVelocity = 10.0f; //original i 1.0f
+//float minRegisterFlowVelocity = 2.0f;  // ORIGINAL CODE
+  float minRegisterFlowVelocity = 10.0f; //original i 1.0f
 
   // A flow field is a two dimensional array of PVectors
   PVector[][] field;
@@ -42,15 +42,14 @@ float minRegisterFlowVelocity = 10.0f; //original i 1.0f
   int fps=30;
   float predsec=0.5; // prediction time (sec): larger for longer vector 0.5
 
-    int avSize; //as;  // window size for averaging (-as,...,+as)
+  int avSize; //as;  // window size for averaging (-as,...,+as)
   float df;
 
   // regression vectors
   float[] fx, fy, ft;
   int fm=3*9; // length of the vectors
   // regularization term for regression
-//  float fc=pow(10,8); // larger values for noisy video  //ORIGINAL
-float fc=pow(10,8); // larger values for noisy video
+  float fc=pow(10,8); // larger values for noisy video
 
   // smoothing parameters
   float wflow= .05;//0.04; //0.1;//0.05=ORIGINAL; // smaller value for longer smoothing 0.1
@@ -135,48 +134,23 @@ float fc=pow(10,8); // larger values for noisy video
     //float sumr,sumg,sumb;
     float sumg;
     color pix;
-    //int r,g,b;
     float g;
     int n;
 
-    if(x1<0) x1=0;
-    if(x2>=kWidth) x2=kWidth-1;
-    if(y1<0) y1=0;
-    if(y2>=kHeight) y2=kHeight-1;
+    if (x1 < 0)         x1=0;
+    if (x2 >= kWidth)   x2=kWidth-1;
+    if (y1 < 0)         y1=0;
+    if (y2 >= kHeight)  y2=kHeight-1;
 
     //sumr=sumg=sumb=0.0;
     sumg = 0.0;
-    for(int y=y1; y<=y2; y++) {
-      for(int i=kWidth*y+x1; i<=kWidth*y+x2; i++) {
-        
-        // old method use depth image
-        //pix= kinecter.depthImg.pixels[i];
-        //g = pix & 0xFF; // grey
-        //sumg += g;
-        
-        //b=pix & 0xFF; // blue
-        // pix = pix >> 8;
-        //g=pix & 0xFF; // green
-        //pix = pix >> 8;
-        //r=pix & 0xFF; // red
-        //if( random(0, 150000) > 149000 && r > 0) println("r " + r + " b " + b + " g " + g);
-        // averaging the values
-        //sumr += b;//r;//g;//r;
-        //sumg += b;//r;//g;
-        //sumb += b;//r;//g;//b;
-        
-        // WORK WITH RAW DEPTH INSTEAD
-       sumg += kinecter.rawDepth[i];
-
-       
+    for (int y = y1; y <= y2; y++) {
+      for (int i = kWidth * y + x1; i <= kWidth * y+x2; i++) {
+         sumg += kinecter.rawDepth[i];
       }
     }
     n = (x2-x1+1)*(y2-y1+1); // number of pixels
     // the results are stored in static variables
-    //ar = sumr/n; 
-    //ag = sumg/n; 
-    //ab = sumb/n;
-
     ar = sumg/n; 
     ag = ar; 
     ab = ar;
@@ -373,13 +347,14 @@ float fc=pow(10,8); // larger values for noisy video
 
         // draw the line segments for optical flow
         float a=sqrt(u*u+v*v);
-        //if(a>=2.0) { // draw only if the length >=2.0
+        //if(a>=50) { // draw only if the length >=2.0
+        //----------------------------------------------------------------------------evTherpay::6May 
         if(a>=minRegisterFlowVelocity) { // draw only if the length >=2.0
           //float r=0.5*(1.0+u/(a+0.1));
           //float g=0.5*(1.0+v/(a+0.1));
           //float b=0.5*(2.0-(r+g));
 
-          //stroke(255*r,255*g,255*b);
+          //stroke(255*r,255*g,255*b);//////////----------------------------------------
 
           // draw the optical flow field red!
           if (drawOpticalFlow) 
