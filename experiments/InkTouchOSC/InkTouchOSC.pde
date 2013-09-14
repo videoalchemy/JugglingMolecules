@@ -27,18 +27,10 @@ Movement Ink::
 */
 
 
-import oscP5.*;  // ipad action
+import oscP5.*;  // TouchOSC
 import netP5.*;
 
 OscP5 oscP5;
-
-public int MaxForce = 50;
-public int MaxSpeed = 50;
-public int SeekStrength = 50;
-public int SeparationStrength = 50;
-public int Allignment = 50;
-public int Cohesion = 50;
-public int Indirection = 0;
 
 import processing.video.*;
 import processing.opengl.*;
@@ -251,67 +243,56 @@ void keyPressed() {
     kinecter.kAngle = constrain(kinecter.kAngle, 0, 30);
     kinecter.kinect.tilt(kinecter.kAngle);
   }
-  else if (keyCode == 32) 
-  { 
+  else if (keyCode == 32) { 
     // space bar for settings to adjust kinect depth
     background(bgColor);
-    if (!showSettings) 
-    {
+    if (!showSettings) {
       //controlP5.show();
       showSettings = true;
       drawOpticalFlow = true;
     }
-    else
-    {
+    else {
       //controlP5.hide();
       showSettings = false;
       drawOpticalFlow = false;
     }
   }
-  else if (keyCode == 65)
-  {
+  else if (keyCode == 65) {
     // a pressed add to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth + 10, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (keyCode == 90)
-  {
+  else if (keyCode == 90) {
     // z pressed subtract to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth - 10, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (keyCode == 83)
-  {
+  else if (keyCode == 83) {
     // s pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth + 10, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-  else if (keyCode == 88)
-  {
+  else if (keyCode == 88) {
     // x pressed subtract to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth - 10, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-  else if (key == 'f')
-  {
+  else if (key == 'f') {
     // d pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth + 1, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-   else if (key == 'v')
-  {
+   else if (key == 'v') {
     // c pressed add to maximum depth
     kinecter.maxDepth = constrain(kinecter.maxDepth - 1, 0, kinecter.thresholdRange);
     println("maximum depth: " + kinecter.maxDepth);
   }
-   else if (key == 'd')
-  {
+   else if (key == 'd') {
     // a pressed add to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth + 1, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);
   }
-  else if (key == 'c')
-  {
+  else if (key == 'c') {
     // z pressed subtract to minimum depth
     kinecter.minDepth = constrain(kinecter.minDepth - 1, 0, kinecter.thresholdRange);
     println("minimum depth: " + kinecter.minDepth);

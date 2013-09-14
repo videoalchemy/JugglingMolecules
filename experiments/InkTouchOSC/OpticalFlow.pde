@@ -102,6 +102,7 @@ class OpticalFlow {
   }
 
   void init() {
+    // NOTE: we seed noise during startup
     // Reseed noise so we get a new flow field every time
     //noiseSeed((int)random(10000));
     float xoff = 0;
@@ -119,14 +120,9 @@ class OpticalFlow {
   }
 
   void update() {
-    //clockNow = millis();
-    //clockDiff = clockNow - clockPrev;
-    //clockPrev = clockNow; 
-
     difT();
     difXY();
     solveFlow();
-    //drawColorFlow();
   }
 
   // calculate average pixel value (r,g,b) for rectangle region
@@ -151,44 +147,9 @@ class OpticalFlow {
     }
     n = (x2-x1+1)*(y2-y1+1); // number of pixels
     // the results are stored in static variables
-    ar = sumg/n; 
+    ar = sumg / n; 
     ag = ar; 
     ab = ar;
-  }
-
-  // calculate average pixel value (r,g,b) for rectangle region
-  void pixave(int x1, int y1, int x2, int y2) {
-    float sumr,sumg,sumb;
-    color pix;
-    int r,g,b;
-    int n;
-
-    if(x1<0) x1=0;
-    if(x2>=kWidth) x2=kWidth-1;
-    if(y1<0) y1=0;
-    if(y2>=kHeight) y2=kHeight-1;
-
-    sumr=sumg=sumb=0.0;
-    for(int y=y1; y<=y2; y++) {
-      for(int i=kWidth*y+x1; i<=kWidth*y+x2; i++) {
-        pix= kinecter.depthImg.pixels[i];
-        b=pix & 0xFF; // blue
-        pix = pix >> 8;
-        g=pix & 0xFF; // green
-        pix = pix >> 8;
-        r=pix & 0xFF; // red
-        //if( random(0, 150000) > 149000 && r > 0) println("r " + r + " b " + b + " g " + g);
-        // averaging the values
-        sumr += b;//r;//g;//r;
-        sumg += b;//r;//g;
-        sumb += b;//r;//g;//b;
-      }
-    }
-    n = (x2-x1+1)*(y2-y1+1); // number of pixels
-    // the results are stored in static variables
-    ar = sumr/n; 
-    ag=sumg/n; 
-    ab=sumb/n;
   }
 
   // extract values from 9 neighbour grids
@@ -210,8 +171,8 @@ class OpticalFlow {
     float a,u,v,w;
 
     // prepare covariances
-    xx=xy=yy=xt=yt=0.0;
-    for(int i=0;i<fm;i++) {
+    xx = xy = yy = xt = yt = 0.0;
+    for (int i = 0; i < fm; i++) {
       xx += fx[i]*fx[i];
       xy += fx[i]*fy[i];
       yy += fy[i]*fy[i];
@@ -230,11 +191,11 @@ class OpticalFlow {
   }
 
   void difT() {
-    for(int ix=0;ix<cols;ix++) {
-      int x0=ix*resolution+resolution/2;
-      for(int iy=0;iy<rows;iy++) {
-        int y0=iy*resolution+resolution/2;
-        int ig=iy*cols+ix;
+    for (int ix = 0; ix < cols; ix++) {
+      int x0 = ix * resolution + resolution/2;
+      for (int iy = 0; iy < rows; iy++) {
+        int y0 = iy * resolution + resolution/2;
+        int ig = iy * cols + ix;
         // compute average pixel at (x0,y0)
         pixaveGreyscale(x0-avSize,y0-avSize,x0+avSize,y0+avSize);
         // compute time difference
@@ -271,11 +232,11 @@ class OpticalFlow {
 
   // 3rd sweep : solving optical flow
   void solveFlow() {
-    for(int ix=1;ix<cols-1;ix++) {
-      int x0=ix*resolution+resolution/2;
-      for(int iy=1;iy<rows-1;iy++) {
-        int y0=iy*resolution+resolution/2;
-        int ig=iy*cols+ix;
+    for (int ix = 1; ix < cols-1; ix++) {
+      int x0 = ix * resolution + resolution/2;
+      for (int iy = 1; iy < rows-1; iy++) {
+        int y0 = iy * resolution+resolution/2;
+        int ig = iy * cols+ix;
         //y0Z=iy*resolution+resolution/2;
         //igz=iy*cols+ix;
 

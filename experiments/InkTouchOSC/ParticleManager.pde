@@ -83,17 +83,21 @@ class ParticleManager {
         
         // adjust particlar color by R/G/B fader amount
         //   NOTE:  ">> 16 & 0xFF" bidness is fast color decomposition, see: http://processing.org/reference/red_.html
-//        color clr   = particle.clr;
-//        float red   = (clr >> 16 & 0xFF) * (faderRed/255);
-//        float green = (clr >> 8 & 0xFF)  * (faderGreen/255);
-//        float blue  = (clr & 0xFF)       * (faderBlue/255);
-//        float alpha = (lineAlpha)        * (faderAlpha/255);
-
-        float red   = faderRed;
-        float green = faderGreen;
-        float blue  = faderBlue;
-        float alpha = faderAlpha;
-        particle.render(red, green, blue, alpha);
+        if (false) {  // if (individuallyColoredParticles) {
+          color clr   = particle.clr;
+          float red   = (clr >> 16 & 0xFF) * (faderRed/255);
+          float green = (clr >> 8 & 0xFF)  * (faderGreen/255);
+          float blue  = (clr & 0xFF)       * (faderBlue/255);
+          float alpha = (lineAlpha)        * (faderAlpha/255);
+        } 
+        // all particles same color -- faster
+        else {
+          float red   = faderRed;
+          float green = faderGreen;
+          float blue  = faderBlue;
+          float alpha = faderAlpha;
+          particle.render(red, green, blue, alpha);
+        }
       }
     }
     popStyle();
