@@ -76,23 +76,23 @@ boolean showOpticalFlow=false;
 // TODO: from OSC
 color opticalFlowLineColor = color(255, 0, 0, 30);
 
-// set to true to show the depth image
-// TODO: from OSC
-boolean showDepthImage = true;
-
-// `tint` color for the depth image
-color depthImageColor = color(255, 256);
-
 // set to true to show particles
 // TODO: from OSC
 boolean showParticles=true;
 
 
+// set to true to show the depth image
+// TODO: from OSC
+boolean showDepthImage = true;
+
+// `tint` color for the depth image
+color depthImageColor = color(128, 12);
+
 // blend mode for the depth image
 // TODO: from OSC
-int depthImageBlendMode = DARKEST;
-//int depthImageBlendMode = DARKEST;
-//int depthImageBlendMode = DARKEST;
+//int depthImageBlendMode = LIGHTEST;      // tracks white to body, but image too white
+//int depthImageBlendMode = DARKEST;       // ghostly trail on body, dissolving into snakes
+int depthImageBlendMode = DIFFERENCE;      // tracks black to body, 
 //int depthImageBlendMode = DARKEST;
 //int depthImageBlendMode = DARKEST;
 
@@ -154,6 +154,7 @@ float accLimiterOSC = .35;  // - .999
 // Maximum number of particles that can be active at once.
 // More particles = more detail because less "recycling"
 // Fewer particles = faster.
+// TODO: OSC
 int maxParticleCount = 20000;
 
 // how many particles to emit when mouse/tuio blob move
@@ -166,6 +167,7 @@ float generateSpreadOSC = 20; //1-50
 // (more efficient if so)
 boolean individuallyColoredParticles = true;
 
+
 //////////////////////////////
 ///// flowfield
 //////////////////////////////
@@ -175,10 +177,12 @@ boolean individuallyColoredParticles = true;
 // Larger means finer flowfield = slower but better tracking of edges
 int flowfieldResolution = 15;  // 1..50 ?
 
-  
- // setting both to the same value is intereseting
-float minDrawParticlesFlowVelocity = 10;// 1-20 ???
-float minRegisterFlowVelocity = 10.0f; //  2-10 ???
+// Amount of time in seconds between "averages" to compute the flow
+float vectorPredictionTime = .5;
+
+// velocity must exceed this to add/draw particles in the flow field
+float minRegisterFlowVelocity = 20; //  2-10 ???
+
 
 
 
@@ -194,7 +198,7 @@ void setup() {
   oscP5 = new OscP5(this, 8000);
 
   background(bgColor);
-  frameRate(60);
+  frameRate(30);
 
   particleManager = new ParticleManager(maxParticleCount);
 
@@ -211,7 +215,6 @@ void draw() {
   pushStyle();
   pushMatrix();
 
-
   // partially fade the screen by drawing a semi-opaque rectangle over everything
   easyFade();
 
@@ -219,22 +222,14 @@ void draw() {
   kinecter.updateKinectDepth(true);
 
   // update the optical flow vectors from the kinecter depth image 
-  // also draws the force vectors if `showOpticalFlow` is true
+  // NOTE: also draws the force vectors if `showOpticalFlow` is true
   flowfield.update();
 
   // show the flowfield particles
   if (showParticles) particleManager.updateAndRender();
     
-  if (showDepthImage) {
-    pushStyle();
-    pushMatrix();
-//    blendMode(depthImageBlendMode);
-    scale(-1,1);
-    tint(0, 12);
-    image(kinecter.depthImg, 0, 0, -width, height);
-    popMatrix();
-    popStyle();
-  }
+  // draw the depth image over the particles
+  if (showDepthImage) drawDepthImage();
 
   // display instructions for adjusting kinect depth image on top of everything else
   if (showSettings) drawInstructionScreen();
@@ -243,6 +238,19 @@ void draw() {
   popStyle();
   popMatrix();
 }
+
+void drawDepthImage() {
+    pushStyle();
+    pushMatrix();
+//    tint(depthImageColor);
+//    tint(256,128);
+    scale(-1,1);  // reverse image to mirrored direction
+    blendMode(depthImageBlendMode);
+    image(kinecter.depthImg, 0, 0, -width, height);
+    blendMode(BLEND);  // NOTE: things don't look good if you don't restore this!
+    popMatrix();
+    popStyle(); 
+} 
 
 
 // Partially fade the screen by drawing a translucent black rectangle over everything.

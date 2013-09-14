@@ -65,11 +65,12 @@ class Kinecter {
     rawDepth = kinect.getRawDepth();
     for (int i=0; i < kWidth*kHeight; i++) {
       if (rawDepth[i] >= minDepth && rawDepth[i] <= maxDepth) {
-        if (updateDepthPixels) depthImg.pixels[i] = 0xFFFFFFFF;
+        int greyScale = (int)map((float)rawDepth[i], minDepth, maxDepth, 255, 0);
+        depthImg.pixels[i] = color(0, greyScale, greyScale, 0);
         rawDepth[i] = 255;
       } 
       else {
-        if (updateDepthPixels) depthImg.pixels[i] = 0;
+        depthImg.pixels[i] = 0;  // transparent black
         rawDepth[i] = 0;
       }
     }

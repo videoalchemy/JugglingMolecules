@@ -60,24 +60,58 @@ void keyPressed() {
   }
   
   // toggle showParticles on/off
-  else if (key == '1') {
+  else if (key == 'q') {
     showParticles = !showParticles;
-    println("showing particles? " + showParticles);
+    println("showing particles: " + showParticles);
   }
   // toggle showOpticalFlow on/off
-  else if (key == '2') {
+  else if (key == 'w') {
     showOpticalFlow = !showOpticalFlow;
-    println("showing optical flow? " + showOpticalFlow);
+    println("showing optical flow: " + showOpticalFlow);
   }
   // toggle showDepthImage on/off
-  else if (key == '3') {
+  else if (key == 'e') {
     showDepthImage = !showDepthImage;
-    println("showing depth image? " + showDepthImage);
+    println("showing depth image: " + showDepthImage);
   }
-  // toggle showSettings on/off
-  else if (key == '0') {
-    showSettings = !showSettings;
-    println("showing settings? " + showSettings);
+  
+  
+// different blend modes
+  else if (key == '1') {
+    depthImageBlendMode = BLEND;
+    println("Blend mode: BLEND");
+  }
+  else if (key == '2') {
+    depthImageBlendMode = ADD;
+    println("Blend mode: ADD");
+  }
+  else if (key == '3') {
+    depthImageBlendMode = SUBTRACT;
+    println("Blend mode: SUBTRACT");
+  }
+  else if (key == '4') {
+    depthImageBlendMode = DARKEST;
+    println("Blend mode: DARKEST");
+  }
+  else if (key == '5') {
+    depthImageBlendMode = LIGHTEST;
+    println("Blend mode: LIGHTEST");
+  }
+  else if (key == '6') {
+    depthImageBlendMode = DIFFERENCE;
+    println("Blend mode: DIFFERENCE");
+  }
+  else if (key == '7') {
+    depthImageBlendMode = EXCLUSION;
+    println("Blend mode: EXCLUSION");
+  }
+  else if (key == '7') {
+    depthImageBlendMode = MULTIPLY;
+    println("Blend mode: MULTIPLY");
+  }
+  else if (key == '8') {
+    depthImageBlendMode = SCREEN;
+    println("Blend mode: SCREEN");
   }
   
 }
