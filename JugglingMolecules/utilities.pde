@@ -20,9 +20,27 @@
 //		tint(256,128);
 		scale(-1,1);	// reverse image to mirrored direction
 		blendMode(gConfig.depthImageBlendMode);
-		image(gKinecter.depthImg, 0, 0, -width, height);
+		image(gDepthImg, 0, 0, -width, height);
 		blendMode(BLEND);	// NOTE: things don't look good if you don't restore this!
 		popMatrix();
+		popStyle();
+	}
+
+	// Draw the raw depth info as a pixel at each coordinate.
+	void drawDepthPixels() {
+		pushStyle();
+		int delta = 4;//gConfig.flowfieldResolution;	// 1;
+		for (int row = 0; row < gKinectHeight; row += delta) {
+			for (int col = 0; col < gKinectWidth; col += delta) {
+				int index = col + (row*gKinectWidth);
+				int zAlpha = (int) map((float) gRawDepth[index],0,2047,0,255);
+// green
+				stroke(0, 255, 0, zAlpha);
+				int x = width - (int) map((float)col, 0, gKinectWidth, 0, width);
+				int y = 		(int) map((float)row, 0, gKinectHeight, 0, height);
+				point(x, y);
+			}
+		}
 		popStyle();
 	}
 
@@ -104,3 +122,22 @@
 		colorMode(RGB, 255);
 		return result;
 	}
+
+
+
+
+////////////////////////////////////////////////////////////
+//	Debuggy
+////////////////////////////////////////////////////////////
+
+	// Return a color as `rgba(r,g,b,a)`.
+	String echoColor(color clr) {
+		return "rgba("+(int)red(clr)+","+(int)green(clr)+","+(int)blue(clr)+","+(int)alpha(clr)+")";
+	}
+
+	// Return a boolean as `true` or `false`.
+	String echoBoolean(boolean bool) {
+		if (bool) return "true";
+		return "false";
+	}
+

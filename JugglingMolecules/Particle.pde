@@ -110,7 +110,7 @@ class Particle {
 			flowFieldLocation.y *= gKinectHeight;
 
 			desired = manager.flowfield.lookup(flowFieldLocation);
-			desired.x *= -1;// -1 = ORIGINAL
+			desired.x *= -1;	// TODO??? WHAT'S THIS?
 
 			steer = PVector.sub(desired, velocity);
 			steer.limit(stepSize);	// Limit to maximum steering force
@@ -130,8 +130,7 @@ class Particle {
 		stepSize *= config.particleViscocity;
 	}
 
-	// 2-d render using processing P2D rendering context
-	// r,g,b,a are floats from 0..255
+	// 2-d render using processing OPENGL rendering context
 	void render() {
 		stroke(clr);
 		line(prevLocation.x, prevLocation.y, location.x, location.y);

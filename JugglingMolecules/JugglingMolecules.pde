@@ -37,6 +37,20 @@ import java.util.Iterator;
 	// Configuration object, manipulated by TouchOSC and OmiCron
 	MolecularConfig gConfig;
 
+	// Name of the config file we're currently working with.
+	String gConfigFileName;
+
+	// Raw depth info from the kinect.
+	int[] gRawDepth;
+
+	// Adjusted depth, thresholded by `updateKinectDepth()`.
+	int[] gNormalizedDepth;
+
+	// Depth image, thresholded by `updateKinectDepth()` and displayable.
+	PImage gDepthImg;
+
+
+
 
 ////////////////////////////////////////////////////////////
 //	Screen setup (constant for all configs)
@@ -54,10 +68,10 @@ import java.util.Iterator;
 ////////////////////////////////////////////////////////////
 	// size of the kinect
 	int   gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/gKinectHeight;	 // inverse of screen dimensions
-	float gKinectToWindowWidth	= ((float) gWindowWidth)	* gInvKWidth;		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = ((float) gWindowHeight) * gInvKHeight;	 // multiplier for kinect size to window size
+	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
+	float gInvKHeight = 1.0f/(float)gKinectHeight;	 // inverse of screen dimensions
+	float gKinectToWindowWidth	= ((float) gWindowWidth)  * gInvKWidth;		// multiplier for kinect size to window size
+	float gKinectToWindowHeight = ((float) gWindowHeight) * gInvKHeight;	// multiplier for kinect size to window size
 
 
 // Initialize all of our global objects.
@@ -67,6 +81,10 @@ import java.util.Iterator;
 //		 can be overridden except for the `setupXXX` items.
 //
 void setup() {
+
+// println(gInvKWidth+","+gInvKHeight+"::::"+(gInvKWidth*gKinectWidth)+","+(gInvKHeight*gKinectHeight));
+// println(gKinectToWindowWidth+","+gKinectToWindowHeight+"::::"+(gKinectToWindowWidth*width)+","+(gKinectToWindowHeight*height));
+
 	// set up with OPENGL rendering context == faster
 	size(gWindowWidth, gWindowHeight, gDrawMode);
 
@@ -85,6 +103,11 @@ void setup() {
 	// set up noise seed
 	noiseSeed(gConfig.setupNoiseSeed);
 
+	// initialize depth variables
+    gRawDepth = new int[gKinectWidth*gKinectHeight];
+	gNormalizedDepth = new int[gKinectWidth*gKinectHeight];
+    gDepthImg = new PImage(gKinectWidth, gKinectHeight);
+
 	// helper class for kinect
 	gKinecter = new Kinecter(this);
 
@@ -97,8 +120,12 @@ void setup() {
 	// Tell the particleManager about the flowfield
 	gParticleManager.flowfield = gFlowfield;
 
+
 	// save the configuration!!!
-	gConfig.saveToConfigFile("PS01");
+//	gConfig.saveToConfigFile("PS01");
+
+	// print the configuration
+	gConfig.echo();
 }
 
 
@@ -110,12 +137,15 @@ void draw() {
 	// partially fade the screen by drawing a semi-opaque rectangle over everything
 	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayAlpha);
 
-	// updates the kinect raw depth + gKinecter.depthImg
-	gKinecter.updateKinectDepth(true);
+	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
+	gKinecter.updateKinectDepth();
 
 	// update the optical flow vectors from the gKinecter depth image
 	// NOTE: also draws the force vectors if `showFlowLines` is true
 	gFlowfield.update();
+
+	// draw raw depth pixels
+	if (gConfig.showDepthPixels) drawDepthPixels();
 
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();

@@ -136,7 +136,7 @@
   "FLOW_LINE_ALPHA_MAX",
   255,
   "flowLineAlpha",
-  0.11764705926179886,
+  1,
   "depthImageHue",
   0,
   "depthImageBlendMode",

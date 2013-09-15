@@ -1,15 +1,22 @@
-/*keep track of the changes I made::
+/*******************************************************************
+ *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
+ *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *
+ *	See `credits.txt` for base work and shouts out.
+ *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
+ *		            http://creativecommons.org/licenses/by-sa/3.0/
+ *******************************************************************/
 
-color changes happended in this function:	public void updateAndRenderGL() {
-
-and here:
-public void updateAndRenderGL() {
-
-//----------------------------------------------------------------bring in the TOUCH OSC variables
-		viscosity = particleViscocityOSC;
-
-
-*/
+////////////////////////////////////////////////////////////
+//  TouchOSC mapping setup.
+//
+//	All values in TouchOSC controller map to floats 0..1
+//	This is the same as our "JSON" output format, so we can use the config.toJSON()
+//	 routines to feed back to the controller the current state of what's going on.
+//
+//	Currently this only supports listening to one controller, this will change.
+//
+////////////////////////////////////////////////////////////
 
 
 // create function to recv and parse oscP5 messages

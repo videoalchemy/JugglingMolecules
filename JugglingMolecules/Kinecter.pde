@@ -14,16 +14,11 @@ import org.openkinect.processing.*;
 class Kinecter {
 
   Kinect kinect;
-  int gKinectWidth  = 640;
-  int gKinectHeight = 480;
   int kAngle  =  15;
   boolean isKinected = false;
-  int[] rawDepth;
   int minDepth = 100;//655;//740;
   int maxDepth = 950;//995;//982;//818;//860;
   int thresholdRange = 2047;
-
-  PImage depthImg;
 
   public Kinecter(PApplet parent) {
     try {
@@ -41,31 +36,28 @@ class Kinecter {
       isKinected = false;
       println("KINECT NOT INITIALISED");
     }
-
-    depthImg = new PImage(gKinectWidth, gKinectHeight);
-    rawDepth = new int[gKinectWidth*gKinectHeight];
   }
 
-  public void updateKinectDepth(boolean updateDepthPixels) {
+  public void updateKinectDepth() {
     if (!isKinected) return;
 
     // checks raw depth of kinect: if within certain depth range - color everything white, else black
-    rawDepth = kinect.getRawDepth();
+    gRawDepth = kinect.getRawDepth();
     for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
-      if (rawDepth[i] >= minDepth && rawDepth[i] <= maxDepth) {
-        int greyScale = (int)map((float)rawDepth[i], minDepth, maxDepth, 255, 0);
-        depthImg.pixels[i] = color(0, greyScale, greyScale, 0);
-        rawDepth[i] = 255;
+      if (gRawDepth[i] >= minDepth && gRawDepth[i] <= maxDepth) {
+        int greyScale = (int)map((float)gRawDepth[i], minDepth, maxDepth, 255, 0);
+//TODO: use depthImageColor
+        gDepthImg.pixels[i] = color(0, greyScale, greyScale, 0);
+        gNormalizedDepth[i] = 255;
       }
       else {
-        depthImg.pixels[i] = 0;  // transparent black
-        rawDepth[i] = 0;
+        gDepthImg.pixels[i] = 0;  // transparent black
+        gNormalizedDepth[i] = 0;
       }
     }
 
     // update the thresholded image
-    if (updateDepthPixels) depthImg.updatePixels();
-//    image(depthImg, 0, 0, width, height);
+    gDepthImg.updatePixels();
   }
 
 

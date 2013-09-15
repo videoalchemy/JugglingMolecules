@@ -12,7 +12,6 @@
  * Note from Trent Brooks NoiseInk project:
  * 	MODIFICATIONS TO HIDETOSHI'S OPTICAL FLOW
  * 	modified to use kinect camera image & optimised a fair bit as rgb calculations are not required - still needs work.
- * 	note class requires depth image from gKinecter: gKinecter.depthImg
  *
  **/
 
@@ -107,19 +106,19 @@ class OpticalFlow {
 		float g;
 		int n;
 
-		if (x1 < 0)				 x1=0;
-		if (x2 >= gKinectWidth)	 x2=gKinectWidth-1;
-		if (y1 < 0)				 y1=0;
-		if (y2 >= gKinectHeight)	y2=gKinectHeight-1;
+		if (x1 < 0)					x1 = 0;
+		if (x2 >= gKinectWidth)		x2 = gKinectWidth - 1;
+		if (y1 < 0)					y1 = 0;
+		if (y2 >= gKinectHeight)	y2 = gKinectHeight - 1;
 
 		//sumr=sumg=sumb=0.0;
 		sumg = 0.0;
 		for (int y = y1; y <= y2; y++) {
 			for (int i = gKinectWidth * y + x1; i <= gKinectWidth * y+x2; i++) {
-				 sumg += gKinecter.rawDepth[i];
+				 sumg += gNormalizedDepth[i];
 			}
 		}
-		n = (x2-x1+1)*(y2-y1+1); // number of pixels
+		n = (x2-x1+1) * (y2-y1+1); // number of pixels
 		// the results are stored in static variables
 		ar = sumg / n;
 		ag = ar;
@@ -155,7 +154,7 @@ class OpticalFlow {
 		}
 
 		// least squares computation
-		a = xx*yy - xy*xy + config.flowfieldPredictionTime;
+		a = xx*yy - xy*xy + config.flowfieldRegularization;
 		u = yy*xt - xy*yt; // x direction
 		v = xx*yt - xy*xt; // y direction
 
@@ -171,11 +170,11 @@ class OpticalFlow {
 				int y0 = row * resolution + resolution/2;
 				int index = row * cols + col;
 				// compute average pixel at (x0,y0)
-				averagePixelsGrayscale(x0-avSize,y0-avSize,x0+avSize,y0+avSize);
+				averagePixelsGrayscale(x0-avSize, y0-avSize, x0+avSize, y0+avSize);
 				// compute time difference
 				dtr[index] = ar-par[index]; // red
 				// save the pixel
-				par[index]=ar;
+				par[index] = ar;
 			}
 		}
 	}
@@ -187,9 +186,9 @@ class OpticalFlow {
 			for (int row = 1; row<rows-1; row++) {
 				int index = row * cols + col;
 				// compute x difference
-				dxr[index] = par[index+1]-par[index-1];
+				dxr[index] = par[index+1] - par[index-1];
 				// compute y difference
-				dyr[index] = par[index+cols]-par[index-cols];
+				dyr[index] = par[index+cols] - par[index-cols];
 			}
 		}
 	}
@@ -201,8 +200,8 @@ class OpticalFlow {
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
 			for (int row = 1; row < rows-1; row++) {
-				int y0 = row * resolution+resolution/2;
-				int index = row * cols+col;
+				int y0 = row * resolution + resolution/2;
+				int index = row * cols + col;
 
 				// prepare vectors fx, fy, ft
 				getNeigboringPixels(dxr, fx, index, 0); // dx red
@@ -233,6 +232,7 @@ class OpticalFlow {
 						float startY = ((float) y0) * gKinectToWindowHeight;
 						float endX	 = width - (((float) (x0+u)) * gKinectToWindowWidth);
 						float endY	 = ((float) (y0+v)) * gKinectToWindowHeight;
+//println(startX+","+startY+" : "+endX+","+endY);
 						line(startX, startY, endX, endY);
 					}
 

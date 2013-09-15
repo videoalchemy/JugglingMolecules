@@ -29,6 +29,13 @@
 	  else if (keyCode == 32) {
 		gConfig.showSettings = !gConfig.showSettings;
 	  }
+
+	  // 'p' key to echo current parameters
+	  else if (key == 'p') {
+		gConfig.echo();
+	  }
+
+
 	  // 'a' pressed add to minimum depth
 	  else if (key == 'a') {
 		gKinecter.minDepth = constrain(gKinecter.minDepth + 10, 0, gKinecter.thresholdRange);
@@ -64,6 +71,11 @@
 	  else if (key == 'e') {
 		gConfig.showDepthImage = !gConfig.showDepthImage;
 		println("showing depth image: " + gConfig.showDepthImage);
+	  }
+	  // toggle showDepthPixels on/off
+	  else if (key == 'r') {
+		gConfig.showDepthPixels = !gConfig.showDepthPixels;
+		println("showing depth pixels: " + gConfig.showDepthPixels);
 	  }
 
 

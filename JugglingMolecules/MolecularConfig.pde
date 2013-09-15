@@ -45,13 +45,16 @@ class MolecularConfig {
 ////////////////////////////////////////////////////////////
 
 	// Show particles.
-	boolean showParticles = true;
+	boolean showParticles = false;
 
 	// Show force lines.
-	boolean showFlowLines = false;
+	boolean showFlowLines = true;
 
 	// Show the depth image.
-	boolean showDepthImage = true;
+	boolean showDepthImage = false;
+
+	// Show depth pixels
+	boolean showDepthPixels = false;
 
 	// Show setup screen OVER the rest of the screen.
 	boolean showSettings = false;
@@ -86,7 +89,8 @@ class MolecularConfig {
 	int flowfieldResolution = 15;	// 1..50 ?
 	int FLOWFIELD_RESOLUTION_MIN = 1;
 	int FLOWFIELD_RESOLUTION_MAX = 50;
-	int flowfieldResolutionFromJSON(float value) {return (int) map(value, 0, 1, FLOWFIELD_RESOLUTION_MIN, FLOWFIELD_RESOLUTION_MAX);}
+// TODO: make sure this doesn't change dynamically...
+	int flowfieldResolutionFromJSON(float value) {return flowfieldResolution;}//(int) map(value, 0, 1, FLOWFIELD_RESOLUTION_MIN, FLOWFIELD_RESOLUTION_MAX);}
 	float flowfieldResolutionToJSON(){return map((float) flowfieldResolution, FLOWFIELD_RESOLUTION_MIN, FLOWFIELD_RESOLUTION_MAX, 0, 1);}
 
 	// Amount of time (in seconds) between "averages" to compute the flow.
@@ -254,7 +258,7 @@ class MolecularConfig {
 ////////////////////////////////////////////////////////////
 
 	// color for optical flow lines
-	color flowLineColor = color(255, 0, 0);
+	color flowLineColor = color(255, 0, 0, 30);
 	color flowLineColorFromJSON(float value) {return colorFromHue(value);}
 	float flowLineColorToJSON() {return hueFromColor(flowLineColor);}
 
@@ -272,7 +276,7 @@ class MolecularConfig {
 
 	// `tint` color for the depth image.
 	// NOTE: NOT CURRENTLY USED.  see
-	color depthImageColor = color(128, 12);
+	color depthImageColor = color(0,255,0);
 	color depthImageColorFromJSON(float value) {return colorFromHue(value);}
 	float depthImageColorToJSON() {return hueFromColor(depthImageColor);}
 
@@ -299,6 +303,45 @@ class MolecularConfig {
 //	Config manipulation
 ////////////////////////////////////////////////////////////
 
+	// Print the current config to the console.
+	void echo() {
+		println("---------------------------------------------------------");
+		println("-------      C U R R E N T     C O N F I G        -------");
+		println("---------------------------------------------------------");
+		println("-  showParticles                : " + echoBoolean(showParticles));
+		println("-  showFlowLines                : " + echoBoolean(showFlowLines));
+		println("-  showDepthImage               : " + echoBoolean(showDepthImage));
+		println("-  showDepthPixels              : " + echoBoolean(showDepthPixels));
+		println("-  showSettings                 : " + echoBoolean(showSettings));
+		println("-  windowBgColor                : " + echoColor(windowBgColor));
+		println("-  windowOverlayAlpha           : " + windowOverlayAlpha);
+		println("-  flowfieldResolution          : " + flowfieldResolution);
+		println("-  flowfieldPredictionTime      : " + flowfieldPredictionTime);
+		println("-  flowfieldMinVelocity         : " + flowfieldMinVelocity);
+		println("-  flowfieldRegularization      : " + flowfieldRegularization);
+		println("-  flowfieldSmoothing           : " + flowfieldSmoothing);
+		println("-  noiseStrength                : " + noiseStrength);
+		println("-  noiseScale                   : " + noiseScale);
+		println("-  particleViscocity            : " + particleViscocity);
+		println("-  particleForceMultiplier      : " + particleForceMultiplier);
+		println("-  particleAccelerationFriction : " + particleAccelerationFriction);
+		println("-  particleAccelerationLimiter  : " + particleAccelerationLimiter);
+		println("-  particleNoiseVelocity        : " + particleNoiseVelocity);
+		println("-  particleColorScheme          : " + particleColorScheme);
+		println("-  particleColor                : " + echoColor(particleColor));
+		println("-  particleAlpha                : " + particleAlpha);
+		println("-  particleMaxCount             : " + particleMaxCount);
+		println("-  particleGenerateRate         : " + particleGenerateRate);
+		println("-  particleGenerateSpread       : " + particleGenerateSpread);
+		println("-  particleMinStepSize          : " + particleMinStepSize);
+		println("-  particleMaxStepSize          : " + particleMaxStepSize);
+		println("-  particleLifetime             : " + particleLifetime);
+		println("-  flowLineColor                : " + echoColor(flowLineColor));
+		println("-  flowLineAlpha                : " + flowLineAlpha);
+		println("-  depthImageColor              : " + echoColor(depthImageColor));
+		println("---------------------------------------------------------");
+	}
+
 	// Load configuration from json data stored in a config file.
 	// `configFileName` is, e.g., `PS01`.
 	void loadFromConfigFile(String configFileName) {
@@ -313,6 +356,21 @@ class MolecularConfig {
 
 			println("   Setting "+keyName+" to (float) value "+value);
 			this.applyConfigValue(keyName, value);
+		}
+
+		// remember that we have loaded this file
+		gConfigFileName = configFileName;
+
+		// print out the config
+		this.echo();
+	}
+
+	// Update the current config file with the new settings.
+	void updateCurrentConfigFile() {
+		if (gConfigFileName == null) {
+			println("updateCurrentConfigFile(): we've never loaded a config!");
+		} else {
+			saveToConfigFile(gConfigFileName);
 		}
 	}
 
