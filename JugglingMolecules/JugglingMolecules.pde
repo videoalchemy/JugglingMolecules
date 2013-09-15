@@ -12,12 +12,17 @@ import netP5.*;
 import processing.video.*;
 import processing.opengl.*;
 import javax.media.opengl.*;
+import java.util.Iterator;
 
 ////////////////////////////////////////////////////////////
 //	Global objects
 ////////////////////////////////////////////////////////////
 	// TouchOSC controller
 	OscP5 gTouchController;
+
+	// TouchOSC device we're connecting to.
+	// Set when we receive our first OscMessage in `touchOSC_controls::oscEvent()`.
+	NetAddress 	gTouchControllerAddress;
 
 	// Kinect helper
 	Kinecter gKinecter;
@@ -97,7 +102,7 @@ void draw() {
 	pushMatrix();
 
 	// partially fade the screen by drawing a semi-opaque rectangle over everything
-	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayOpacity);
+	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayAlpha);
 
 	// updates the kinect raw depth + gKinecter.depthImg
 	gKinecter.updateKinectDepth(true);

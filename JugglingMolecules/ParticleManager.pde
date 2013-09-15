@@ -36,7 +36,6 @@ class ParticleManager {
 	public void updateAndRender() {
 		// NOTE: doing pushStyle()/popStyle() on the outside of the loop makes this much much faster
 		pushStyle();
-		float red, green, blue, alpha;
 		// loop through all particles
 		int particleCount = config.particleMaxCount;
 		for (int i = 0; i < particleCount; i++) {

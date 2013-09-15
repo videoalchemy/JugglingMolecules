@@ -62,7 +62,8 @@
 ////////////////////////////////////////////////////////////
 //	Generic math-ey utilities.
 ////////////////////////////////////////////////////////////
-	// Return a perline noise vector field, size of `rows` x `columns`.
+
+	// Return a Perlin noise vector field, size of `rows` x `columns`.
 	PVector[][] makePerlinNoiseField(int rows, int cols) {
 	  //noiseSeed((int)random(10000));  // TODO???
 	  PVector[][] field = new PVector[cols][rows];
@@ -79,4 +80,27 @@
 		xOffset += 0.1;
 	  }
 	  return field;
+	}
+
+
+	// Given a hue of 0..1, return a fully saturated color().
+	// NOTE: assumes we're normally in RGB mode
+	color colorFromHue(float hue) {
+		// switch to HSB color mode
+		colorMode(HSB, 1.0);
+		color clr = color(hue);
+		// restore RGB color mode
+		colorMode(RGB, 255);
+		return clr;
+	}
+
+	// Given a color, return its hue as 0..1.
+	// NOTE: assumes we're normally in RGB mode
+	float hueFromColor(color clr) {
+		// switch to HSB color mode
+		colorMode(HSB, 1.0);
+		float result = hue(clr);
+		// restore RGB color mode
+		colorMode(RGB, 255);
+		return result;
 	}

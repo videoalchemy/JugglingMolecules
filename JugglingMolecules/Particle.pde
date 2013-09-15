@@ -77,7 +77,7 @@ class Particle {
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
 		} else if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
-			clr = color(config.particleRed, config.particleGreen, config.particleBlue, config.particleAlpha);
+			clr = color(config.particleColor, config.particleAlpha);
 		}
 	}
 
