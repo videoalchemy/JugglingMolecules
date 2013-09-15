@@ -23,6 +23,7 @@ import java.util.Iterator;
 	// TouchOSC device we're connecting to.
 	// Set when we receive our first OscMessage in `touchOSC_controls::oscEvent()`.
 	NetAddress 	gTouchControllerAddress;
+	int			gTouchControllerReceivingPort = 9000;
 
 	// Kinect helper
 	Kinecter gKinecter;
@@ -75,6 +76,8 @@ void setup() {
 	// create the config object
 	gConfig = new MolecularConfig();
 
+//	gConfig.loadFromConfigFile("PS01");
+
 	// set up display parametets
 	background(gConfig.windowBgColor);
 	frameRate(gConfig.setupFPS);
@@ -93,6 +96,9 @@ void setup() {
 
 	// Tell the particleManager about the flowfield
 	gParticleManager.flowfield = gFlowfield;
+
+	// save the configuration!!!
+	gConfig.saveToConfigFile("PS01");
 }
 
 

@@ -22,14 +22,15 @@ void oscEvent(OscMessage message) {
 	// if this is the first message we've received, gTouchControllerAddress will be empty.
 	//	set it so we can communicate back with this device.
 	if (gTouchControllerAddress == null) {
-		println("oscEvent(): First message received -- setting gTouchControllerAddress to "+message.address() + ":" + message.port());
-		gTouchControllerAddress = new NetAddress(message.address(), message.port());
+		NetAddress inboundAddress = message.netAddress();
+		println("oscEvent(): First message received -- setting gTouchControllerAddress to "+inboundAddress.address() + ":" + gTouchControllerReceivingPort);
+		gTouchControllerAddress = new NetAddress(inboundAddress.address(), gTouchControllerReceivingPort);
 	}
 
 	String debugMessage = "oscEvent(): " + control + " = " + value;
 
 	// "particleGenerate" x/y pad
-	if (control == "particleGenerate") {
+	if (control.equals("particleGenerate")) {
 		// x-y pad which returns 2 values
 		float otherValue = message.get(1).floatValue();
 		debugMessage += ":"+otherValue;
@@ -37,7 +38,7 @@ void oscEvent(OscMessage message) {
 		gConfig.applyConfigValue("particleGenerateSpread", otherValue);
 	}
 	// TODO: other x/y pad
-	else if (control == "noise") {
+	else if (control.equals("noise")) {
 		// x-y pad which returns 2 values
 		float otherValue = message.get(1).floatValue();
 		debugMessage += ":"+otherValue;
@@ -46,16 +47,16 @@ void oscEvent(OscMessage message) {
 	}
 
 	// particleColorScheme toggles
-	else if (control == "particleColorScheme-0")	gConfig.applyConfigValue("particleColorScheme", 0);
-	else if (control == "particleColorScheme-1")	gConfig.applyConfigValue("particleColorScheme", 1);
-	else if (control == "particleColorScheme-2")	gConfig.applyConfigValue("particleColorScheme", 2);
-	else if (control == "particleColorScheme-3")	gConfig.applyConfigValue("particleColorScheme", 3);
+	else if (control.equals("particleColorScheme-0"))	gConfig.applyConfigValue("particleColorScheme", 0);
+	else if (control.equals("particleColorScheme-1"))	gConfig.applyConfigValue("particleColorScheme", 1);
+	else if (control.equals("particleColorScheme-2"))	gConfig.applyConfigValue("particleColorScheme", 2);
+	else if (control.equals("particleColorScheme-3"))	gConfig.applyConfigValue("particleColorScheme", 3);
 
 	// depthImageBlendMode toggles
-	else if (control == "depthImageBlendMode-0")	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_0);
-	else if (control == "depthImageBlendMode-1")	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_1);
-	else if (control == "depthImageBlendMode-2")	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_2);
-	else if (control == "depthImageBlendMode-3")	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_3);
+	else if (control.equals("depthImageBlendMode-0"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_0);
+	else if (control.equals("depthImageBlendMode-1"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_1);
+	else if (control.equals("depthImageBlendMode-2"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_2);
+	else if (control.equals("depthImageBlendMode-3"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_3);
 
 	// all other controls have a single value!
 	else {
@@ -63,29 +64,31 @@ void oscEvent(OscMessage message) {
 	}
 
 	println(debugMessage);
+
+	// save the config back out to the controller
+	this.outputStateToOSCController();
 }
 
 
 void outputStateToOSCController() {
 	// get output states as a JSON blob, WITHOUT the _MIN and _MAX values
-	JSONObject json = gConfig.toJSON(false);
+	JSONArray json = gConfig.toJSON(false);
 
-	// TODO: iterate over keys
-	Iterator keyIterator = json.keyIterator();
-	while (keyIterator.hasNext()) {
-		String keyName 	= (String)keyIterator.next();
-		float  value 	= json.getFloat(keyName);
+	int i = 0, last = json.size();
+	while (i < last) {
+		String keyName = json.getString(i++);
+		float value    = json.getFloat(i++);
 
 		// "particleGenerate" x/y pad
-		if 		(keyName == "particleGenerateRate") sendFloatsToController("particleGenerate", gConfig.particleGenerateRate, gConfig.particleGenerateSpread);
-		else if (keyName == "particleGenerateSpeed") ;	// NOTE: sending value as "particleGenerate"
+		if 		(keyName.equals("particleGenerateRate")) sendFloatsToController("particleGenerate", gConfig.particleGenerateRateToJSON(), gConfig.particleGenerateSpreadToJSON());
+		else if (keyName.equals("particleGenerateSpeed")) ;	// NOTE: sending value as part of "particleGenerate" message
 
 		// "noise" x/y pad
-		else if (keyName == "noiseStrength") sendFloatsToController("noise", gConfig.noiseStrength, gConfig.noiseScale);
-		else if (keyName == "noiseScale") ;	// NOTE: sending value as "noise"
+		else if (keyName.equals("noiseStrength")) sendFloatsToController("noise", gConfig.noiseStrengthToJSON(), gConfig.noiseScaleToJSON());
+		else if (keyName.equals("noiseScale")) ;	// NOTE: sending value as part of "noise" message
 
 		// particleColorScheme toggles
-		else if (keyName == "particleColorScheme")	{
+		else if (keyName.equals("particleColorScheme"))	{
 			sendFloatToController("particleColorScheme-0", (value == 0 ? 1 : 0));
 			sendFloatToController("particleColorScheme-1", (value == 1 ? 1 : 0));
 			sendFloatToController("particleColorScheme-2", (value == 2 ? 1 : 0));
@@ -93,7 +96,7 @@ void outputStateToOSCController() {
 		}
 
 		// depthImageBlendMode toggles
-		else if (keyName == "depthImageBlendMode") {
+		else if (keyName.equals("depthImageBlendMode")) {
 			sendFloatToController("depthImageBlendMode-0", (value == DEPTH_IMAGE_BLEND_MODE_0 ? 1 : 0));
 			sendFloatToController("depthImageBlendMode-1", (value == DEPTH_IMAGE_BLEND_MODE_1 ? 1 : 0));
 			sendFloatToController("depthImageBlendMode-2", (value == DEPTH_IMAGE_BLEND_MODE_2 ? 1 : 0));
@@ -111,6 +114,7 @@ void outputStateToOSCController() {
 void sendFloatToController(String messageName, float value) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(value);
+//	println(">> sending /"+messageName+" "+value);
 	sendMessageToController(message);
 }
 
@@ -119,6 +123,7 @@ void sendFloatsToController(String messageName, float x, float y) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(x);
 	message.add(y);
+	println(">> sending /"+messageName+" "+x+" "+y);
 	sendMessageToController(message);
 }
 
