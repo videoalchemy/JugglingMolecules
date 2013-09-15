@@ -103,7 +103,7 @@ class ParticleManager {
     popStyle();
   }
 
-  // Add a bunch of particles to represent a new force
+  // Add a bunch of particles to represent a new vector in the flow field
   public void addForce(float x, float y, float dx, float dy) {
     regenerateParticles(x * width, y * height, dx * forceMultiplier, dy * forceMultiplier);
   }
