@@ -87,11 +87,11 @@ void outputStateToOSCController() {
 		float value    = json.getFloat(i++);
 
 		// "particleGenerate" x/y pad
-		if 		(keyName.equals("particleGenerateRate")) sendFloatsToController("particleGenerate", gConfig.particleGenerateRateToJSON(), gConfig.particleGenerateSpreadToJSON());
+		if 		(keyName.equals("particleGenerateRate")) sendFloatsToController("particleGenerate", gConfig.particleGenerateRateToUnit(), gConfig.particleGenerateSpreadToUnit());
 		else if (keyName.equals("particleGenerateSpeed")) ;	// NOTE: sending value as part of "particleGenerate" message
 
 		// "noise" x/y pad
-		else if (keyName.equals("noiseStrength")) sendFloatsToController("noise", gConfig.noiseStrengthToJSON(), gConfig.noiseScaleToJSON());
+		else if (keyName.equals("noiseStrength")) sendFloatsToController("noise", gConfig.noiseStrengthToUnit(), gConfig.noiseScaleToUnit());
 		else if (keyName.equals("noiseScale")) ;	// NOTE: sending value as part of "noise" message
 
 		// particleColorScheme toggles
