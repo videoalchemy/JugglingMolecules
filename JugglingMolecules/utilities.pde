@@ -29,13 +29,13 @@
 	// Draw the raw depth info as a pixel at each coordinate.
 	void drawDepthPixels() {
 		pushStyle();
-		int delta = 4;//gConfig.flowfieldResolution;	// 1;
+		int delta = 2;//gConfig.flowfieldResolution;	// 1;
 		for (int row = 0; row < gKinectHeight; row += delta) {
 			for (int col = 0; col < gKinectWidth; col += delta) {
 				int index = col + (row*gKinectWidth);
-				int zAlpha = (int) map((float) gRawDepth[index],0,2047,0,255);
+				int zAlpha = (int) map((float) gRawDepth[index],0,2047,0,128);
 // green
-				stroke(0, 255, 0, zAlpha);
+				stroke(0, 128, 0, zAlpha);
 				int x = width - (int) map((float)col, 0, gKinectWidth, 0, width);
 				int y = 		(int) map((float)row, 0, gKinectHeight, 0, height);
 				point(x, y);
@@ -106,7 +106,7 @@
 	color colorFromHue(float hue) {
 		// switch to HSB color mode
 		colorMode(HSB, 1.0);
-		color clr = color(hue);
+		color clr = color(hue, 1, 1);
 		// restore RGB color mode
 		colorMode(RGB, 255);
 		return clr;

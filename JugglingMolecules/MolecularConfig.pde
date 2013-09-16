@@ -16,10 +16,10 @@
 
 
 // Depth image blend mode constants.
-	int DEPTH_IMAGE_BLEND_MODE_0 = BLEND;				// default stamp
-	int DEPTH_IMAGE_BLEND_MODE_1 = SUBTRACT;
-	int DEPTH_IMAGE_BLEND_MODE_2 = DARKEST;
-	int DEPTH_IMAGE_BLEND_MODE_3 = DIFFERENCE;			// tracks black to body
+	int DEPTH_IMAGE_BLEND_MODE_0 = LIGHTEST;				// default stamp
+	int DEPTH_IMAGE_BLEND_MODE_1 = DARKEST;
+	int DEPTH_IMAGE_BLEND_MODE_2 = DIFFERENCE;
+	int DEPTH_IMAGE_BLEND_MODE_3 = EXCLUSION;			// tracks black to body
 
 
 class MolecularConfig {
@@ -45,10 +45,10 @@ class MolecularConfig {
 ////////////////////////////////////////////////////////////
 
 	// Show particles.
-	boolean showParticles = false;
+	boolean showParticles = true;
 
 	// Show force lines.
-	boolean showFlowLines = true;
+	boolean showFlowLines = false;
 
 	// Show the depth image.
 	boolean showDepthImage = false;
@@ -130,6 +130,7 @@ class MolecularConfig {
 	// Cloud variation.
 	// Low values have long stretching clouds that move long distances.
 	// High values have detailed clouds that don't move outside smaller radius.
+//TODO: convert to int?
 	float noiseStrength = 100; //1-300;
 	float NOISE_STRENGTH_MIN = 1;
 	float NOISE_STRENGTH_MAX = 300;
@@ -138,6 +139,7 @@ class MolecularConfig {
 
 	// Cloud strength multiplier.
 	// Low strength values makes clouds more detailed but move the same long distances. ???
+//TODO: convert to int?
 	float noiseScale = 100; //1-400
 	float NOISE_SCALE_MIN = 1;
 	float NOISE_SCALE_MAX = 400;
@@ -194,15 +196,15 @@ class MolecularConfig {
 	// 	- 1 = particle color set from origin
 	int PARTICLE_COLOR_SCHEME_SAME_COLOR 	= 0;
 	int PARTICLE_COLOR_SCHEME_XY 			= 1;
-	int PARTICLE_COLOR_SCHEME_UNKNOWN_1		= 2;
-	int PARTICLE_COLOR_SCHEME_UNKNOWN_2		= 3;
+	int PARTICLE_COLOR_SCHEME_YX			= 2;
+	int PARTICLE_COLOR_SCHEME_XYX			= 3;
 	int particleColorScheme = PARTICLE_COLOR_SCHEME_XY;
 	int particleColorSchemeFromJSON(float value) {return (int) value;}
 	float particleColorSchemeToJSON(){return (float) particleColorScheme;}
 
 	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
 	color particleColor		= color(255);
-	color particleColorFromJSON(float value) {return colorFromHue(value);}
+	color particleColorFromJSON(float value) {color clr = colorFromHue(value);println(echoColor(clr));return clr;}
 	float particleColorToJSON(){return hueFromColor(particleColor);}
 
 	// Opacity for all particle lines, used for all color schemes.
@@ -280,19 +282,25 @@ class MolecularConfig {
 	color depthImageColorFromJSON(float value) {return colorFromHue(value);}
 	float depthImageColorToJSON() {return hueFromColor(depthImageColor);}
 
+	int depthImageAlpha = 30;
+	int DEPTH_IMAGE_ALPHA_MIN 	= 0;
+	int DEPTH_IMAGE_ALPHA_MAX 	= 255;
+	int depthImageAlphaFromJSON(float value){return (int) map(value, 0, 1, DEPTH_IMAGE_ALPHA_MIN, DEPTH_IMAGE_ALPHA_MAX);}
+	float depthImageAlphaToJSON(){return map((float) depthImageAlpha, 0, 255, 0, 1);}
+
 	// blend mode for the depth image
-	int depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_3;
+	int depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_1;
 	int depthImageBlendModeFromJSON(float value){
-		if (value == 1) depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_1;
-		if (value == 2) depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_2;
-		if (value == 3) depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_3;
+		if (value == 1.0f) return DEPTH_IMAGE_BLEND_MODE_1;
+		if (value == 2.0f) return DEPTH_IMAGE_BLEND_MODE_2;
+		if (value == 3.0f) return DEPTH_IMAGE_BLEND_MODE_3;
 		return DEPTH_IMAGE_BLEND_MODE_0;
 	}
 	float depthImageBlendModeToJSON(){
-		if 		(depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_1) return 1;
-		else if (depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_2) return 2;
-		else if (depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_3) return 3;
-		return 0;
+		if 		(depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_1) return 1.0f;
+		else if (depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_2) return 2.0f;
+		else if (depthImageBlendMode == DEPTH_IMAGE_BLEND_MODE_3) return 3.0f;
+		return 0.0f;
 	}
 
 
@@ -394,6 +402,7 @@ class MolecularConfig {
 		if 		(keyName.equals("showParticles"))			showParticles  = (value != 0);
 		else if (keyName.equals("showFlowLines")) 			showFlowLines  = (value != 0);
 		else if (keyName.equals("showDepthImage")) 			showDepthImage = (value != 0);
+		else if (keyName.equals("showDepthPixels")) 		showDepthPixels = (value != 0);
 		else if (keyName.equals("showSettings")) 			showSettings   = (value != 0);
 
 
@@ -535,6 +544,9 @@ class MolecularConfig {
 	/////////////////
 		// depth image color as Hue (no opacity)
 		else if (keyName.equals("depthImageHue"))					depthImageColor = depthImageColorFromJSON(value);
+		else if (keyName.equals("depthImageAlpha"))					depthImageAlpha = depthImageAlphaFromJSON(value);
+		else if (keyName.equals("DEPTH_IMAGE_ALPHA_MIN"))			DEPTH_IMAGE_ALPHA_MIN = (int) value;
+		else if (keyName.equals("DEPTH_IMAGE_ALPHA_MAX"))			DEPTH_IMAGE_ALPHA_MAX = (int) value;
 		else if (keyName.equals("depthImageBlendMode")) 			depthImageBlendMode = depthImageBlendModeFromJSON(value);
 
 		// error case for debugging
@@ -557,6 +569,7 @@ class MolecularConfig {
 		this.addToJSONArray(array, "showParticles", showParticles ? 1 : 0);
 		this.addToJSONArray(array, "showFlowLines", showFlowLines ? 1 : 0);
 		this.addToJSONArray(array, "showDepthImage", showDepthImage ? 1 : 0);
+		this.addToJSONArray(array, "showDepthPixels", showDepthPixels ? 1 : 0);
 		this.addToJSONArray(array, "showSettings", showSettings ? 1 : 0);
 
 	/////////////////
@@ -645,7 +658,7 @@ class MolecularConfig {
 
 		// particle color as Hue + Opacity
 		this.addToJSONArray(array, "particleHue", particleColorToJSON());
-		if (saveMinMax) this.addToJSONArray(array, "PARTICLE_ALPHA_MIN", (float) FLOW_LINE_ALPHA_MIN);
+		if (saveMinMax) this.addToJSONArray(array, "PARTICLE_ALPHA_MIN", (float) PARTICLE_ALPHA_MIN);
 		if (saveMinMax) this.addToJSONArray(array, "PARTICLE_ALPHA_MAX", (float) PARTICLE_ALPHA_MAX);
 		this.addToJSONArray(array, "particleAlpha", particleAlphaToJSON());
 
@@ -688,8 +701,11 @@ class MolecularConfig {
 	/////////////////
 	// 	Depth image drawing
 	/////////////////
-		// depth image color as Hue (no opacity)
+		// depth image color as Hue + Opacity
 		this.addToJSONArray(array, "depthImageHue", depthImageColorToJSON());
+		if (saveMinMax) this.addToJSONArray(array, "DEPTH_IMAGE_ALPHA_MIN", (float) DEPTH_IMAGE_ALPHA_MIN);
+		if (saveMinMax) this.addToJSONArray(array, "DEPTH_IMAGE_ALPHA_MAX", (float) DEPTH_IMAGE_ALPHA_MAX);
+		this.addToJSONArray(array, "depthImageAlpha", depthImageAlphaToJSON());
 		// depth image blend mode
 		this.addToJSONArray(array, "depthImageBlendMode", depthImageBlendModeToJSON());
 

@@ -47,7 +47,7 @@ class Kinecter {
       if (gRawDepth[i] >= minDepth && gRawDepth[i] <= maxDepth) {
         int greyScale = (int)map((float)gRawDepth[i], minDepth, maxDepth, 255, 0);
 //TODO: use depthImageColor
-        gDepthImg.pixels[i] = color(0, greyScale, greyScale, 0);
+        gDepthImg.pixels[i] = color(gConfig.depthImageColor, gConfig.depthImageAlpha);//color(0, greyScale, greyScale, 0);
         gNormalizedDepth[i] = 255;
       }
       else {

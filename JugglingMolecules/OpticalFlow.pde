@@ -227,7 +227,7 @@ class OpticalFlow {
 
 					// shwo optical flow as lines in `flowLineColor`
 					if (config.showFlowLines) {
-						stroke(gConfig.flowLineColor);
+						stroke(gConfig.flowLineColor, gConfig.flowLineAlpha);
 						float startX = width - (((float) x0) * gKinectToWindowWidth);
 						float startY = ((float) y0) * gKinectToWindowHeight;
 						float endX	 = width - (((float) (x0+u)) * gKinectToWindowWidth);

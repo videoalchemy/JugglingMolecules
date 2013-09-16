@@ -60,10 +60,10 @@ void oscEvent(OscMessage message) {
 	else if (control.equals("particleColorScheme-3"))	gConfig.applyConfigValue("particleColorScheme", 3);
 
 	// depthImageBlendMode toggles
-	else if (control.equals("depthImageBlendMode-0"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_0);
-	else if (control.equals("depthImageBlendMode-1"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_1);
-	else if (control.equals("depthImageBlendMode-2"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_2);
-	else if (control.equals("depthImageBlendMode-3"))	gConfig.applyConfigValue("depthImageBlendMode", DEPTH_IMAGE_BLEND_MODE_3);
+	else if (control.equals("depthImageBlendMode-0"))	gConfig.applyConfigValue("depthImageBlendMode", 0);
+	else if (control.equals("depthImageBlendMode-1"))	gConfig.applyConfigValue("depthImageBlendMode", 1);
+	else if (control.equals("depthImageBlendMode-2"))	gConfig.applyConfigValue("depthImageBlendMode", 2);
+	else if (control.equals("depthImageBlendMode-3"))	gConfig.applyConfigValue("depthImageBlendMode", 3);
 
 	// all other controls have a single value!
 	else {
@@ -96,18 +96,18 @@ void outputStateToOSCController() {
 
 		// particleColorScheme toggles
 		else if (keyName.equals("particleColorScheme"))	{
-			sendFloatToController("particleColorScheme-0", (value == 0 ? 1 : 0));
-			sendFloatToController("particleColorScheme-1", (value == 1 ? 1 : 0));
-			sendFloatToController("particleColorScheme-2", (value == 2 ? 1 : 0));
-			sendFloatToController("particleColorScheme-3", (value == 3 ? 1 : 0));
+			sendIntToController("particleColorScheme-0", (value == 0 ? 1 : 0));
+			sendIntToController("particleColorScheme-1", (value == 1 ? 1 : 0));
+			sendIntToController("particleColorScheme-2", (value == 2 ? 1 : 0));
+			sendIntToController("particleColorScheme-3", (value == 3 ? 1 : 0));
 		}
 
 		// depthImageBlendMode toggles
 		else if (keyName.equals("depthImageBlendMode")) {
-			sendFloatToController("depthImageBlendMode-0", (value == DEPTH_IMAGE_BLEND_MODE_0 ? 1 : 0));
-			sendFloatToController("depthImageBlendMode-1", (value == DEPTH_IMAGE_BLEND_MODE_1 ? 1 : 0));
-			sendFloatToController("depthImageBlendMode-2", (value == DEPTH_IMAGE_BLEND_MODE_2 ? 1 : 0));
-			sendFloatToController("depthImageBlendMode-3", (value == DEPTH_IMAGE_BLEND_MODE_3 ? 1 : 0));
+			sendIntToController("depthImageBlendMode-0", (value == 0 ? 1 : 0));
+			sendIntToController("depthImageBlendMode-1", (value == 1 ? 1 : 0));
+			sendIntToController("depthImageBlendMode-2", (value == 2 ? 1 : 0));
+			sendIntToController("depthImageBlendMode-3", (value == 3 ? 1 : 0));
 		}
 
 		// all other controls go over as normal floats
@@ -115,13 +115,52 @@ void outputStateToOSCController() {
 			sendFloatToController(keyName, value);
 		}
 	}
+
+	// output labels
+
+	setControllerLabelValue("windowOverlayAlpha", 			""+gConfig.windowOverlayAlpha);
+
+//	setControllerLabelValue("windowBgColor", 				""+gConfig.echoColor(windowBgColor));
+	setControllerLabelValue("windowOverlayAlpha", 			""+gConfig.windowOverlayAlpha);
+	setControllerLabelValue("flowfieldResolution", 			""+gConfig.flowfieldResolution);
+	setControllerLabelValue("flowfieldPredictionTime", 		""+gConfig.flowfieldPredictionTime);
+	setControllerLabelValue("flowfieldMinVelocity", 		""+gConfig.flowfieldMinVelocity);
+	setControllerLabelValue("flowfieldRegularization", 		""+gConfig.flowfieldRegularization);
+	setControllerLabelValue("flowfieldSmoothing", 			""+gConfig.flowfieldSmoothing);
+	setControllerLabelValue("noiseStrength", 				""+gConfig.noiseStrength);
+	setControllerLabelValue("noiseScale", 					""+gConfig.noiseScale);
+	setControllerLabelValue("particleViscocity", 			""+gConfig.particleViscocity);
+	setControllerLabelValue("particleForceMultiplier", 		""+gConfig.particleForceMultiplier);
+	setControllerLabelValue("particleAccelerationFriction",	""+gConfig.particleAccelerationFriction);
+	setControllerLabelValue("particleAccelerationLimiter",	""+gConfig.particleAccelerationLimiter);
+	setControllerLabelValue("particleNoiseVelocity", 		""+gConfig.particleNoiseVelocity);
+	setControllerLabelValue("particleColorScheme", 			""+gConfig.particleColorScheme);
+//	setControllerLabelValue("particleColor", 				""+gConfig.echoColor(particleColor));
+	setControllerLabelValue("particleAlpha", 				""+gConfig.particleAlpha);
+	setControllerLabelValue("particleMaxCount", 			""+gConfig.particleMaxCount);
+	setControllerLabelValue("particleGenerateRate", 		""+gConfig.particleGenerateRate);
+	setControllerLabelValue("particleGenerateSpread", 		""+gConfig.particleGenerateSpread);
+	setControllerLabelValue("particleMinStepSize", 			""+gConfig.particleMinStepSize);
+	setControllerLabelValue("particleMaxStepSize", 			""+gConfig.particleMaxStepSize);
+	setControllerLabelValue("particleLifetime", 			""+gConfig.particleLifetime);
+//	setControllerLabelValue("flowLineColor", 				""+gConfig.echoColor(flowLineColor));
+	setControllerLabelValue("flowLineAlpha", 				""+gConfig.flowLineAlpha);
+//	setControllerLabelValue("depthImageColor", 				""+gConfig.echoColor(depthImageColor));
 }
 
 // Send a key:value pair to the controller with a single float value.
 void sendFloatToController(String messageName, float value) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(value);
-//	println(">> sending /"+messageName+" "+value);
+	println(">> sending /"+messageName+" "+value);
+	sendMessageToController(message);
+}
+
+// Send a key:value pair to the controller with a single float value.
+void sendIntToController(String messageName, int value) {
+	OscMessage message = new OscMessage("/"+messageName);
+	message.add(value);
+	println(">> sending /"+messageName+" "+value);
 	sendMessageToController(message);
 }
 
@@ -131,6 +170,14 @@ void sendFloatsToController(String messageName, float x, float y) {
 	message.add(x);
 	message.add(y);
 	println(">> sending /"+messageName+" "+x+" "+y);
+	sendMessageToController(message);
+}
+
+// Set a label on the controller with the name of label + the value;
+void setControllerLabelValue(String labelName, String stringValue) {
+	OscMessage message = new OscMessage("/"+labelName+"Label");
+	message.add(labelName+"="+stringValue);
+//	println(">> sending /"+labelName+" "+labelName+"="+stringValue);
 	sendMessageToController(message);
 }
 
