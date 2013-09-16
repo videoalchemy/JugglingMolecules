@@ -736,8 +736,45 @@ class MolecularConfig {
 
 
 
+	// Print the current config to the console.
+	String[] getOutput() {
+		String[] output = new String[100];
+		output.append("---------------------------------------------------------");
+		output.append("-------      C U R R E N T     C O N F I G        -------");
+		output.append("---------------------------------------------------------");
+		output.append("-  showParticles                : " + echoBoolean(showParticles));
+		output.append("-  showFlowLines                : " + echoBoolean(showFlowLines));
+		output.append("-  showDepthImage               : " + echoBoolean(showDepthImage));
+		output.append("-  showDepthPixels              : " + echoBoolean(showDepthPixels));
+		output.append("-  showSettings                 : " + echoBoolean(showSettings));
+		output.append("-  windowBgColor                : " + echoColor(windowBgColor));
+		output.append("-  windowOverlayAlpha           : " + windowOverlayAlpha);
+		output.append("-  flowfieldResolution          : " + flowfieldResolution);
+		output.append("-  flowfieldPredictionTime      : " + flowfieldPredictionTime);
+		output.append("-  flowfieldMinVelocity         : " + flowfieldMinVelocity);
+		output.append("-  flowfieldRegularization      : " + flowfieldRegularization);
+		output.append("-  flowfieldSmoothing           : " + flowfieldSmoothing);
+		output.append("-  noiseStrength                : " + noiseStrength);
+		output.append("-  noiseScale                   : " + noiseScale);
+		output.append("-  particleViscocity            : " + particleViscocity);
+		output.append("-  particleForceMultiplier      : " + particleForceMultiplier);
+		output.append("-  particleAccelerationFriction : " + particleAccelerationFriction);
+		output.append("-  particleAccelerationLimiter  : " + particleAccelerationLimiter);
+		output.append("-  particleNoiseVelocity        : " + particleNoiseVelocity);
+		output.append("-  particleColorScheme          : " + particleColorScheme);
+		output.append("-  particleColor                : " + echoColor(particleColor));
+		output.append("-  particleAlpha                : " + particleAlpha);
+		output.append("-  particleMaxCount             : " + particleMaxCount);
+		output.append("-  particleGenerateRate         : " + particleGenerateRate);
+		output.append("-  particleGenerateSpread       : " + particleGenerateSpread);
+		output.append("-  particleMinStepSize          : " + particleMinStepSize);
+		output.append("-  particleMaxStepSize          : " + particleMaxStepSize);
+		output.append("-  particleLifetime             : " + particleLifetime);
+		output.append("-  flowLineColor                : " + echoColor(flowLineColor));
+		output.append("-  flowLineAlpha                : " + flowLineAlpha);
+		output.append("-  depthImageColor              : " + echoColor(depthImageColor));
+		output.append("-  depthImageAlpha              : " + depthImageAlpha);
+		output.append("---------------------------------------------------------");
+		return output.join("\n");
+	}
 
-
-
-
-}
