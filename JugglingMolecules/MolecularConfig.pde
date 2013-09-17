@@ -71,10 +71,10 @@ class MolecularConfig {
 	// Amount to "dim" the background each round by applying partially opaque background
 	// Higher number means less of each screen sticks around on subsequent draw cycles.
 	int windowOverlayAlpha = 20;	//	0-255
-	int WINDOW_OVERLAY_ALPHA_MIN = 0;
-	int WINDOW_OVERLAY_ALPHA_MAX = 255;
-	int windowOverlayAlphaFromUnit(float value){return (int) map(value, 0, 1, WINDOW_OVERLAY_ALPHA_MIN, WINDOW_OVERLAY_ALPHA_MAX);}
-	float windowOverlayAlphaToUnit(){return map((float) windowOverlayAlpha, WINDOW_OVERLAY_ALPHA_MIN, WINDOW_OVERLAY_ALPHA_MAX, 0, 1);}
+	int _windowOverlayAlpha_MIN = 0;
+	int _windowOverlayAlpha_MAX = 255;
+	int windowOverlayAlphaFromUnit(float value){return (int) map(value, 0, 1, _windowOverlayAlpha_MIN, _windowOverlayAlpha_MAX);}
+	float windowOverlayAlphaToUnit(){return map((float) windowOverlayAlpha, _windowOverlayAlpha_MIN, _windowOverlayAlpha_MAX, 0, 1);}
 
 
 
@@ -131,20 +131,20 @@ class MolecularConfig {
 	// Low values have long stretching clouds that move long distances.
 	// High values have detailed clouds that don't move outside smaller radius.
 //TODO: convert to int?
-	float noiseStrength = 100; //1-300;
-	float NOISE_STRENGTH_MIN = 1;
-	float NOISE_STRENGTH_MAX = 300;
-	float noiseStrengthFromUnit(float value){return map(value, 0, 1, NOISE_STRENGTH_MIN, NOISE_STRENGTH_MAX);}
-	float noiseStrengthToUnit(){return map(noiseStrength, NOISE_STRENGTH_MIN, NOISE_STRENGTH_MAX, 0, 1);}
+	int noiseStrength = 100; //1-300;
+	int NOISE_STRENGTH_MIN = 1;
+	int NOISE_STRENGTH_MAX = 300;
+	int noiseStrengthFromUnit(float value){return (int)map(value, 0, 1, NOISE_STRENGTH_MIN, NOISE_STRENGTH_MAX);}
+	float noiseStrengthToUnit(){return map((float) noiseStrength, NOISE_STRENGTH_MIN, NOISE_STRENGTH_MAX, 0, 1);}
 
 	// Cloud strength multiplier.
 	// Low strength values makes clouds more detailed but move the same long distances. ???
 //TODO: convert to int?
-	float noiseScale = 100; //1-400
-	float NOISE_SCALE_MIN = 1;
-	float NOISE_SCALE_MAX = 400;
-	float noiseScaleFromUnit(float value){return map(value, 0, 1, NOISE_SCALE_MIN, NOISE_SCALE_MAX);}
-	float noiseScaleToUnit(){return map(noiseScale, NOISE_SCALE_MIN, NOISE_SCALE_MAX, 0, 1);};
+	int noiseScale = 100; //1-400
+	int NOISE_SCALE_MIN = 1;
+	int NOISE_SCALE_MAX = 400;
+	int noiseScaleFromUnit(float value){return (int)map(value, 0, 1, NOISE_SCALE_MIN, NOISE_SCALE_MAX);}
+	float noiseScaleToUnit(){return map((float)noiseScale, NOISE_SCALE_MIN, NOISE_SCALE_MAX, 0, 1);};
 
 ////////////////////////////////////////////////////////////
 //	Interaction between particles and flow field.
@@ -233,11 +233,11 @@ class MolecularConfig {
 	float particleGenerateRateToUnit() {return map((float)particleGenerateRate, PARTICLE_GENERATE_RATE_MIN, PARTICLE_GENERATE_RATE_MAX, 0, 1);}
 
 	// random offset for particles emitted, so they don't all appear in the same place
-	float particleGenerateSpread = 20; //1-50
-	float PARTICLE_GENERATE_SPREAD_MIN = 1;
-	float PARTICLE_GENERATE_SPREAD_MAX = 50;
-	float particleGenerateSpreadFromUnit(float value) {return map(value, 0, 1, PARTICLE_GENERATE_SPREAD_MIN, PARTICLE_GENERATE_SPREAD_MAX);}
-	float particleGenerateSpreadToUnit() {return map((float)particleGenerateSpread, PARTICLE_GENERATE_SPREAD_MIN, PARTICLE_GENERATE_SPREAD_MAX, 0, 1);}
+	int particleGenerateSpread = 20; //1-50
+	int PARTICLE_GENERATE_SPREAD_MIN = 1;
+	int PARTICLE_GENERATE_SPREAD_MAX = 50;
+	int particleGenerateSpreadFromUnit(float value) {return (int) map(value, 0, 1, PARTICLE_GENERATE_SPREAD_MIN, PARTICLE_GENERATE_SPREAD_MAX);}
+	int particleGenerateSpreadToUnit() {return (int)map(particleGenerateSpread, PARTICLE_GENERATE_SPREAD_MIN, PARTICLE_GENERATE_SPREAD_MAX, 0, 1);}
 
 	// Upper and lower bound of particle movement each frame.
 	int particleMinStepSize = 4;
@@ -316,38 +316,38 @@ class MolecularConfig {
 		println("---------------------------------------------------------");
 		println("-------      C U R R E N T     C O N F I G        -------");
 		println("---------------------------------------------------------");
-		println("-  showParticles                : " + echoBoolean(showParticles));
-		println("-  showFlowLines                : " + echoBoolean(showFlowLines));
-		println("-  showDepthImage               : " + echoBoolean(showDepthImage));
-		println("-  showDepthPixels              : " + echoBoolean(showDepthPixels));
-		println("-  showSettings                 : " + echoBoolean(showSettings));
-		println("-  windowBgColor                : " + echoColor(windowBgColor));
-		println("-  windowOverlayAlpha           : " + windowOverlayAlpha);
-		println("-  flowfieldResolution          : " + flowfieldResolution);
-		println("-  flowfieldPredictionTime      : " + flowfieldPredictionTime);
-		println("-  flowfieldMinVelocity         : " + flowfieldMinVelocity);
-		println("-  flowfieldRegularization      : " + flowfieldRegularization);
-		println("-  flowfieldSmoothing           : " + flowfieldSmoothing);
-		println("-  noiseStrength                : " + noiseStrength);
-		println("-  noiseScale                   : " + noiseScale);
-		println("-  particleViscocity            : " + particleViscocity);
-		println("-  particleForceMultiplier      : " + particleForceMultiplier);
-		println("-  particleAccelerationFriction : " + particleAccelerationFriction);
-		println("-  particleAccelerationLimiter  : " + particleAccelerationLimiter);
-		println("-  particleNoiseVelocity        : " + particleNoiseVelocity);
-		println("-  particleColorScheme          : " + particleColorScheme);
-		println("-  particleColor                : " + echoColor(particleColor));
-		println("-  particleAlpha                : " + particleAlpha);
-		println("-  particleMaxCount             : " + particleMaxCount);
-		println("-  particleGenerateRate         : " + particleGenerateRate);
-		println("-  particleGenerateSpread       : " + particleGenerateSpread);
-		println("-  particleMinStepSize          : " + particleMinStepSize);
-		println("-  particleMaxStepSize          : " + particleMaxStepSize);
-		println("-  particleLifetime             : " + particleLifetime);
-		println("-  flowLineColor                : " + echoColor(flowLineColor));
-		println("-  flowLineAlpha                : " + flowLineAlpha);
-		println("-  depthImageColor              : " + echoColor(depthImageColor));
-		println("-  depthImageAlpha              : " + depthImageAlpha);
+		println("showParticles	" + echoBoolean(showParticles));
+		println("showFlowLines	" + echoBoolean(showFlowLines));
+		println("showDepthImage	" + echoBoolean(showDepthImage));
+		println("showDepthPixels	" + echoBoolean(showDepthPixels));
+		println("showSettings	" + echoBoolean(showSettings));
+		println("windowBgColor	" + echoColor(windowBgColor));
+		println("windowOverlayAlpha	" + windowOverlayAlpha);
+		println("flowfieldResolution	" + flowfieldResolution);
+		println("flowfieldPredictionTime	" + flowfieldPredictionTime);
+		println("flowfieldMinVelocity	" + flowfieldMinVelocity);
+		println("flowfieldRegularization	" + flowfieldRegularization);
+		println("flowfieldSmoothing	" + flowfieldSmoothing);
+		println("noiseStrength	" + noiseStrength);
+		println("noiseScale	" + noiseScale);
+		println("particleViscocity	" + particleViscocity);
+		println("particleForceMultiplier	" + particleForceMultiplier);
+		println("particleAccelerationFriction	" + particleAccelerationFriction);
+		println("particleAccelerationLimiter	" + particleAccelerationLimiter);
+		println("particleNoiseVelocity	" + particleNoiseVelocity);
+		println("particleColorScheme	" + particleColorScheme);
+		println("particleColor	" + echoColor(particleColor));
+		println("particleAlpha	" + particleAlpha);
+		println("particleMaxCount	" + particleMaxCount);
+		println("particleGenerateRate	" + particleGenerateRate);
+		println("particleGenerateSpread	" + particleGenerateSpread);
+		println("particleMinStepSize	" + particleMinStepSize);
+		println("particleMaxStepSize	" + particleMaxStepSize);
+		println("particleLifetime	" + particleLifetime);
+		println("flowLineColor	" + echoColor(flowLineColor));
+		println("flowLineAlpha	" + flowLineAlpha);
+		println("depthImageColor	" + echoColor(depthImageColor));
+		println("depthImageAlpha	" + depthImageAlpha);
 		println("---------------------------------------------------------");
 	}
 
@@ -415,8 +415,8 @@ class MolecularConfig {
 
 		// background overlay opacity
 		else if (keyName.equals("windowOverlayAlpha"))			windowOverlayAlpha = windowOverlayAlphaFromUnit(value);
-		else if (keyName.equals("WINDOW_OVERLAY_ALPHA_MIN"))	WINDOW_OVERLAY_ALPHA_MIN = (int) value;
-		else if (keyName.equals("WINDOW_OVERLAY_ALPHA_MAX"))	WINDOW_OVERLAY_ALPHA_MAX = (int) value;
+		else if (keyName.equals("_windowOverlayAlpha_MIN"))	_windowOverlayAlpha_MIN = (int) value;
+		else if (keyName.equals("_windowOverlayAlpha_MAX"))	_windowOverlayAlpha_MAX = (int) value;
 
 
 	/////////////////
@@ -453,13 +453,13 @@ class MolecularConfig {
 	/////////////////
 		// noise strength
 		else if (keyName.equals("noiseStrength"))				noiseStrength = noiseStrengthFromUnit(value);
-		else if (keyName.equals("NOISE_STRENGTH_MIN"))			NOISE_STRENGTH_MIN = value;
-		else if (keyName.equals("NOISE_STRENGTH_MAX"))			NOISE_STRENGTH_MAX = value;
+		else if (keyName.equals("NOISE_STRENGTH_MIN"))			NOISE_STRENGTH_MIN = (int) value;
+		else if (keyName.equals("NOISE_STRENGTH_MAX"))			NOISE_STRENGTH_MAX = (int) value;
 
 		// noise strength
 		else if (keyName.equals("noiseScale"))					noiseScale = noiseScaleFromUnit(value);
-		else if (keyName.equals("NOISE_SCALE_MIN"))				NOISE_SCALE_MIN = value;
-		else if (keyName.equals("NOISE_SCALE_MAX"))				NOISE_SCALE_MAX = value;
+		else if (keyName.equals("NOISE_SCALE_MIN"))				NOISE_SCALE_MIN = (int) value;
+		else if (keyName.equals("NOISE_SCALE_MAX"))				NOISE_SCALE_MAX = (int) value;
 
 
 	/////////////////
@@ -515,8 +515,8 @@ class MolecularConfig {
 
 		// particle generate spread
 		else if (keyName.equals("particleGenerateSpread"))			particleGenerateSpread = particleGenerateSpreadFromUnit(value);
-		else if (keyName.equals("PARTICLE_GENERATE_SPREAD_MIN"))	PARTICLE_GENERATE_SPREAD_MIN = value;
-		else if (keyName.equals("PARTICLE_GENERATE_SPREAD_MAX"))	PARTICLE_GENERATE_SPREAD_MAX = value;
+		else if (keyName.equals("PARTICLE_GENERATE_SPREAD_MIN"))	PARTICLE_GENERATE_SPREAD_MIN = (int) value;
+		else if (keyName.equals("PARTICLE_GENERATE_SPREAD_MAX"))	PARTICLE_GENERATE_SPREAD_MAX = (int) value;
 
 		// particle min/max step size
 		else if (keyName.equals("particleMinStepSize"))				particleMinStepSize = particleStepSizeFromUnit(value);
@@ -578,8 +578,8 @@ class MolecularConfig {
 	/////////////////
 		// window background color, 0 == black, 1 == white
 		this.addToUnitArray(array, "windowBgColor", (red(windowBgColor) == 0 ? 0 : 1));
-		if (saveMinMax) this.addToUnitArray(array, "WINDOW_OVERLAY_ALPHA_MIN", (float) WINDOW_OVERLAY_ALPHA_MIN);
-		if (saveMinMax) this.addToUnitArray(array, "WINDOW_OVERLAY_ALPHA_MAX", (float) WINDOW_OVERLAY_ALPHA_MAX);
+		if (saveMinMax) this.addToUnitArray(array, "_windowOverlayAlpha_MIN", (float) _windowOverlayAlpha_MIN);
+		if (saveMinMax) this.addToUnitArray(array, "_windowOverlayAlpha_MAX", (float) _windowOverlayAlpha_MAX);
 		this.addToUnitArray(array, "windowOverlayAlpha", windowOverlayAlphaToUnit());
 
 	/////////////////

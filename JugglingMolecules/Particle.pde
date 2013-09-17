@@ -102,8 +102,8 @@ class Particle {
 
 		if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
-			angle = noise(location.x / config.noiseScale, location.y / config.noiseScale, zNoise);
-			angle *= config.noiseStrength;
+			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+			angle *= (float)config.noiseStrength;
 
 //EXTRA CODE HERE
 
