@@ -1,3 +1,5 @@
+###Juggling Molecules --> IMAGES (screenshots and diagrams)
+
 ###OmiCron-SpiroLight
 - an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
 - the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with its large knobs and glowing buttons.  Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
@@ -348,3 +350,10 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 		- ofxCV – created by Kyle McDonald – fast openCV wrapper.
 		- ofxFluidSolver – created by Memo Atken. After Years, it is still one of my favourite calculation models to illustrate continous flow of a dancer and graphics.
 		- ofxUI – created by rezaali – having worked a lot in processing, i completly fell in love with this GUI library as it speeds up my tweaking processes. Its easy to use and fast to bind to variables.
+
+- **Particles Create Shape -> then use TEXTURE image:**
+	- currently particles from t1-tn create a line
+	- use clusters of particles **to form a shape**
+	- then fill that shape with a texture randomly selected from an Emblem
+
+- **FLOW MAPS**
