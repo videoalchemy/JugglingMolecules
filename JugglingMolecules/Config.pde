@@ -12,8 +12,8 @@
 //
 //  We can load and save these to disk to restore "interesting" states to play with.
 //
-//	Configurations are stored in ".tsv" files
-//		we have a header row as 		field<tab>value
+//	Configurations are stored in ".config" files in Tab-Separated-Value format.
+//		We have a header row as 		field<tab>value
 //		and then each row of data is 	<field><tab><value>
 //										<field><tab><value>
 //
@@ -34,29 +34,30 @@ int _COLOR_TYPE 	= 4;
 int _STRING_TYPE 	= 5;
 
 
-/****
-	OWEN TODO
-		- simple unit test project
-		- FIELDS vs CONSTANTS
-		- separate table construction from filling, so we can do FIELDS, or CONTANTS or FIELDS+CONSTANTS
-		- only write deltas to table
-		- max/min semantics
-		- list of controllers we'll notify about changes (passing table)
-		- Controller class (save for later)
-
-		- package as a library?
-
-*****/
-
-
 
 class Config {
 
+	// constructor
 	public Config() {}
 
-	// Create an array with all of the fields we're managing.
-	// Used, eg, to automatically save() all fields we care about.
-	static String[] FIELDS = {"foo", "bar", "baz"};
+	// Set to true to print debugging information if something goes wrong
+	//	which would normally be swallowed silently.
+	boolean debugging = false;
+
+	// List of "setup" fields.
+	// These will be loaded/saved in "config/setup.config" and will be loaded
+	//	BEFORE initialization begins (so you can have dynamic screen size, etc).
+	static String[] SETUP_FIELDS = {"windowWidth", "windowHeight", "kinectAngle", "activeConfig"};
+
+	// List of "default" fields.
+	// These will be loaded/saved in "config/defaults.config" and will be loaded
+	//	at startup BEFORE the "main" config file is loaded.
+	// Put your "MIN_" and "MAX_" constants in here.
+	static String[] DEFAULT_FIELDS = {};
+
+	// Names of all of our "normal" configuration fields.
+	// These are what are actually saved per each configuration.
+	static String[] FIELDS = {};
 
 
 ////////////////////////////////////////////////////////////
@@ -68,6 +69,10 @@ class Config {
 	// The path will be created if necessary.
 	// DO NOT include the trailing slash.
 	static String filepath = "config/";
+
+
+	// Extension (including period) for all files of this type.
+	static String extension = ".config";
 
 
 	// Name of this individual config file.
@@ -83,10 +88,10 @@ class Config {
 	String getFilePath(String _filename) {
 		if (_filename == null) _filename = filename;
 		if (_filename == null) {
-			println("ERROR in config.getFilePath(): no filename specified;
+			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
 		}
-		return filepath + "/" + _filename + ".tsv";
+		return filepath + "/" + _filename + extension;
 	}
 
 
@@ -106,18 +111,19 @@ class Config {
 	// Load configuration from data stored on disk.
 	// If you pass `_filename`, we'll load from that file and remember as our `filename` for later.
 	// If you pass null, we'll use our stored `filename`.
-	void load(String _filename) {
+	// Returns `changeLog` Table of actual changed values.
+	Table load(String _filename) {
 		// remember filename if
 		if (_filename != null) this.filename = _filename;
 		String path = getFilePath();
 		if (path == null) {
-			println("ERROR in config.loadFromConfigFile(): no filename specified");
-			return;	// TOTHROW ???
+			this.error("ERROR in config.loadFromConfigFile(): no filename specified");
+			return;
 		}
 
-		println("Attempting to read config from file "+path);
-		println("Current values:");
-		this.echo();
+		this.showDebug("Attempting to read config from file "+path);
+		this.showDebug("Current values:");
+		if (this.debugging) this.echo();
 
 		// load as a .tsv file with loadTable()
 		Table inputTable = loadTable(path, "header,tsv");
@@ -130,36 +136,77 @@ class Config {
 			String fieldName = row.getString("field");
 			String value 	 = row.getString("value");
 			String typeHint	 = row.getString("type");
-			this.updateField(fieldName, value, typeHint, changeLog);
+			this.setField(fieldName, value, typeHint, changeLog);
 		}
 
 	// TODO: send changeLog to our controllers (or possibly all values?)
 
 		// print out the config
-		println("Finished reading config!  New values:");
-		this.echo();
+		this.showDebug("Finished reading config!  New values:");
+		if (this.debugging) this.echo();
+		return changeLog;
 	}
 
-	// Parse a single field/value pair from our config file.
+
+	// Parse a single field/value pair from our config file and update the corresponding value.
 	// Eats all exceptions.
-	void updateField(String fieldName, String stringValue) {
-		this.updateField(fieldName, stringValue, null, null);
+	void setField(String fieldName, String stringValue) {
+		this.setField(fieldName, stringValue, null, null);
 	}
-	void updateField(String fieldName, String stringValue, String typeHint, Table changeLog) {
+	void setField(String fieldName, String stringValue, String typeHint) {
+		this.setField(fieldName, stringValue, typeHint, null);
+	}
+	void setField(String fieldName, String stringValue, String typeHint, Table changeLog) {
+		Field field = this.getField(fieldName, "setField({{fieldName}}): field not found");
+		this.setField(field, stringValue, typeHint, changeLog);
+	}
+
+	void setField(Field field, String stringValue, String typeHint, Table changeLog) {
+		int type = this.getType(field, typeHint);
 		try {
-			Field field = this.getFieldDefinition(fieldName);
-			int type = this.getFieldType(field, typeHint);
 			switch (type) {
-				case _INT_TYPE:		this.updateIntFieldWithString(field, stringValue, changeLog); return;
+				case _INT_TYPE:		this.setInt(field, stringValue, changeLog); return;
 				case _FLOAT_TYPE:	this.updateFloatFieldWithString(field, stringValue, changeLog); return;
 				case _BOOLEAN_TYPE:	this.updateBooleanFieldWithString(field, stringValue, changeLog); return;
 				case _COLOR_TYPE:	this.updateColorFieldWithString(field, stringValue, changeLog); return;
 				case _STRING_TYPE:	this.updateStringFieldWithString(field, stringValue, changeLog); return;
 				default:			break;
 		} catch (exception e) {
-			println("parseConfigField("+fieldName+"): error while updating.  Skipping.");
+			this.debug("parseConfigField("+fieldName+"): error while updating field value.  Skipping.");
 		}
 	}
+
+
+	// set an integer field.
+	boolean setInt(String fieldName, String stringValue) {
+		return this.setInt(fieldName, stringValue, null);
+	}
+	boolean setInt(String fieldName, String stringValue, Table changeLog) {
+		Field field = this.getField(fieldName, "setInt({{fieldName}}: field not found.");
+		return this.setInt(field, stringValue, changeLog);
+	}
+	boolean setInt(Field field, String stringValue, Table changeLog) {
+		if (field == null) return false;
+		try {
+			int oldValue = field.getInt(this);
+			int newValue = stringToInt(stringValue);
+			if (oldValue != newValue) {
+				field.setInt(this, newValue);
+				if (changeLog) {
+					TableRow row = changeLog.addRow();
+					row.setString("field", field.getName());
+					row.setString("type" , getTypeName(_INT_TYPE);
+					row.setString("value", ""+field.getInt(this));
+				} else {
+					this.fieldChanged(field.getName());
+				}
+			}
+		} catch (Exception e) {
+			this.warn("setInt("+field.getName()+"): exception setting string value '"+stringValue+"'", e);
+		}
+		return false;
+	}
+
 
 	// Update an integer field on our object by coercing the specified `stringValue`.
 	// Returns the parsed value.  Will throw if something goes wrong.
@@ -168,21 +215,19 @@ class Config {
 		return updateIntFieldWithString(field, stringValue, changeLog);
 	}
 	int updateIntFieldWithString(Field field, String stringValue, String typeHint, Table changeLog) throws Exception {
-		// HACK: if stringValue starts with "rgba(", assume it's a color and process accordingly.
-		if (stringValue.startsWith("rgba(")) return updateColorFieldWithString(field, stringValue);
+		// HACK: if stringValue starts with "color(", assume it's a color and process accordingly.
+		if (stringValue.startsWith("color(")) return updateColorFieldWithString(field, stringValue);
 
 		int oldValue = field.getInt(this);
 		int newValue = int(stringValue);
 		if (oldValue != newValue) {
-			println("parsed int "+field.getName()+" value to "+newValue);
+			this.showDebug("parsed int "+field.getName()+" value to "+newValue);
 			field.setInt(this, newValue);
 			if (changeLog) {
 				TableRow row = changeLog.addRow();
 				row.setString("field", field.getName());
 				row.setString("type" , getTypeName(_INT_TYPE);
-				row.setString("value", getStringValueForInt(field);
-				row.setInt("native", newValue);
-				row.setInt("old",    oldValue);
+				row.setString("value", stringFromInt(field);
 			}
 		}
 		return newValue;
@@ -198,15 +243,13 @@ class Config {
 		boolean oldValue = field.getBoolean(this);
 		boolean newValue = boolean(stringValue);
 		if (oldValue != newValue) {
-			println("parsed boolean "+field.getName()+" value to "+newValue);
+			this.showDebug("parsed boolean "+field.getName()+" value to "+newValue);
 			field.setBoolean(this, newValue);
 			if (changeLog) {
 				TableRow row = changeLog.addRow();
 				row.setString("field", field.getName());
 				row.setString("type" , getTypeName(_BOOLEAN_TYPE);
-				row.setString("value", getStringValueForBoolean(field);
-				row.setBoolean("native", newValue);
-				row.setBoolean("old",    oldValue);
+				row.setString("value", stringFromBoolean(field);
 			}
 		}
 		return newValue;
@@ -222,15 +265,13 @@ class Config {
 		float oldValue = field.getFloat(this);
 		float newValue = float(stringValue);
 		if (oldValue != newValue) {
-			println("parsed float "+field.getName()+" value to "+newValue);
+			this.showDebug("parsed float "+field.getName()+" value to "+newValue);
 			field.setFloat(this, newValue);
 			if (changeLog) {
 				TableRow row = changeLog.addRow();
 				row.setString("field", field.getName());
 				row.setString("type" , getTypeName(_FLOAT_TYPE);
-				row.setString("value", getStringValueForFloat(field);
-				row.setFloat("native", newValue);
-				row.setFloat("old",    oldValue);
+				row.setString("value", stringFromFloat(field);
 			}
 		}
 		return newValue;
@@ -246,15 +287,13 @@ class Config {
 		int oldValue = field.getInt(this);
 		int newValue = (int) getColorFieldValue(stringValue);
 		if (oldValue != newValue) {
-			println("parsed int "+field.getName()+" value to "+newValue);
+			this.showDebug("parsed int "+field.getName()+" value to "+newValue);
 			field.setInt(this, newValue);
 			if (changeLog) {
 				TableRow row = changeLog.addRow();
 				row.setString("field", field.getName());
 				row.setString("type" , getTypeName(_COLOR_TYPE);
-				row.setString("value", getStringValueForColor(field);
-				row.setInt("native", newValue);
-				row.setInt("old",    oldValue);
+				row.setString("value", stringFromColor(field);
 			}
 		}
 		return (color) newValue;
@@ -272,7 +311,7 @@ class Config {
 	String updateStringFieldWithString(Field field, String newValue) throws Exception {
 		String oldValue = field.get(this);
 		if (oldValue == null || !oldValue.equals(newValue)) {
-			println("upading string "+field.getName()+" value to "+newValue);
+			this.showDebug("updating string "+field.getName()+" value to "+newValue);
 			field.set(this, newValue);
 			this.fieldChanged(field.getName(), newValue, oldValue);
 		}
@@ -291,7 +330,7 @@ class Config {
 		if (_filename != null) this.filename = _filename;
 		String path = getFilePath();
 		if (path == null) {
-			println("ERROR in config.saveToFile(): no filename specified");
+			if (this.debugging) println("ERROR in config.saveToFile(): no filename specified");
 			return;	// TOTHROW ???
 		}
 
@@ -307,12 +346,7 @@ class Config {
 	}
 
 	// Given a table in our format, save it to a file.
-	// NOTE: this will modify the table, removing the "native" and "old" columns!!!
 	void saveTableAs(String path, Table table) {
-		// remove the "native" and "old" column, as we don't write them out
-		table.removeColumn("native");
-		table.removeColumn("old");
-
 		// Write to the file.
 		saveTable(path, table);
 	}
@@ -323,17 +357,12 @@ class Config {
 		table.addColumn("type");		// field type (eg: "int" or "string" or "color")
 		table.addColumn("field");		// name of the field
 		table.addColumn("value");		// string value for the field
-		table.addColumn("native");		// CURRENT or FUTURE native value of the field (not saved, for internal manipulation)
-		table.addColumn("old");			// OLD native value of the field (not saved, used when using as a change log)
 		return table;
 	}
 
-	// Return output as a Table with columns:
-	//		"type", "field", "value" and "native"
-	//	where:
-	//		- "value" is the stringified value (what we'll write to a file), and
-	//		- "native" is the value expressed in table semantics
-	//					so you can do `table.getRow(1).getInt("value")`
+	// Return output for a set of fieldNames as a Table with columns:
+	//		"type", "field", (stringified) "value"
+	// If you pass a Table, we'll add to that, otherwise we'll create a new one.
 	// Eats exceptions.
 	Table getFieldsAsTable(String[] fieldNames, Table table) {
 		if (fieldNames == null) fieldNames = FIELDS;
@@ -348,39 +377,34 @@ class Config {
 				TableRow row = table.addRow();
 
 				// get the field definition
-				Field field = getFieldDefinition(fieldName);
+				Field field = getField(fieldName);
 				row.setString("field", fieldName);
 
 				// get the type of the field
-				int type = getFieldType(field);
+				int type = getType(field);
 				if (type == _UNKNOWN_TYPE) new NoSuchFieldException();
 				row.setString("type", getTypeName(type));
 
 				switch (type) {
-					case _INT_TYPE:		row.setString("value", 	this.getStringValueForInt(field));
-										row.setInt("native", 	this.getValueForInt(field));
+					case _INT_TYPE:		row.setString("value", 	this.stringFromInt(field));
 										break;
 
-					case _FLOAT_TYPE:	row.setString("value", 	this.getStringValueForFloat(field));
-										row.setFloat("native", 	this.getValueForFloat(field));
+					case _FLOAT_TYPE:	row.setString("value", 	this.stringFromFloat(field));
 										break;
 
-					case _BOOLEAN_TYPE:	row.setString("value", 	this.getStringValueForBoolean(field));
-										row.setBoolean("native",this.getValueForBoolean(field));
+					case _BOOLEAN_TYPE:	row.setString("value", 	this.stringFromBoolean(field));
 										break;
 
-					case _COLOR_TYPE:	row.setString("value",  this.getStringValueForColor(field));
-										row.setInt("native", 	(int) this.getValueForColor(field));
+					case _COLOR_TYPE:	row.setString("value",  this.stringFromColor(field));
 										break;
 
-					case _STRING_TYPE:	row.setString("value",	this.getStringValueForString(field));
-										row.setString("native",	this.getStringValueForString(field));
+					case _STRING_TYPE:	row.setString("value",	this.stringFromString(field));
 										break;
 					default:
-						println("Don't know what to do with type of field "+fieldName);
+						if (this.debugging) println("Don't know what to do with type of field "+fieldName);
 				}
 			} catch (Exception e) {
-				println("getFieldsAsTable(): error processing field "+fieldName);
+				if (this.debugging) println("getFieldsAsTable(): error processing field "+fieldName);
 				// remove the incomplete row
 				table.removeRow(table.getRowCount()-1);
 			}
@@ -394,38 +418,62 @@ class Config {
 ////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////
-	//	Working with field definitions and types.
+	//	Getting field definitions.
 	////////////////////////////////////////////////////////////
 
 	// Return the Field definition for a named field.
-	// Throws a `NoSuchFieldException` if field not found.
-	Field getFieldDefinition(String fieldName) throws NoSuchFieldException {
-		Field field Config.class.getDeclaredField(fieldName);
-		if (field == null) throw new NoSuchFieldException();
+	// Returns null if no field can be found.
+	// Swallows all exceptions.
+	Field getField(String fieldName) {
+		try {
+//TODO: how to genericise this to current class?
+			return Config.class.getDeclaredField(fieldName);
+		} catch (Exception e){
+			return null;
+		}
+	}
+
+	// Return the field definition for a named field, printing a debug message if not found.
+	//
+	// If field cannot be found, we'll:
+	//	- print debug message (with "{{fieldName}}" replaced with the name of the field), and
+	//	- return null.
+	Field getField(String fieldName, String message) {
+		Field field = this.getField(fieldName);
+		if (field == null && message != null) {
+			this.debug(message.replace("{{fieldName}}", fieldName));
+		}
 		return field;
 	}
 
-	// Return the logical data type for a field, specified by `fieldName` or by `field`,
+	////////////////////////////////////////////////////////////
+	//	Getting "logical" field types.
+	////////////////////////////////////////////////////////////
+
+	// Return the "logical" data type for a field, specified by `fieldName` or by `field`,
 	//	eg: `_INT_TYPE` or `_FLOAT_TYPE`
+	// If you have a `typeHint` (eg: from a tsv file), pass that, it might help.
 	// Returns `_UNKNOWN_TYPE` if we can't find the field or it's not a type we understand.
 	// Swallows all exceptions.
-	int getFieldType(String fieldName) throws Exception {
-		return getFieldType(getFieldDefinition(fieldName), null);
-	}
-	int getFieldType(Field field, String typeHint) {
+	int getType(String fieldName) { return this.getType(getField(fieldName), null); }
+	int getType(String fieldName, String typeHint) { return this.getType(getField(fieldName), typeHint); }
+	int getType(Field field) { return this.getType(field, null); }
+	int getType(Field field, String typeHint) {
 		if (field == null) return _UNKNOWN_TYPE;
+//TODO: how best to genericise this???  some type of MAP ???
 		if (typeHint != null && typeHint.equals("color")) return _COLOR_TYPE;
 
 		Type type = field.getType();
 		if (type == Integer.TYPE) {
 			// Ugh.  Processing masquerades `color` variables as `int`s.
 			// If the field name ends with "Color", assume it's a color.
+//TODO: how best to genericise this???
 			field.getName().endsWith("Color")) return _COLOR_TYPE;
 			return _INT_TYPE;
 		}
-		else if (type == Float.TYPE) 	return _FLOAT_TYPE;
-		else if (type == Boolean.TYPE) 	return _BOOLEAN_TYPE;
-		else if (type == String.TYPE)	return _STRING_TYPE;
+		if (type == Float.TYPE) 	return _FLOAT_TYPE;
+		if (type == Boolean.TYPE) 	return _BOOLEAN_TYPE;
+		if (type == String.TYPE)	return _STRING_TYPE;
 		return _UNKNOWN_TYPE;
 	}
 
@@ -437,126 +485,241 @@ class Config {
 			case _BOOLEAN_TYPE:	return "boolean";
 			case _COLOR_TYPE:	return "color";
 			case _STRING_TYPE:	return "string";
-			default:			return "unknown";
+			default:			return "UNKNOWN";
 		}
 	}
 
 
-	////////////////////////////////////////////////////////////
-	//	Getting native data types from fields.
-	////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//	Return internal value for a given field, specified by field name or Field.
+// 	They will throw:
+//		- `NoSuchFieldException` if no field found with that name, or
+//		- `IllegalArgumentException` if we can't parse the value.
+////////////////////////////////////////////////////////////
 
-	// Get string values for primitive types.
-	int getValueForInt(Field field) {
+	int getInt(String fieldName) throws Exception {return this.getInt(getField(fieldName));}
+	int getInt(Field field) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		return field.getInt(this);
+	}
+	float getFloat(String fieldName) throws Exception {return this.getFloat(getField(fieldName));}
+	float getFloat(Field field) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		return field.getFloat(this);
+	}
+	boolean getBoolean(String fieldName) throws Exception {return this.getBoolean(getField(fieldName));}
+	boolean getBoolean(Field field) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		return field.getBoolean(this);
+	}
+	color getColor(String fieldName) throws Exception {return this.getColor(getField(fieldName));}
+	color getColor(Field field) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		return (color)field.getInt(this);
+	}
+	String getString(String fieldName) throws Exception {return this.getString(getField(fieldName));}
+	String getString(Field field) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		return (String) field.get(this);
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Return internal values for a given field, returning `defaultValue` on exception.
+//	Swallows all exceptions.
+////////////////////////////////////////////////////////////
+
+	// Get internal int value.
+	int getInt(String fieldName, int defaultValue) {
+		Field field = this.getField(fieldName, "getInt({{fieldName}}: field not found.  Returning default: "+defaultValue);
+		return getInt(field, defaultValue);
+	}
+	int getInt(Field field, int defaultValue) {
+		if (field == null) return defaultValue;
 		try {
 			return field.getInt(this);
 		} catch (Exception e) {
-			println("ERROR in getValueForInt("+field.getName()+"): returning null");
-			return null;
+			this.warn("getInt("+field.getName()+"): error getting int value.  Returning default "+defaultValue, e);
+			return defaultValue;
 		}
 	}
-	float getValueForFloat(Field field) {
+
+	// Get internal float value.
+	float getFloat(String fieldName, float defaultValue) {
+		Field field = this.getField(fieldName, "getFloat({{fieldName}}: field not found.  Returning default: "+defaultValue);
+		return getFloat(field, defaultValue);
+	}
+	float getFloat(Field field, float defaultValue){
+		if (field == null) return defaultValue;
 		try {
 			return field.getFloat(this);
 		} catch (Exception e) {
-			println("ERROR in getValueForFloat("+field.getName()+"): returning null");
-			return null;
+			this.warn("getFloat("+field.getName()+"): error getting float value.  Returning default "+defaultValue, e);
+			return defaultValue;
 		}
 	}
-	boolean getValueForBoolean(Field field) {
+
+	// Get internal boolean value.
+	boolean getBoolean(String fieldName, boolean defaultValue) {
+		Field field = this.getField(fieldName, "getBoolean({{fieldName}}: field not found.  Returning default: "+defaultValue);
+		return getBoolean(field, defaultValue);
+	}
+	boolean getBoolean(Field field, boolean defaultValue){
+		if (field == null) return defaultValue;
 		try {
 			return field.getBoolean(this);
 		} catch (Exception e) {
-			println("ERROR in getValueForBoolean("+field.getName()+"): returning null");
-			return null;
+			this.warn("getBoolean("+field.getName()+"): error getting boolean value.  Returning default "+defaultValue, e);
+			return defaultValue;
 		}
 	}
-	color getValueForColor(Field field) {
+
+	// Get internal color value.
+	color getColor(String fieldName, color defaultValue) {
+		Field field = this.getField(fieldName, "getColor({{fieldName}}: field not found.  Returning default: "+defaultValue);
+		return getColor(field, defaultValue);
+	}
+	color getColor(Field field, color defaultValue){
+		if (field == null) return defaultValue;
 		try {
-			return (color)field.getInt(this);
+			return (clor) field.getInt(this);
 		} catch (Exception e) {
-			println("ERROR in getValueForColor("+field.getName()+"): returning null");
-			return null;
+			this.warn("getColor("+field.getName()+"): error getting color value.  Returning default "+defaultValue, e);
+			return defaultValue;
 		}
 	}
-	String getValueForString(Field field) {
+
+	// Get internal string value.
+	String getString(String fieldName, String defaultValue) {
+		Field field = this.getField(fieldName, "getString({{fieldName}}: field not found.  Returning default: "+defaultValue);
+		return getString(field, defaultValue);
+	}
+	String getString(Field field, String defaultValue){
+		if (field == null) return defaultValue;
 		try {
-			return (String) field.get(this);
+			return (clor) field.getInt(this);
 		} catch (Exception e) {
-			println("ERROR in getValueForString("+field.getName()+"): returning null");
-			return null;
+			this.warn("getString("+field.getName()+"): error getting String value.  Returning default "+defaultValue, e);
+			return defaultValue;
 		}
 	}
 
 
 
-	////////////////////////////////////////////////////////////
-	//	Coercing native types to strings.
-	////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//	Coercing native field value to our string equivalent.
+//	Returns `null` on exception.
+////////////////////////////////////////////////////////////
 
 	// Return the value for one of our fields, specified by `fieldName` or `field`.
-	String getStringValueForField(String fieldName) {
-		try {
-			return getStringValueForField(getFieldDefinition(fieldName));
-		} catch (Exception e) {
-			return null;
-		}
+	String fieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "fieldToString({{fieldName}}: field not found.");
+		return this.fieldToString(this.getField(fieldName));
 	}
-	String getStringValueForField(Field field) {
+	String fieldToString(String fieldName, int type) {
+		Field field = this.getField(fieldName, "fieldToString({{fieldName}}: field not found.");
+		return this.fieldToString(this.getField(fieldName), type);
+	}
+	String fieldToString(Field field) {
 		if (field == null) return null;
 		try {
-			int type = getFieldType(field);
-			switch (type) {
-				case _INT_TYPE:		return this.getStringValueForInt(field);
-				case _FLOAT_TYPE:	return this.getStringValueForFloat(field);
-				case _BOOLEAN_TYPE:	return this.getStringValueForBoolean(field);
-				case _COLOR_TYPE:	return this.getStringValueForColor(field);
-				case _STRING_TYPE:	return this.getStringValueForString(field);
-			}
-		} catch (Exception e);
+			int type = this.getType(field);
+		} catch (Exception e) {
+			this.warn("fieldToString(field "+field.getName()+"): exception getting type value.  Returning null.");
+			return null;
+		}
+		return this.typedFieldToString(field, type);
+	}
+
+	// Given a Field record and a corresponding "logical" `type"
+	//	return the current value of that field as a String.
+	String typedFieldToString(Field field, int type) {
+		if (field == null) return null;
+		switch (type) {
+			case _INT_TYPE:		return this.intFieldToString(field);
+			case _FLOAT_TYPE:	return this.floatFieldToString(field);
+			case _BOOLEAN_TYPE:	return this.booleanFieldToString(field);
+			case _COLOR_TYPE:	return this.colorFieldToString(field);
+			case _STRING_TYPE:	return this.stringFieldToString(field);
+			default:
+				this.warn("typedFieldToString(field "+field.getName()+" field type '"+type+"' not understood");
+		}
 		return null;
 	}
 
-	// Get string values for primitive types.
-	String getStringValueForInt(Field field) {
+////////////////////////////////////////////////////////////
+//	Coercing native field value to our string equivalent.
+//	Returns `null` on exception.
+////////////////////////////////////////////////////////////
+
+	// Return string value for integer field.
+	String intFieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "intFieldToString({{fieldName}}): field not found.");
+		return this.intFieldToString(field);
+	}
+	String intFieldToString(Field field) {
 		try {
-			return ""+field.getInt(this);
+			return this.intToString(field.getInt(this));
 		} catch (Exception e) {
-			println("ERROR in getStringValueForInt("+field.getName()+"): returning null");
+			this.warn("intFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
-	String getStringValueForFloat(Field field) {
+
+	// Return string value for float field.
+	String floatFieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "floatFieldToString({{fieldName}}): field not found.");
+		return this.floatFieldToString(field);
+	}
+	String floatFieldToString(Field field) {
 		try {
-			return ""+field.getFloat(this);
+			return this.floatToString(field.getFloat(this));
 		} catch (Exception e) {
-			println("ERROR in getStringValueForFloat("+field.getName()+"): returning null");
+			this.warn("floatFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
-	String getStringValueForBoolean(Field field) {
+
+	// Return string value for boolean field.
+	String booleanFieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "booleanFieldToString({{fieldName}}): field not found.");
+		return this.booleanFieldToString(field);
+	}
+	String booleanFieldToString(Field field) {
 		try {
-			boolean value = field.getBoolean(this);
-			return (value ? "true" : "false");
+			boolean isTrue = field.getBoolean(this);
+			return (isTrue ? "true" : "false");
 		} catch (Exception e) {
-			println("ERROR in getStringValueForBoolean("+field.getName()+"): returning null");
+			this.warn("booleanFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
-	String getStringValueForColor(Field field) {
+
+	// Return string value for color field.
+	String colorFieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "colorFieldToString({{fieldName}}): field not found.");
+		return this.colorFieldToString(field);
+	}
+	String colorFieldToString(Field field) {
 		try {
 			color value = (color)field.getInt(this);
-			return "rgba("+(int)red(value)+","+(int)green(value)+","+(int)blue(value)+","+(int)alpha(value)+")";
+			return "color("+(int)red(value)+","+(int)green(value)+","+(int)blue(value)+","+(int)alpha(value)+")";
 		} catch (Exception e) {
-			println("ERROR in getStringValueForColor("+field.getName()+"): returning null");
+			this.warn("colorFieldToString(field "+field.getName()+"): returning null");
 			return null;
 		}
 	}
-	String getStringValueForString(Field field) {
+
+	// Return string value for string field.  :-)
+	String stringFieldToString(String fieldName) {
+		Field field = this.getField(fieldName, "stringFieldToString({{fieldName}}): field not found.");
+		return this.stringFieldToString(field);
+	}
+	String stringFieldToString(Field field) {
 		try {
 			return (String) field.get(this);
 		} catch (Exception e) {
-			println("ERROR in getStringValueForString("+field.getName()+"): returning null");
+			this.warn("stringFieldToString("+field.getName()+"): returning null");
 			return null;
 		}
 	}
@@ -564,31 +727,128 @@ class Config {
 
 
 
-
-
-
 ////////////////////////////////////////////////////////////
-//	Parsing different value types
+//	Given a native data type, return the equivalent String value.
+//	Returns null on exception.
 ////////////////////////////////////////////////////////////
 
-	// Convert a color string to a color object (an int).
-	// Currently only works for `rgba(r,g,b,a)` format.
-	// TODO: type and/or error checking...
-	color getColorFieldValue(String stringValue) {
-		String[] rgbaMatch = match(stringValue, "rgba\\((\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\)");
-		if (rgbaMatch != null) {
-			int r = int(rgbaMatch[1]);
-			int g = int(rgbaMatch[2]);
-			int b = int(rgbaMatch[3]);
-			int a = int(rgbaMatch[4]);
-			println("parsed color rgba("+r+","+g+","+b+","+a+")");
-			return color(r,g,b,a);
+	// Return string value for integer.
+	String intToString(int value) {
+		try {
+			return ""+value;
+		} catch (Exception e) {
+			this.warn("intToString(): returning null", e);
+			return null;
 		}
-		println("getColorFieldValue(): color value `"+stringValue+"` not understood.  Returning black.");
-		return color(0);
+	}
+
+	// Return string value for float field.
+	String floatToString(float value) {
+		try {
+			return ""+value;
+		} catch (Exception e) {
+			this.warn("floatToString("+field.getName()+"): returning null", e);
+			return null;
+		}
+	}
+
+	// Return string value for boolean value.
+	String booleanToString(boolean value) {
+		try {
+			return (value ? "true" : "false");
+		} catch (Exception e) {
+			this.warn("booleanToString("+field.getName()+"): returning null", e);
+			return null;
+		}
+	}
+
+	// Return string value for color value.
+	String colorToString(color value) {
+		try {
+			return "color("+(int)red(value)+","+(int)green(value)+","+(int)blue(value)+","+(int)alpha(value)+")";
+		} catch (Exception e) {
+			this.warn("ERROR in colorToString("+field.getName()+"): returning null", e);
+			return null;
+		}
+	}
+
+	// Return string value for string (base case).
+	String stringToString(String string) {
+		return string;
 	}
 
 
+
+
+
+////////////////////////////////////////////////////////////
+//	Given a String representation of a native data type,
+//		return the equivalent data type.
+//	Returns throws on exception.
+////////////////////////////////////////////////////////////
+
+	int stringToInt(String stringValue) throws Exception {
+		return int(stringValue);
+	}
+
+	float stringToFloat(String stringValue) throws Exception {
+		return float(value);
+	}
+
+	boolean stringToBoolean(String stringValue) throws Exception {
+		return (stringValue.equals("true") ? true : false);
+	}
+
+	color stringToColor(String stringValue) throws Exception {
+		String[] colorMatch = match(stringValue, "[color|rgba]\\((\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\)");
+		if (colorMatch == null) throw new Exception();	// TODO: more specific...
+// TODO: variable # of arguments
+// TODO: #FFCCAA
+		int r = int(colorMatch[1]);
+		int g = int(colorMatch[2]);
+		int b = int(colorMatch[3]);
+		int a = int(colorMatch[4]);
+		this.debug("parsed color color("+r+","+g+","+b+","+a+")");
+		return color(r,g,b,a);
+	}
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////
+//	Debugging and error handling.
+////////////////////////////////////////////////////////////
+
+	// Log a debug message -- something unexpected happened, but no biggie.
+	void debug(message) {
+		if (this.debugging) println(message);
+	}
+
+
+	// Log a warning message -- something unexpected happened, but it's not fatal.
+	void warn(message) {
+		this.warn(message, null);
+	}
+
+	void warn(message, Exception e) {
+		if (!this.debugging) return;
+		println("WARNING: " + message);
+		if (e) println(e);
+	}
+
+	// Log an error message -- something unexpected happened, and it's pretty bad.
+	void error(message) {
+		this.error(message, null);
+	}
+
+	void error(message, Exception e) {
+		if (!this.debugging) return;
+		println("ERROR!!:   " + message);
+		if (e) println(e);
+	}
 
 
 }
