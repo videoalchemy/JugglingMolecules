@@ -1,4 +1,6 @@
-###Juggling Molecules --> IMAGES (screenshots and diagrams)
+###Juggling Molecules -- Documentation:
+- [images (screenshots and diagrams)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
+- [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
 ###OmiCron-SpiroLight
 - an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
