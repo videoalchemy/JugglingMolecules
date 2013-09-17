@@ -56,8 +56,8 @@ import java.util.Iterator;
 //	Screen setup (constant for all configs)
 ////////////////////////////////////////////////////////////
 	// projector size
-	int gWindowWidth = 1024;
-	int gWindowHeight = 768;
+	int gWindowWidth = 800;
+	int gWindowHeight = 600;
 
 	// Drawing mode
 	String gDrawMode = OPENGL;
