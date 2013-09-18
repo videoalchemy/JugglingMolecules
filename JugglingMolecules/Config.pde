@@ -89,26 +89,20 @@ println("CONFIG INIT");
 	String extension = ".tsv";
 
 
-	// Name of this individual config file.
-	// This is generally set by `load()`ing or `save()`ing.
-	// DO NOT include the path or extension!
-	String filename;
-
-
 	// Return the full path for a given config file instance.
-	// If you pass `_filename`, we'll use that.
+	// If you pass `_fileName`, we'll use that.
 	// Otherwise we'll use our internal `setupLastConfigFile` (but won't set it).
 	// Returns `null` if no filename specified.
 	String getFilePath() {
 		return this.getFilePath(null);
 	}
-	String getFilePath(String _filename) {
-		if (_filename == null) _filename = this.setupLastConfigFile;
-		if (_filename == null) {
+	String getFilePath(String _fileName) {
+		if (_fileName == null) _fileName = this.setupLastConfigFile;
+		if (_fileName == null) {
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
 		}
-		return filepath + _filename + extension;
+		return filepath + _fileName + extension;
 	}
 
 
@@ -354,16 +348,24 @@ println("CONFIG INIT");
 	}
 
 	// Load our "main" configuration from data stored on disk.
-	// If you pass `_filename`, we'll load from that file and remember as our `filename` for later.
+	// If you pass `_fileName`, we'll load from that file and remember as our `filename` for later.
 	// If you pass null, we'll use our stored `filename`.
 	// Returns `changeLog` Table of actual changed values.
 	Table load() {
 		return this.load(null);
 	}
-	Table load(String _filename) {
+	Table load(String _fileName) {
 		// remember filename if passed in
-		if (_filename != null) this.setupLastConfigFile = _filename;
-		return this.loadFromFile(_filename);
+		if (_fileName != null) {
+			// turn off old button
+			if (gController != null) gController.togglePresetButton(this.setupLastConfigFile, false);
+			this.setupLastConfigFile = _fileName;
+			// save current setup config
+			this.saveSetup();
+		}
+		// turn on new button
+		if (gController != null) gController.togglePresetButton(_fileName, true);
+		return this.loadFromFile(_fileName);
 	}
 
 	// Load our setup file from disk.
@@ -379,8 +381,8 @@ println("CONFIG INIT");
 
 	// Load ANY configuration file from data stored on disk.
 	// Returns `changeLog` Table of actual changed values.
-	Table loadFromFile(String _filename) {
-		String path = this.getFilePath(_filename);
+	Table loadFromFile(String _fileName) {
+		String path = this.getFilePath(_fileName);
 		if (path == null) {
 			this.error("ERROR in config.loadFromConfigFile(): no filename specified");
 			return null;
@@ -600,15 +602,15 @@ println("CONFIG INIT");
 ////////////////////////////////////////////////////////////
 
 	// Save the FIELDS in our current config to a file.
-	// If you pass `_filename`, we'll use that file (and remember it for later).
+	// If you pass `_fileName`, we'll use that file (and remember it for later).
 	// Otherwise we'll save to the current filename.
 	// Returns a Table with the data as it was saved.
 	Table save() {
 		return this.save(null);
 	}
-	Table save(String _filename) {
-		if (_filename != null) this.filename = _filename;
-		return this.saveToFile(this.filename, this.FIELDS);
+	Table save(String _fileName) {
+		if (_fileName != null) this.setupLastConfigFile = _fileName;
+		return this.saveToFile(this.setupLastConfigFile, this.FIELDS);
 	}
 
 	// Load our defaults from disk.
@@ -622,9 +624,9 @@ println("CONFIG INIT");
 	}
 
 	// Save an arbitrary set of fields in our current config to a file.
-	// You must pass `_filename`.
-	Table saveToFile(String _filename, String[] fields) {
-		String path = getFilePath(_filename);
+	// You must pass `_fileName`.
+	Table saveToFile(String _fileName, String[] fields) {
+		String path = getFilePath(_fileName);
 		if (path == null) {
 			this.error("ERROR in config.saveToFile(): no filename specified");
 			return null;
@@ -636,6 +638,9 @@ println("CONFIG INIT");
 
 		// Write to the file.
 		saveTable(table, path);
+
+		// save current setup config
+		if (_fileName != null && !_fileName.equals("setup")) this.saveSetup();
 
 		return table;
 	}
@@ -1096,7 +1101,7 @@ println("CONFIG INIT");
 		int g = int(colorMatch[2]);
 		int b = int(colorMatch[3]);
 		int a = int(colorMatch[4]);
-		this.debug("parsed color color("+r+","+g+","+b+","+a+")");
+//		this.debug("parsed color color("+r+","+g+","+b+","+a+")");
 		return color(r,g,b,a);
 	}
 

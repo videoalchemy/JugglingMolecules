@@ -105,6 +105,21 @@ void setup() {
 	gConfig.saveSetup();
 	gConfig.saveDefaults();
 	gConfig.save();
+
+
+/*	print out the blendModes...
+
+	println("	BLEND:       "+BLEND);
+	println("	ADD:         "+ADD);
+	println("	SUBTRACT:    "+SUBTRACT);
+	println("	DARKEST:     "+DARKEST);
+	println("	LIGHTEST:    "+LIGHTEST);
+	println("	DIFFERENCE:  "+DIFFERENCE);
+	println("	EXCLUSION:   "+EXCLUSION);
+	println("	MULTIPLY:    "+MULTIPLY);
+	println("	SCREEN:      "+SCREEN);
+	println("	REPLACE:     "+ REPLACE);
+*/
 }
 
 

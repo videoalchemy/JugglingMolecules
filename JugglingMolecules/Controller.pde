@@ -52,14 +52,13 @@ class TouchOscController extends Controller {
 		//	by remembering its outbound address.
 		this.rememberOutboundAddress(message.netAddress());
 
-		// get the name of the field being affected, minus the initial slash
-		String fieldName = message.addrPattern().substring(1);
+		try {
+			// get the name of the field being affected, minus the initial slash
+			String fieldName = message.addrPattern().substring(1);
 
-		// update the configuration
-		this.updateConfig(fieldName, message);
-
-		// save the config back out to the controller
-//		this.outputStateToOSCController();
+			// update the configuration
+			this.updateConfig(fieldName, message);
+		} catch (Exception e) {}
 	}
 
 
@@ -96,6 +95,13 @@ class TouchOscController extends Controller {
 		this.sendLabel(fieldName, valueLabel);
 	}
 
+	void sendInt(String fieldName, int value) {
+		println("  setting controller "+fieldName+" to "+value);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value);
+		this.sendMessage(message);
+	}
+
 	void sendFloat(String fieldName, float value) {
 		println("  setting controller "+fieldName+" to "+value);
 		OscMessage message = new OscMessage("/"+fieldName);
@@ -111,9 +117,18 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	// Send a series of messages for different choice values.
+	// Send a series of messages for different choice values, from 0 - maxValue.
 	void sendChoice(String fieldName, float value, int maxValue) {
 		for (int i = 0; i <= maxValue; i++) {
+			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
+		}
+		this.sendFloat(fieldName, value);
+	}
+
+	// Send a series of messages for different choice values,
+	//	with choices as an array of ints.
+	void sendChoice(String fieldName, float value, int[] choices) {
+		for (int i : choices) {
 			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
@@ -130,6 +145,11 @@ class TouchOscController extends Controller {
 		}
 	}
 
+	void togglePresetButton(String presetName, boolean turnOn) {
+		this.sendInt("/"+presetName, turnOn ? 1 : 0);
+//		this.sendInt("/Load/"+presetName, turnOn ? 1 : 0);
+//		this.sendInt("/Save/"+presetName, turnOn ? 1 : 0);
+	}
 
 	void sendLabel(String fieldName, String value) {
 		println("  sending label "+fieldName+"="+value);

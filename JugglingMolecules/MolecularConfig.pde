@@ -15,12 +15,6 @@
 ////////////////////////////////////////////////////////////
 
 
-// Depth image blend mode constants.
-	int DEPTH_IMAGE_BLEND_MODE_0 = LIGHTEST;				// default stamp
-	int DEPTH_IMAGE_BLEND_MODE_1 = DARKEST;
-	int DEPTH_IMAGE_BLEND_MODE_2 = DIFFERENCE;
-	int DEPTH_IMAGE_BLEND_MODE_3 = EXCLUSION;			// tracks black to body
-
 // Particle color schemes
 	int PARTICLE_COLOR_SCHEME_SAME_COLOR 	= 0;
 	int PARTICLE_COLOR_SCHEME_XY 			= 1;
@@ -47,6 +41,9 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 //  Global setup.  Note that we cannot override these at runtime.
 ////////////////////////////////////////////////////////////
+
+	// Name of the last config file we loaded.
+	String setupLastConfigFile = "PS01";
 
 	// Window size
 	int setupWindowWidth = 640;
@@ -267,8 +264,20 @@ println("MolecularConfig INIT");
 	int MIN_depthImageAlpha 	= 0;
 	int MAX_depthImageAlpha 	= 255;
 
+	// Depth image blend mode constants.
+	//	REPLACE:     0
+	//	BLEND:       1
+	//	ADD:         2
+	//	SUBTRACT:    4
+	//	DARKEST:     16
+	//	LIGHTEST:    8
+	//	DIFFERENCE:  32
+	//	EXCLUSION:   64
+	//	MULTIPLY:    128
+	//	SCREEN:      256
+
 	// blend mode for the depth image
-	int depthImageBlendMode = DEPTH_IMAGE_BLEND_MODE_1;
+	int depthImageBlendMode = BLEND;
 
 
 

@@ -13,13 +13,36 @@
 
 class MolecularController extends TouchOscController {
 
+	boolean saveLock = false;
+
 	public MolecularController() {
 		super();
 	}
 
 	// Special stuff to update the config w/weird controls, etc.
 	void updateConfig(String fieldName, OscMessage message) {
+		// Handle "Load" and "Save" messages
+		if (fieldName.startsWith("Load/") || fieldName.startsWith("PS")) {
+			String fileName = fieldName.replace("Load/", "");
+			gConfig.load(fileName);
+			return;
+		} else if (fieldName.startsWith("Save/")) {
+			String fileName = fieldName.replace("Save/", "");
+			if (this.saveLock) gConfig.save(fileName);
+			return;
+		}
+
 		float value = message.get(0).floatValue();
+
+		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
+		// We'll only save if `saveLock` is true.
+		if (fieldName.equals("Savelock")) {
+			this.saveLock = (value == 1);
+println("---- saveLock:	"+this.saveLock);
+			return;
+		}
+
+
 
 		// "particleGenerate" x/y pad
 		if (fieldName.equals("particleGenerate")) {
@@ -68,7 +91,7 @@ class MolecularController extends TouchOscController {
 		// map "Color" to "Hue"
 		if (fieldName.endsWith("Color")) fieldName = fieldName.replace("Color", "Hue");
 
-		// always send the raw value and a label
+		// always send the raw value
 		this.sendFloat(fieldName, controllerValue);
 
 		// do "specials"
@@ -90,7 +113,8 @@ class MolecularController extends TouchOscController {
 
 		// depthImageBlendMode toggles
 		else if (fieldName.equals("depthImageBlendMode")) {
-			this.sendChoice("depthImageBlendMode", controllerValue, 3);
+			int[] choices = {0,1,2,4,8,16,32,64,128,256};
+			this.sendChoice("depthImageBlendMode", controllerValue, choices);
 		}
 
 	}
