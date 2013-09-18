@@ -221,11 +221,13 @@ class OpticalFlow {
 
 				float a = sqrt(u * u + v * v);
 
+//println ("distance 'a' between 'u' and 'v' = " + a);  //debug: all vectors flowing to the left
+
 				// register new vectors
 				if (a >= gConfig.flowfieldMinVelocity) {
 					field[col][row] = new PVector(u,v);
 
-					// shwo optical flow as lines in `flowLineColor`
+					// show optical flow as lines in `flowLineColor`
 					if (config.showFlowLines) {
 						stroke(gConfig.flowLineColor, gConfig.flowLineAlpha);
 						float startX = width - (((float) x0) * gKinectToWindowWidth);
@@ -239,8 +241,8 @@ class OpticalFlow {
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
 					float mouseNormX = (x0+u) * gInvKWidth;
 					float mouseNormY = (y0+v) * gInvKHeight;
-					float mouseVelX	= x0 * gInvKWidth;
-					float mouseVelY	= y0 * gInvKHeight;
+					float mouseVelX	= ((x0+u) - x0) * gInvKWidth;
+					float mouseVelY	= ((y0+v) - y0) * gInvKHeight;
 					particles.addParticlesForForce(1-mouseNormX, mouseNormY, -mouseVelX, mouseVelY);
 				}
 			}
