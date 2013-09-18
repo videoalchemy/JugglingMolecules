@@ -18,12 +18,13 @@ import java.util.Iterator;
 //	Global objects
 ////////////////////////////////////////////////////////////
 	// TouchOSC controller
-	OscP5 gTouchController;
+	OscP5 gOscMaster;
 
-	// TouchOSC device we're connecting to.
-	// Set when we receive our first OscMessage in `touchOSC_controls::oscEvent()`.
-	NetAddress 	gTouchControllerAddress;
-	int			gTouchControllerReceivingPort = 9000;
+	// Configuration object, manipulated by TouchOSC and OmiCron
+	MolecularConfig gConfig;
+
+	// TouchOsc controller for our app
+	MolecularController gController;
 
 	// Kinect helper
 	Kinecter gKinecter;
@@ -33,12 +34,6 @@ import java.util.Iterator;
 
 	// Particle manager which renders the flow field
 	ParticleManager gParticleManager;
-
-	// Configuration object, manipulated by TouchOSC and OmiCron
-	MolecularConfig gConfig;
-
-	// Name of the config file we're currently working with.
-	String gConfigFileName;
 
 	// Raw depth info from the kinect.
 	int[] gRawDepth;
@@ -50,19 +45,14 @@ import java.util.Iterator;
 	PImage gDepthImg;
 
 
+// Load our config object on start()
+void start() {
+	// create the config object
+	gConfig = new MolecularConfig();
+	// Load setup, defaults and the last config automatically
+	gConfig.loadAll();
 
-
-////////////////////////////////////////////////////////////
-//	Screen setup (constant for all configs)
-////////////////////////////////////////////////////////////
-	// projector size
-	int gWindowWidth = 800;
-	int gWindowHeight = 600;
-
-	// Drawing mode
-	String gDrawMode = OPENGL;
-
-
+}
 
 // Initialize all of our global objects.
 //
@@ -71,35 +61,32 @@ import java.util.Iterator;
 //		 can be overridden except for the `setupXXX` items.
 //
 void setup() {
-
-// println(gInvKWidth+","+gInvKHeight+"::::"+(gInvKWidth*gKinectWidth)+","+(gInvKHeight*gKinectHeight));
-// println(gKinectToWindowWidth+","+gKinectToWindowHeight+"::::"+(gKinectToWindowWidth*width)+","+(gKinectToWindowHeight*height));
-
-	// set up with OPENGL rendering context == faster
-	size(gWindowWidth, gWindowHeight, gDrawMode);
+	// window size comes from config
+	// TODO: well, ideally window size would come from config,
+	//		 but when we call size() it re-runs setup, which messes things up.
+	size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
-	gTouchController = new OscP5(this, 8000);
+	gOscMaster = new OscP5(this, 8000);
 
-	// create the config object
-	gConfig = new MolecularConfig();
-
-//	gConfig.loadFromConfigFile("PS01");
+	// create and set up our controller
+	gController = new MolecularController();
+	gConfig.addController(gController);
 
 	// set up display parametets
 	background(gConfig.windowBgColor);
-	frameRate(gConfig.setupFPS);
 
 	// set up noise seed
 	noiseSeed(gConfig.setupNoiseSeed);
+	frameRate(gConfig.setupFPS);
+
+	// helper class for kinect
+	gKinecter = new Kinecter(this);
 
 	// initialize depth variables
     gRawDepth = new int[gKinectWidth*gKinectHeight];
 	gNormalizedDepth = new int[gKinectWidth*gKinectHeight];
     gDepthImg = new PImage(gKinectWidth, gKinectHeight);
-
-	// helper class for kinect
-	gKinecter = new Kinecter(this);
 
 	// Create the particle manager.
 	gParticleManager = new ParticleManager(gConfig);
@@ -111,11 +98,13 @@ void setup() {
 	gParticleManager.flowfield = gFlowfield;
 
 
-	// save the configuration!!!
-//	gConfig.saveToConfigFile("PS01");
-
 	// print the configuration
 	gConfig.echo();
+
+	// save our startup state
+	gConfig.saveSetup();
+	gConfig.saveDefaults();
+	gConfig.save();
 }
 
 
@@ -149,6 +138,20 @@ void draw() {
 
 	popStyle();
 	popMatrix();
+}
+
+
+////////////////////////////////////////////////////////////
+//	Receiving events from the device.
+////////////////////////////////////////////////////////////
+
+// create function to recv and parse oscP5 messages
+void oscEvent(OscMessage message) {
+	try {
+		gController.oscEvent(message);
+	} catch (Exception e) {
+		println("ERROR processing oscEvent: "+e);
+	}
 }
 
 

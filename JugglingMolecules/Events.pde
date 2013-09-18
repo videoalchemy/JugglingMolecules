@@ -15,15 +15,15 @@
 
 	  // up arrow to move kinect down
 	  if (keyCode == UP) {
-		gKinecter.kAngle++;
-		gKinecter.kAngle = constrain(gKinecter.kAngle, 0, 30);
-		gKinecter.kinect.tilt(gKinecter.kAngle);
+		gConfig.kinectAngle = constrain(++gConfig.kinectAngle, 0, 30);
+		gKinecter.kinect.tilt(gConfig.kinectAngle);
+		gConfig.saveSetup();
 	  }
 	  // down arrow to move kinect down
 	  else if (keyCode == DOWN) {
-		gKinecter.kAngle--;
-		gKinecter.kAngle = constrain(gKinecter.kAngle, 0, 30);
-		gKinecter.kinect.tilt(gKinecter.kAngle);
+		gConfig.kinectAngle = constrain(--gConfig.kinectAngle, 0, 30);
+		gKinecter.kinect.tilt(gConfig.kinectAngle);
+		gConfig.saveSetup();
 	  }
 	  // space bar for settings to adjust kinect depth
 	  else if (keyCode == 32) {
@@ -38,23 +38,25 @@
 
 	  // 'a' pressed add to minimum depth
 	  else if (key == 'a') {
-		gKinecter.minDepth = constrain(gKinecter.minDepth + 10, 0, gKinecter.thresholdRange);
-		println("minimum depth: " + gKinecter.minDepth);
+		gConfig.kinectMinDepth = constrain(gConfig.kinectMinDepth + 10, 0, gKinecter.thresholdRange);
+		gConfig.saveSetup();
+		println("minimum depth: " + gConfig.kinectMinDepth);
 	  }
 	  // z pressed subtract to minimum depth
 	  else if (key == 'z') {
-		gKinecter.minDepth = constrain(gKinecter.minDepth - 10, 0, gKinecter.thresholdRange);
-		println("minimum depth: " + gKinecter.minDepth);
+		gConfig.kinectMinDepth = constrain(gConfig.kinectMinDepth - 10, 0, gKinecter.thresholdRange);
+		gConfig.saveSetup();
+		println("minimum depth: " + gConfig.kinectMinDepth);
 	  }
 	  // s pressed add to maximum depth
 	  else if (key == 's') {
-		gKinecter.maxDepth = constrain(gKinecter.maxDepth + 10, 0, gKinecter.thresholdRange);
-		println("maximum depth: " + gKinecter.maxDepth);
+		gConfig.kinectMaxDepth = constrain(gConfig.kinectMaxDepth + 10, 0, gKinecter.thresholdRange);
+		println("maximum depth: " + gConfig.kinectMaxDepth);
 	  }
 	  // x pressed subtract to maximum depth
 	  else if (key == 'x') {
-		gKinecter.maxDepth = constrain(gKinecter.maxDepth - 10, 0, gKinecter.thresholdRange);
-		println("maximum depth: " + gKinecter.maxDepth);
+		gConfig.kinectMaxDepth = constrain(gConfig.kinectMaxDepth - 10, 0, gKinecter.thresholdRange);
+		println("maximum depth: " + gConfig.kinectMaxDepth);
 	  }
 
 	  // toggle showParticles on/off

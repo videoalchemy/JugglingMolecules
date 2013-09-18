@@ -23,12 +23,10 @@ import org.openkinect.processing.*;
 
 
 class Kinecter {
-
 	Kinect kinect;
-	int kAngle	=	15;
 	boolean isKinected = false;
-	int minDepth = 100;//655;//740;
-	int maxDepth = 950;//995;//982;//818;//860;
+
+	int kAngle	 = gConfig.kinectAngle;
 	int thresholdRange = 2047;
 
 	public Kinecter(PApplet parent) {
@@ -59,8 +57,8 @@ class Kinecter {
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
 		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
-			if (gRawDepth[i] >= minDepth && gRawDepth[i] <= maxDepth) {
-				int greyScale = (int)map((float)gRawDepth[i], minDepth, maxDepth, 255, 0);
+			if (gRawDepth[i] >= gConfig.kinectMinDepth && gRawDepth[i] <= gConfig.kinectMaxDepth) {
+				int greyScale = (int)map((float)gRawDepth[i], gConfig.kinectMinDepth, gConfig.kinectMaxDepth, 255, 0);
 //TODO: use depthImageColor
 				gDepthImg.pixels[i] = color(gConfig.depthImageColor, gConfig.depthImageAlpha);//color(0, greyScale, greyScale, 0);
 				gNormalizedDepth[i] = 255;

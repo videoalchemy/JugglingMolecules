@@ -36,28 +36,42 @@ static final int _STRING_TYPE 	= 5;
 
 
 class Config {
-
-	// constructor
-	public Config() {}
-
 	// Set to true to print debugging information if something goes wrong
 	//	which would normally be swallowed silently.
-	boolean debugging = false;
+	boolean debugging = true;
+
+	// Name of the last config file we loaded.
+	String setupLastConfigFile = "PS01";
+
+	// constructor
+	public Config() {
+println("CONFIG INIT");
+		this.controllers = new ArrayList<Controller>();
+	}
+
+////////////////////////////////////////////////////////////
+//	Controllers that we're aware of.
+////////////////////////////////////////////////////////////
+	ArrayList<Controller> controllers;
+
+////////////////////////////////////////////////////////////
+//	Fields that we manage
+////////////////////////////////////////////////////////////
 
 	// List of "setup" fields.
 	// These will be loaded/saved in "config/setup.config" and will be loaded
 	//	BEFORE initialization begins (so you can have dynamic screen size, etc).
-	String[] SETUP_FIELDS = {"debugging", "windowWidth", "windowHeight", "kinectAngle", "activeConfig"};
+	String[] SETUP_FIELDS;
 
 	// List of "default" fields.
 	// These will be loaded/saved in "config/defaults.config" and will be loaded
 	//	at startup BEFORE the "main" config file is loaded.
 	// Put your "MIN_" and "MAX_" constants in here.
-	String[] DEFAULT_FIELDS = {};
+	String[] DEFAULT_FIELDS;
 
 	// Names of all of our "normal" configuration fields.
 	// These are what are actually saved per each configuration.
-	String[] FIELDS = {};
+	String[] FIELDS;
 
 
 ////////////////////////////////////////////////////////////
@@ -67,12 +81,12 @@ class Config {
 
 	// Path to ALL config files for this type, local to sketch directory.
 	// The path will be created if necessary.
-	// DO NOT include the trailing slash.
+	// YOU MUST include the trailing slash.
 	String filepath = "config/";
 
 
 	// Extension (including period) for all files of this type.
-	String extension = ".config";
+	String extension = ".tsv";
 
 
 	// Name of this individual config file.
@@ -83,18 +97,18 @@ class Config {
 
 	// Return the full path for a given config file instance.
 	// If you pass `_filename`, we'll use that.
-	// Otherwise we'll use our internal `filename` (but won't set it).
+	// Otherwise we'll use our internal `setupLastConfigFile` (but won't set it).
 	// Returns `null` if no filename specified.
 	String getFilePath() {
 		return this.getFilePath(null);
 	}
 	String getFilePath(String _filename) {
-		if (_filename == null) _filename = filename;
+		if (_filename == null) _filename = this.setupLastConfigFile;
 		if (_filename == null) {
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
 		}
-		return filepath + "/" + _filename + extension;
+		return filepath + _filename + extension;
 	}
 
 
@@ -102,46 +116,288 @@ class Config {
 //	Dealing with change.
 ////////////////////////////////////////////////////////////
 
+	// Tell the controller(s) about the state of all of our FIELDs.
+	void updateControllers() {
+		this.updateControllers(null);
+	}
+	void updateControllers(String[] fieldNames) {
+		Table values = this.getFieldsAsTable(fieldNames);
+		this.fieldsChanged(values);
+	}
+
+
 	// One of our fields has changed.
-	// Do something!  Tell somebody!
-	void fieldChanged(String fieldName) {}
+	// Tell all of our controllers.
+	void fieldChanged(String fieldName, String typeName, String currentValueString) {
+		Field field = this.getField(fieldName, "fieldChanged("+fieldName+"): field not found");
+		this.fieldChanged(field, typeName, currentValueString);
+	}
+	void fieldChanged(Field field, String typeName, String currentValueString) {
+		if (field == null) return;
+		for (Controller controller : this.controllers) {
+			try {
+				float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
+				controller.onFieldChanged(field.getName(), controllerValue, typeName, currentValueString);
+			} catch (Exception e) {
+				this.warn("fieldChanged("+field.getName()+") exception setting controller value", e);
+			}
+		}
+	}
+
+	// A bunch of fields have changed.
+	// Tell all of our controllers.
+	void fieldsChanged(Table changeLog) {
+		for (TableRow row : changeLog.rows()) {
+			this.fieldChanged(row.getString("field"), row.getString("type"), row.getString("value"));
+		}
+	}
 
 	// Record a change to a field in our changeLog.
-	void recordChange(Field field, String typeName, String stringValue, Table changeLog) {
+	// If no changeLog found, we'll call `fieldChanged()` immediately.
+	void recordChange(Field field, String typeName, String currentValueString, Table changeLog) {
 		if (changeLog != null) {
 			TableRow row = changeLog.addRow();
 			row.setString("field", field.getName());
 			row.setString("type" , typeName);
-			row.setString("value", stringValue);
+			row.setString("value", currentValueString);
 		} else {
-			this.fieldChanged(field.getName());
+			this.fieldChanged(field, typeName, currentValueString);
 		}
 	}
+
+	// Echo the current state of our FIELDS to the output.
+	void echo() {
+		this.echo(this.getFieldsAsTable(this.FIELDS, null));
+	}
+	void echo(Table table) {
+//TODO...
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Dealing with controllers and messages from controllers.
+////////////////////////////////////////////////////////////
+	void addController(Controller controller) {
+		this.controllers.add(controller);
+	}
+	void removeController(Controller controller) {
+		this.controllers.remove(controller);
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Setting values as they come from the controller.
+////////////////////////////////////////////////////////////
+
+	void setFromController(String fieldName, float controllerValue, float controllerMin, float controllerMax) {
+		Field field = this.getField(fieldName, "setFromController({{fieldName}}): field not found");
+		if (field != null) this.setFromController(field, controllerValue, controllerMin, controllerMax);
+	}
+
+	void setFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
+		if (field == null) return;
+		try {
+			int type = this.getType(field);
+			switch (type) {
+				case _INT_TYPE:		this.setIntFromController(field, controllerValue, controllerMin, controllerMax); return;
+				case _FLOAT_TYPE:	this.setFloatFromController(field, controllerValue, controllerMin, controllerMax); return;
+				case _BOOLEAN_TYPE:	this.setBooleanFromController(field, controllerValue, controllerMin, controllerMax); return;
+				case _COLOR_TYPE:	this.setColorFromController(field, controllerValue, controllerMin, controllerMax); return;
+				default:			break;
+			}
+		} catch (Exception e) {
+			this.warn("setFromController("+field.getName()+"): exception setting field value", e);
+		}
+	}
+
+	// Set internal integer value from controller value.
+	void setIntFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
+		if (field == null) return;
+		int configMin, configMax, newValue;
+		// try to get min/max from variables and use that to scale the value.
+		try {
+			configMin = this.getInt("MIN_"+field.getName());
+			configMax = this.getInt("MAX_"+field.getName());
+			newValue = (int) map(controllerValue, controllerMin, controllerMax, configMin, configMax);
+		}
+		// if that didn't work, just coerce to an int
+		catch (Exception e) {
+			newValue = (int) controllerValue;
+		}
+		this.debug("setIntFromController("+field.getName()+"): setting to "+newValue);
+		this.setInt(field, newValue);
+	}
+
+
+	// Set internal float value from controller value.
+	void setFloatFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
+		if (field == null) return;
+		float configMin, configMax, newValue;
+		// try to get min/max from variables and use that to scale the value.
+		try {
+			configMin = this.getFloat("MIN_"+field.getName());
+			configMax = this.getFloat("MAX_"+field.getName());
+			newValue = map(controllerValue, controllerMin, controllerMax, configMin, configMax);
+		}
+		// if that didn't work, just coerce to an int
+		catch (Exception e) {
+			newValue = controllerValue;
+		}
+		this.debug("setFloatFromController("+field.getName()+"): setting to "+newValue);
+		this.setFloat(field, newValue);
+	}
+
+	// Set internal boolean value from controller value.
+	void setBooleanFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
+		if (field == null) return;
+		boolean newValue = controllerValue != 0;
+		this.debug("setBooleanFromController("+field.getName()+"): setting to "+newValue);
+		this.setBoolean(field, newValue);
+	}
+
+	// Set internal color value from controller value.
+	// NOTE: we assume that they're passing in the HUE!
+//TODO: split into r,g,b etc
+	void setColorFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
+		if (field == null) return;
+		float theHue = map(controllerValue, controllerMin, controllerMax, 0, 1);
+		color newValue = this.colorFromHue(theHue);
+		this.debug("setBooleanFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.setColor(field, newValue);
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Getting values to send to the controller as floats. (???)
+////////////////////////////////////////////////////////////
+
+
+	float valueForController(String fieldName, float controllerMin, float controllerMax) throws Exception {
+		Field field = this.getField(fieldName, "valueForController({{fieldName}}): field not found");
+		return this.valueForController(field, controllerMin, controllerMax);
+	}
+	float valueForController(Field field, float controllerMin, float controllerMax) throws Exception {
+		if (field == null) throw new NoSuchFieldException();
+		int type = this.getType(field);
+		switch (type) {
+			case _INT_TYPE:		return this.intForController(field, controllerMin, controllerMax);
+			case _FLOAT_TYPE:	return this.floatForController(field, controllerMin, controllerMax);
+			case _BOOLEAN_TYPE:	return this.booleanForController(field, controllerMin, controllerMax);
+			case _COLOR_TYPE:	return this.colorForController(field, controllerMin, controllerMax);
+			default:			this.warn("valueForController("+field.getName()+"): type not understood");
+		}
+		throw new NoSuchFieldException();
+	}
+
+	// Return internal integer field value as a float, scaled for our controller.
+	float intForController(Field field, float controllerMin, float controllerMax) throws Exception {
+		float currentValue = (float) this.getInt(field);
+		// attempt to map to MIN_ and MAX_ for control
+		try {
+			int configMin, configMax;
+			configMin = this.getInt("MIN_"+field.getName());
+			configMax = this.getInt("MAX_"+field.getName());
+			// if we can find them, coerce the value
+			currentValue = map((float)currentValue, configMin, configMax, controllerMin, controllerMax);
+		} catch (Exception e) {/* eat this error */}
+
+		return currentValue;
+	}
+
+	// Return internal float field value as a float, scaled for our controller.
+	float floatForController(Field field, float controllerMin, float controllerMax) throws Exception {
+		float currentValue = this.getFloat(field);
+		// attempt to get min and max
+		try {
+			float configMin, configMax;
+			configMin = this.getFloat("MIN_"+field.getName());
+			configMax = this.getFloat("MAX_"+field.getName());
+			// if we can find them, coerce the value
+			currentValue = map(currentValue, configMin, configMax, controllerMin, controllerMax);
+		} catch (Exception e) {	/* eat this error */}
+		return currentValue;
+	}
+
+	// Return internal boolean field value as a float, scaled for our controller.
+	float booleanForController(Field field, float controllerMin, float controllerMax) throws Exception {
+		boolean isTrue = this.getBoolean(field);
+		return (isTrue ? controllerMax : controllerMin);
+	}
+
+	// Set internal color value from controller value.
+	// NOTE: we assume that they're passing in the HUE!
+//TODO: split into r,g,b etc
+	// Return internal color field value as a float, scaled for our controller.
+	float colorForController(Field field, float controllerMin, float controllerMax) throws Exception {
+		color clr = this.getColor(field);
+		return (float) this.hueFromColor(clr);
+	}
+
 
 
 ////////////////////////////////////////////////////////////
 //	Loading from disk and parsing.
 ////////////////////////////////////////////////////////////
 
-	// Load configuration from data stored on disk.
+	Table loadAll() {
+		// load our setup fields
+		this.loadSetup();
+
+		// load our defaults
+		this.loadDefaults();
+
+		// if our .setupAutoLoadLast is true, load our last config file
+		if (this.setupLastConfigFile != null) {
+			return this.load(this.setupLastConfigFile);
+		}
+		return null;
+	}
+
+	// Load our "main" configuration from data stored on disk.
 	// If you pass `_filename`, we'll load from that file and remember as our `filename` for later.
 	// If you pass null, we'll use our stored `filename`.
 	// Returns `changeLog` Table of actual changed values.
+	Table load() {
+		return this.load(null);
+	}
 	Table load(String _filename) {
-		// remember filename if
-		if (_filename != null) this.filename = _filename;
-		String path = this.getFilePath();
+		// remember filename if passed in
+		if (_filename != null) this.setupLastConfigFile = _filename;
+		return this.loadFromFile(_filename);
+	}
+
+	// Load our setup file from disk.
+	Table loadDefaults() {
+		return this.loadFromFile("defaults");
+	}
+
+	// Load our defaults from disk.
+	Table loadSetup() {
+		return this.loadFromFile("setup");
+	}
+
+
+	// Load ANY configuration file from data stored on disk.
+	// Returns `changeLog` Table of actual changed values.
+	Table loadFromFile(String _filename) {
+		String path = this.getFilePath(_filename);
 		if (path == null) {
 			this.error("ERROR in config.loadFromConfigFile(): no filename specified");
 			return null;
 		}
 
-		this.debug("Attempting to read config from file "+path);
-		this.debug("Current values:");
-//		if (this.debugging) this.echo();
-
+		this.debug("Loading from '"+path+"'");
 		// load as a .tsv file with loadTable()
-		Table inputTable = loadTable(path, "header,tsv");
+		Table inputTable;
+		try {
+			inputTable = loadTable(path, "header,tsv");
+		} catch (Exception e) {
+			this.warn("loadFromFile('"+path+"'): couldn't load table file.  Does it exist?", e);
+			return null;
+		}
+
+//		this.debug("Values before load:");
+//		if (this.debugging) this.echo();
 
 		// make a table to hold changes found while setting values
 		Table changeLog = makeFieldTable();
@@ -154,13 +410,12 @@ class Config {
 			this.setField(fieldName, value, typeHint, changeLog);
 		}
 
-	// TODO: send changeLog to our controllers (or possibly all values?)
+		// update all controllers with the current value for all FIELDS
+		this.updateControllers();
 
-		// print out the config
-		this.debug("Finished reading config!  New values:");
-//		if (this.debugging) this.echo();
 		return changeLog;
 	}
+
 
 
 	// Parse a single field/value pair from our config file and update the corresponding value.
@@ -346,31 +601,45 @@ class Config {
 
 	// Save the FIELDS in our current config to a file.
 	// If you pass `_filename`, we'll use that file (and remember it for later).
-	// Otherwise we'll
-	void save(String _filename) {
+	// Otherwise we'll save to the current filename.
+	// Returns a Table with the data as it was saved.
+	Table save() {
+		return this.save(null);
+	}
+	Table save(String _filename) {
 		if (_filename != null) this.filename = _filename;
-		String path = getFilePath();
+		return this.saveToFile(this.filename, this.FIELDS);
+	}
+
+	// Load our defaults from disk.
+	Table saveSetup() {
+		return this.saveToFile("setup", this.SETUP_FIELDS);
+	}
+
+	// Load our setup file from disk.
+	Table saveDefaults() {
+		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
+	}
+
+	// Save an arbitrary set of fields in our current config to a file.
+	// You must pass `_filename`.
+	Table saveToFile(String _filename, String[] fields) {
+		String path = getFilePath(_filename);
 		if (path == null) {
-			this.error("ERROR in config.save(): no filename specified");
-			return;	// TOTHROW ???
+			this.error("ERROR in config.saveToFile(): no filename specified");
+			return null;
 		}
+		this.debug("Saving to '"+path+"'");
 
 		// Get the data as a table
-		Table table = getFieldsAsTable(FIELDS, null);
+		Table table = getFieldsAsTable(fields);
 
-// TODO: update our (controllers? observers?) with the new data
-// 		 NOTE: we want to do this BEFORE writing to the file
-//		 as saveTableAs() will munge the table...
-
-		// Write to the file.
-		saveTableAs(path, table);
-	}
-
-	// Given a table in our format, save it to a file.
-	void saveTableAs(String path, Table table) {
 		// Write to the file.
 		saveTable(table, path);
+
+		return table;
 	}
+
 
 	// Create a new table for this config class which is set up to go.
 	Table makeFieldTable() {
@@ -385,8 +654,11 @@ class Config {
 	//		"type", "field", "value" (stringified)
 	// If you pass a Table, we'll add to that, otherwise we'll create a new one.
 	// Eats exceptions.
+	Table getFieldsAsTable(String[] fieldNames) {
+		return this.getFieldsAsTable(fieldNames, null);
+	}
 	Table getFieldsAsTable(String[] fieldNames, Table table) {
-		if (fieldNames == null) fieldNames = FIELDS;
+		if (fieldNames == null) fieldNames = this.FIELDS;
 
 		// if we weren't passed a table, create one now
 		if (table == null) table = makeFieldTable();
@@ -398,7 +670,7 @@ class Config {
 				TableRow row = table.addRow();
 
 				// get the field definition
-				Field field = this.getField(fieldName);
+				Field field = this.getField(fieldName, "getFieldsAsTable(): field {{fieldName}} not found.");
 				row.setString("field", fieldName);
 
 				// get the type of the field
@@ -410,7 +682,7 @@ class Config {
 				row.setString("value", value);
 
 			} catch (Exception e) {
-				this.warn("getFieldsAsTable(): error processing field "+fieldName);
+				this.warn("getFieldsAsTable(): error processing field "+fieldName, e);
 				// remove the incomplete row
 				table.removeRow(table.getRowCount()-1);
 			}
@@ -433,7 +705,7 @@ class Config {
 	Field getField(String fieldName) {
 		try {
 //TODO: how to genericise this to current class?
-			return Config.class.getDeclaredField(fieldName);
+			return this.getClass().getDeclaredField(fieldName);
 		} catch (Exception e){
 			return null;
 		}
@@ -451,6 +723,33 @@ class Config {
 		}
 		return field;
 	}
+
+	////////////////////////////////////////////////////////////
+	//	Getting lists of fields
+	////////////////////////////////////////////////////////////
+	String[] expandFieldList(String[] fields) {
+		ArrayList<String> output = new ArrayList<String>(100);
+		for (String fieldName : fields) {
+			if (!fieldName.contains("*")) {
+				output.add(fieldName);
+			} else {
+				String prefix = fieldName.substring(0, fieldName.length()-1);
+				this.addFieldNamesStartingWith(prefix, output);
+			}
+		}
+		String[] allFields = output.toArray(new String[output.size()]);
+		return allFields;
+	}
+
+	// Add field nams declared on us (NOT on supers) which start with a prefix.
+	void addFieldNamesStartingWith(String prefix, ArrayList<String>output) {
+		Field[] allFields = this.getClass().getDeclaredFields();
+		for (Field field : allFields) {
+			String name = field.getName();
+			if (name.startsWith(prefix)) output.add(name);
+		}
+	}
+
 
 	////////////////////////////////////////////////////////////
 	//	Getting "logical" field types.
@@ -803,6 +1102,31 @@ class Config {
 
 
 
+////////////////////////////////////////////////////////////
+//	Color utilities.
+////////////////////////////////////////////////////////////
+
+	// Given a hue of 0..1, return a fully saturated color().
+	// NOTE: assumes we're normally in RGB mode
+	color colorFromHue(float hue) {
+		// switch to HSB color mode
+		colorMode(HSB, 1.0);
+		color clr = color(hue, 1, 1);
+		// restore RGB color mode
+		colorMode(RGB, 255);
+		return clr;
+	}
+
+	// Given a color, return its hue as 0..1.
+	// NOTE: assumes we're normally in RGB mode
+	float hueFromColor(color clr) {
+		// switch to HSB color mode
+		colorMode(HSB, 1.0);
+		float result = hue(clr);
+		// restore RGB color mode
+		colorMode(RGB, 255);
+		return result;
+	}
 
 
 
@@ -824,8 +1148,10 @@ class Config {
 
 	void warn(String message, Exception e) {
 		if (!this.debugging) return;
-		println("WARNING: " + message);
+		println("--------------------------------------------------------------------------------------------");
+		println("--  WARNING: " + message);
 		if (e != null) println(e);
+		println("--------------------------------------------------------------------------------------------");
 	}
 
 	// Log an error message -- something unexpected happened, and it's pretty bad.
@@ -835,8 +1161,10 @@ class Config {
 
 	void error(String message, Exception e) {
 		if (!this.debugging) return;
-		println("ERROR!!:   " + message);
+		println("--------------------------------------------------------------------------------------------");
+		println("--  ERROR!!:   " + message);
 		if (e != null) println(e);
+		println("--------------------------------------------------------------------------------------------");
 	}
 
 

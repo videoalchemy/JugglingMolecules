@@ -66,8 +66,8 @@
 	  int top = height-85;
 	  rect(0, top, 640, 85);
 	  fill(255);
-	  text("Press keys 'a' and 'z' to adjust minimum depth: " + gKinecter.minDepth, 5, top+15);
-	  text("Press keys 's' and 'x' to adjust maximum depth: " + gKinecter.maxDepth, 5, top+30);
+	  text("Press keys 'a' and 'z' to adjust minimum depth: " + gConfig.kinectMinDepth, 5, top+15);
+	  text("Press keys 's' and 'x' to adjust maximum depth: " + gConfig.kinectMaxDepth, 5, top+30);
 
 	  text("> Adjust depths until you get a white silhouette of your whole body with everything else black.", 5, top+55);
 	  text("PRESS SPACE TO CONTINUE", 5, top+75);
