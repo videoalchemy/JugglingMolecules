@@ -112,13 +112,13 @@ println("CONFIG INIT");
 
 	// Tell the controller(s) about the state of all of our FIELDs.
 	void updateControllers() {
-		this.updateControllers(null);
+		// get normal fields
+		Table table = this.getFieldsAsTable(FIELDS);
+		// add setup fields as well
+		this.getFieldsAsTable(SETUP_FIELDS, table);
+		// now signal that all of those fields have changed
+		this.fieldsChanged(table);
 	}
-	void updateControllers(String[] fieldNames) {
-		Table values = this.getFieldsAsTable(fieldNames);
-		this.fieldsChanged(values);
-	}
-
 
 	// One of our fields has changed.
 	// Tell all of our controllers.

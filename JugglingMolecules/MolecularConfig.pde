@@ -64,8 +64,17 @@ println("MolecularConfig INIT");
 
 	// Kinect setup
 	int kinectMinDepth = 100;
+	int MIN_kinectMinDepth = 0;
+	int MAX_kinectMinDepth = 2047;
+
 	int kinectMaxDepth = 950;
+	int MIN_kinectMaxDepth = 0;
+	int MAX_kinectMaxDepth = 2047;
+
 	int kinectAngle = 20;
+	int MIN_kinectAngle = 0;
+	int MAX_kinectAngle = 30;
+
 
 
 ////////////////////////////////////////////////////////////

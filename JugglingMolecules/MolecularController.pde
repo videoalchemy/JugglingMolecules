@@ -32,6 +32,19 @@ class MolecularController extends TouchOscController {
 			return;
 		}
 
+		// Handle screen resolution toggles
+		if (fieldName.startsWith("Screen")) {
+			fieldName = fieldName.replace("Screen", "");
+			String[] _split = split(fieldName, "x");
+			int _width = int(_split[0]);
+			int _height = int(_split[1]);
+			gConfig.setupWindowWidth = _width;
+			gConfig.setupWindowHeight = _height;
+			println("Setting window size to "+_width+"x"+_height);
+			gConfig.saveSetup();
+			return;
+		}
+
 		float value = message.get(0).floatValue();
 
 		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
@@ -81,6 +94,17 @@ println("---- saveLock:	"+this.saveLock);
 		}
 
 		gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
+
+
+		if (fieldName.startsWith("kinect")) {
+			gConfig.saveSetup();
+			if (fieldName.equals("kinectAngle")) {
+				try {
+					int angle = gConfig.getInt("kinectAngle");
+					gKinecter.kinect.tilt(angle);
+				} catch (Exception e){};
+			}
+		}
 	}
 
 
