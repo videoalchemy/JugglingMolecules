@@ -21,12 +21,12 @@ float	particleNoiseVelocity	0.0050
 int	particleColorScheme	3
 color	particleColor	color(255,0,7,219)
 int	particleAlpha	255
-int	particleMaxCount	30000
+int	particleMaxCount	7058
 int	particleGenerateRate	1
 int	particleGenerateSpread	24
 int	particleMinStepSize	2
 int	particleMaxStepSize	2
-int	particleLifetime	51
+int	particleLifetime	1000
 color	flowLineColor	color(255,0,0,255)
 int	flowLineAlpha	0
 color	depthImageColor	color(0,255,170,255)
