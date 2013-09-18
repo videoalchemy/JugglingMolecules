@@ -152,7 +152,7 @@ void outputStateToOSCController() {
 void sendFloatToController(String messageName, float value) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(value);
-	println(">> sending /"+messageName+" "+value);
+//	println(">> sending /"+messageName+" "+value);
 	sendMessageToController(message);
 }
 
@@ -160,7 +160,7 @@ void sendFloatToController(String messageName, float value) {
 void sendIntToController(String messageName, int value) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(value);
-	println(">> sending /"+messageName+" "+value);
+//		println(">> sending /"+messageName+" "+value);
 	sendMessageToController(message);
 }
 
@@ -169,7 +169,7 @@ void sendFloatsToController(String messageName, float x, float y) {
 	OscMessage message = new OscMessage("/"+messageName);
 	message.add(x);
 	message.add(y);
-	println(">> sending /"+messageName+" "+x+" "+y);
+//		println(">> sending /"+messageName+" "+x+" "+y);
 	sendMessageToController(message);
 }
 
