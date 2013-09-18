@@ -324,11 +324,8 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 >```spirograph(53, -29, 40, 30, gray)```
 
 
-
-###Diagrams:
-
-
 ###Examples:
+####Spirograph Examples:
 - [Spirograph Web App worth checking out](http://www.benjoffe.com/code/toys/spirograph)
 - [Epicycles On Epicycles, Cable Knots on Cable Knots | vimeo](https://vimeo.com/7757058)
 - [The 3D Spirograph Project | vimeo](https://vimeo.com/2228788)
@@ -342,6 +339,14 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 - [Simple Spirograph | Web App from Aquilax's Dev Blog](http://dev.horemag.net/2008/03/03/spirograph-with-processing/)
 - [Mathiversity | Spirograph Web App](http://mathiversity.com/Spirograph)
 - [Spirograph Web App](http://www.eddaardvark.co.uk/nc/sprog/index.html#x)
+
+####FlowField Examples:
+- [Flocking in FlowField  |  Flight 404 on Vimeo](https://vimeo.com/153453#)
+	- [Flight 404 blog post about the Flocking Behaviors in a Flow Field](http://www.flight404.com/blog/?p=66)
+		- In the original version, for some reason, I decided the best way to deal with the flowfield was to make a ton of vectors and stick them in the space. These vectors are stationary and only contain velocity information. I would use Perlin noise to adjust each vector’s velocity and just leave them there. Pretty much an invisible 3D array of floating arrows. I would then throw a bunch of objects in this 3D array and have each object check the nearest vector for its velocity information and apply this information to the objects own velocity.
+		- Turns out, this was way more work than I needed. Instead, I should simply apply the Perlin noise data directly to my object’s velocity vectors and voila, done and done. And without needing to worry about placing thousands of vector arrows into a space that simply didnt need it. In a way, the Perlin noise data can represent an infinite space with an infinite number of vector arrows, and for cheap too.
+- [Flocking in 3D  |  Flight 404 for Eyeo 2012 Festival](https://vimeo.com/43802463)
+- [Shockwave |  Flight 404](https://vimeo.com/43802127)
 
 
 ###Future:
