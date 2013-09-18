@@ -7,7 +7,7 @@
  *		            http://creativecommons.org/licenses/by-sa/3.0/
  *******************************************************************/
 
-int gLastParticleHue = 0;
+float gLastParticleHue = 0;
 
 ////////////////////////////////////////////////////////////
 //	Particle class
@@ -79,10 +79,9 @@ class Particle {
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
 		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_YX) {
-			int r = (int) map(_y, 0, height, 0, 255);
-			int g = (int) map(_x, 0, width, 0, 255);
-			int b = (int) map(_x + _y, 0, width+height, 0, 255);
-			clr = color(r, g, b, config.particleAlpha);
+			if (++gLastParticleHue > 360) gLastParticleHue = 0;
+			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
+			clr = color(colorFromHue(nextHue), config.particleAlpha);
 		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XYX) {
 			int r = (int) map(_x + _y, 0, width+height, 0, 255);
 			int g = (int) map(_x, 0, width, 0, 255);
