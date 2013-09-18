@@ -63,16 +63,6 @@ import java.util.Iterator;
 	String gDrawMode = OPENGL;
 
 
-////////////////////////////////////////////////////////////
-//	Kinect setup (constant for all configs)
-////////////////////////////////////////////////////////////
-	// size of the kinect
-	int   gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/(float)gKinectHeight;	 // inverse of screen dimensions
-	float gKinectToWindowWidth	= ((float) gWindowWidth)  * gInvKWidth;		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = ((float) gWindowHeight) * gInvKHeight;	// multiplier for kinect size to window size
-
 
 // Initialize all of our global objects.
 //
