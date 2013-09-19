@@ -349,6 +349,12 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 - [Shockwave |  Flight 404](https://vimeo.com/43802127)
 
 
+####FlowMaps, Reference Images:
+- [] add a method for 
+
+####Theta as a function of Depth:
+
+
 ###Future:
 - [] toxilib
 - [Flow no.1 The Kinect Projector Dance](http://princemio.net/portfolio/flow-1-kinect-projector-dance/)
