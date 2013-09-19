@@ -38,8 +38,14 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			int row = this.getZeroBasedRow(message, 10);		// TODO: get # rows from config
 			int col = this.getZeroBasedColumn(message, 10);		// TODO: get # cols from config
 			String fileName = "PS"+row+col;
-			println("!!! Loading from PS"+row+col);
-			gConfig.load(fileName);
+			try {
+				gConfig.load(fileName);
+				this.say("Loaded "+fileName);
+// This SHOULD work to tell the Saver which we just selected...
+//				this.showMultiToggle("Saver", row, col, 10, 10);
+			} catch (Exception e) {
+				this.say(" Slot "+fileName+" is empty!");
+			}
 			return;
 		}
 		// Save switcher control.
@@ -47,6 +53,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		else if (fieldName.startsWith("Saver")) {
 			if (!this.saveLock) {
 				println("!!!! YOU MUST PRESS SAVE BUTTON TO SAVE, F0O0O0O0O0O0L!!!!");
+				this.say("!!Press SAVE to save!!");
 				return;
 			}
 			println("Saver "+fieldName);
@@ -54,7 +61,9 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			int col = this.getZeroBasedColumn(message, 10);		// TODO: get # cols from config
 			String fileName = "PS"+row+col;						// TODO: get "PS" from config
 			println("!!! SAVING to "+fileName);
+			this.say("Saving "+fileName);
 			gConfig.save(fileName);
+			this.say("Saved "+fileName);
 			return;
 		}
 

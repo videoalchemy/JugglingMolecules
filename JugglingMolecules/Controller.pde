@@ -85,6 +85,32 @@ class TouchOscController extends Controller {
 
 
 ////////////////////////////////////////////////////////////
+//	Generic send of a prepared message to all controllers.
+////////////////////////////////////////////////////////////
+
+	// Send a prepared `message` to the OSCTouch controller.
+	// NOTE: if `gOscMasterAddress` hasn't been set up, we'll show a warning and bail.
+	// TODO: support many controllers?
+	void sendMessage(OscMessage message) {
+		if (this.outboundAddresses.size() == 0) {
+			println("osc.sendMessageToController("+message.addrPattern()+"): controller.outboundAddress not set up!  Skipping message.");
+		} else {
+			for (NetAddress outboundAddress : this.outboundAddresses) {
+				try {
+					gOscMaster.send(message, outboundAddress);
+				} catch (Exception e) {
+					println("Exception sending message "+message.addrPattern()+": "+e);
+				}
+			}
+		}
+	}
+
+
+
+
+
+
+////////////////////////////////////////////////////////////
 //	Dealing with changes in the model.
 ////////////////////////////////////////////////////////////
 
@@ -158,21 +184,17 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	// Send a prepared `message` to the OSCTouch controller.
-	// NOTE: if `gOscMasterAddress` hasn't been set up, we'll show a warning and bail.
-	// TODO: support many controllers?
-	void sendMessage(OscMessage message) {
-		if (this.outboundAddresses.size() == 0) {
-			println("osc.sendMessageToController("+message.addrPattern()+"): controller.outboundAddress not set up!  Skipping message.");
-		} else {
-			for (NetAddress outboundAddress : this.outboundAddresses) {
-				try {
-					gOscMaster.send(message, outboundAddress);
-				} catch (Exception e) {
-					println("Exception sending message "+message.addrPattern()+": "+e);
-				}
-			}
-		}
+
+
+
+////////////////////////////////////////////////////////////
+//	Talk-back to the user
+////////////////////////////////////////////////////////////
+	void say(String msgText) {
+		println("  saying "+msgText);
+		OscMessage message = new OscMessage("/message");
+		message.add(msgText);
+		this.sendMessage(message);
 	}
 
 
@@ -228,6 +250,34 @@ class TouchOscController extends Controller {
 			return -1;
 		}
 	}
+
+
+
+////////////////////////////////////////////////////////////
+//	Specific senders
+////////////////////////////////////////////////////////////
+
+	// NOTE: multi-toggle is backwards!
+	void showMultiToggle(String control, int row, int col, int maxRows, int maxCols) {
+println(control+":"+row+":"+col+":"+maxRows+":"+maxCols);
+		OscMessage message = new OscMessage("/"+control);
+		for (int r = maxRows; r > 0; r--) {
+println("row"+r);
+			for (int c = 0; c < maxCols; c++) {
+println("col"+c + "    " + (r == row && c == col ? "YES" : ""));
+				if (r == row && c == col) {
+					message.add(1);
+				} else {
+					message.add(0);
+				}
+			}
+		}
+println("all done!");
+	}
+
+
+
+
 
 
 
