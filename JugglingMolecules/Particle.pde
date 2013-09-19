@@ -129,6 +129,12 @@ class Particle {
 		}
 
 		acceleration.mult(config.particleAccelerationFriction);
+
+// TODO:  HERE IS THE PLACE TO CHANGE ACCELERATION, BEFORE IT IS APPLIED.   ???
+
+
+// END ACCELERATION
+
 		velocity.add(acceleration);
 		location.add(velocity);
 
