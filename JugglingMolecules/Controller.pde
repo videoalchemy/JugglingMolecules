@@ -259,6 +259,7 @@ class TouchOscController extends Controller {
 
 	// NOTE: multi-toggle is backwards!
 	void showMultiToggle(String control, int row, int col, int maxRows, int maxCols) {
+/*
 println(control+":"+row+":"+col+":"+maxRows+":"+maxCols);
 		OscMessage message = new OscMessage("/"+control);
 		for (int r = maxRows; r > 0; r--) {
@@ -273,6 +274,7 @@ println("col"+c + "    " + (r == row && c == col ? "YES" : ""));
 			}
 		}
 println("all done!");
+*/
 	}
 
 

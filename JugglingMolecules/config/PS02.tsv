@@ -31,4 +31,5 @@ color	flowLineColor	color(0,0,255,0)
 int	flowLineAlpha	30
 color	depthImageColor	color(0,0,255,0)
 int	depthImageAlpha	30
+UNKNOWN	depthImageChoices	
 int	depthImageBlendMode	16
