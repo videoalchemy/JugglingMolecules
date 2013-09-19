@@ -672,27 +672,29 @@ println("CONFIG INIT");
 		if (fieldNames == null) return table;
 
 		for (String fieldName : fieldNames) {
+			Field field;
+			int type;
+			String value;
 			try {
-				// add row up front, we'll remove it in the exception handler if something goes wrong
-				TableRow row = table.addRow();
-
 				// get the field definition
-				Field field = this.getField(fieldName, "getFieldsAsTable(): field {{fieldName}} not found.");
-				row.setString("field", fieldName);
+				field = this.getField(fieldName, "getFieldsAsTable(): field {{fieldName}} not found.");
 
 				// get the type of the field
-				int type = this.getType(field);
-				if (type == _UNKNOWN_TYPE) new NoSuchFieldException();
-				row.setString("type", getTypeName(type));
+				type = this.getType(field);
+				if (type == _UNKNOWN_TYPE) continue;
 
-				String value = this.typedFieldToString(field, type);
-				row.setString("value", value);
+				value = this.typedFieldToString(field, type);
 
 			} catch (Exception e) {
 				this.warn("getFieldsAsTable(): error processing field "+fieldName, e);
-				// remove the incomplete row
-				table.removeRow(table.getRowCount()-1);
+				continue;
 			}
+
+			// add row up front, we'll remove it in the exception handler if something goes wrong
+			TableRow row = table.addRow();
+			row.setString("field", fieldName);
+			row.setString("type", getTypeName(type));
+			row.setString("value", value);
 		}
 		return table;
 	}

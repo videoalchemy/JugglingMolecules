@@ -105,6 +105,9 @@ println("MolecularConfig INIT");
 	// background color (black)
 	color windowBgColor = color(0,139,213,50);	// color
 
+	// Should we map the window bg to greyscale, or hue?
+	boolean windowBgGreyscale = true;
+
 	// Amount to "dim" the background each round by applying partially opaque background
 	// Higher number means less of each screen sticks around on subsequent draw cycles.
 	int windowOverlayAlpha = 20;	//	0-255
@@ -211,7 +214,7 @@ println("MolecularConfig INIT");
 
 	// Opacity for all particle lines, used for all color schemes.
 	int particleAlpha		= 50;	//0-255
-	int MIN_particleAlpha 	= 0;
+	int MIN_particleAlpha 	= 10;
 	int MAX_particleAlpha 	= 255;
 
 
@@ -226,7 +229,7 @@ println("MolecularConfig INIT");
 	// how many particles to emit when mouse/tuio blob move
 	int particleGenerateRate = 2; //2-200
 	int MIN_particleGenerateRate = 1;
-	int MAX_particleGenerateRate = 200;
+	int MAX_particleGenerateRate = 50;// 2000;
 
 	// random offset for particles emitted, so they don't all appear in the same place
 	int particleGenerateSpread = 20; //1-50
@@ -270,7 +273,7 @@ println("MolecularConfig INIT");
 	color depthImageColor = color(0,0,0,255);
 
 	int depthImageAlpha = 30;
-	int MIN_depthImageAlpha 	= 0;
+	int MIN_depthImageAlpha 	= 10;
 	int MAX_depthImageAlpha 	= 255;
 
 	// Depth image blend mode constants.
@@ -286,7 +289,7 @@ println("MolecularConfig INIT");
 	//	SCREEN:      256
 
 	// blend mode for the depth image
-	int[] depthImageChoices = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
+	int[] _depthImageChoices = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
 	int depthImageBlendMode = BLEND;
 
 

@@ -121,6 +121,13 @@ class TouchOscController extends Controller {
 		this.sendLabel(fieldName, valueLabel);
 	}
 
+	void sendBoolean(String fieldName, boolean value) {
+		println("  setting controller "+fieldName+" to "+value);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value);
+		this.sendMessage(message);
+	}
+
 	void sendInt(String fieldName, int value) {
 		println("  setting controller "+fieldName+" to "+value);
 		OscMessage message = new OscMessage("/"+fieldName);

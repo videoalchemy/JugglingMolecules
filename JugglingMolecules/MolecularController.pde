@@ -72,7 +72,6 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			gConfig.syncControllers();
 			return;
 		}
-
 		// Handle screen resolution toggles
 // TODO: move into controller base class!!!!
 		if (fieldName.startsWith("windowSize")) {
@@ -97,11 +96,32 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 
 		float value = message.get(0).floatValue();
 
+
+
+		if (fieldName.startsWith("windowBg")) {
+			float _hue;
+			if (fieldName.equals("windowBgGreyscale")) {
+				gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
+				_hue = gConfig.hueFromColor(gConfig.windowBgColor);
+			} else {
+				_hue = value;
+			}
+
+			if (gConfig.windowBgGreyscale) {
+				int _grey = (int)map(_hue, 0, 1, 0, 255);
+				gConfig.windowBgColor = color(_grey);
+			} else {
+				gConfig.windowBgColor = colorFromHue(_hue);
+			}
+			return;
+		}
+
+
 		// "particleGenerate" x/y pad
 		if (fieldName.equals("particleGenerate")) {
 			float otherValue = message.get(1).floatValue();
-			gConfig.setFromController("particleGenerateRate", value, this.minValue, this.maxValue);
-			gConfig.setFromController("particleGenerateSpread", otherValue, this.minValue, this.maxValue);
+			gConfig.setFromController("particleGenerateSpread", value, this.minValue, this.maxValue);
+			gConfig.setFromController("particleGenerateRate", otherValue, this.minValue, this.maxValue);
 			return;
 		}
 
@@ -162,7 +182,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 
 		// "particleGenerate" x/y pad
 		if (fieldName.equals("particleGenerateRate") || fieldName.equals("particleGenerateSpread")) {
-			this.sendXY("particleGenerate", "particleGenerateRate", "particleGenerateSpread");
+			this.sendXY("particleGenerate", "particleGenerateSpread", "particleGenerateRate");
 		}
 
 		// "noise" x/y pad
@@ -179,6 +199,25 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		else if (fieldName.equals("depthImageBlendMode")) {
 			int[] choices = {0,1,2,4,8,16,32,64,128,256};
 			this.sendChoice("depthImageBlendMode", controllerValue, choices);
+		}
+
+		// window bg
+		else if (fieldName.startsWith("windowBg")) {
+			this.sendBoolean("windowBgGreyscale", gConfig.windowBgGreyscale);
+			float hueValue;
+			try {
+				if (gConfig.windowBgGreyscale) {
+					println("GREYSCALE");
+// TODO...
+					hueValue = this.getFieldValue("windowBgColor");
+				} else{
+					println("COLOR");
+					hueValue = this.getFieldValue("windowBgColor");
+				}
+				this.sendFloat("windowBgHue", hueValue);
+			} catch (Exception e) {
+				println("Exception setting windowBgHue: "+e);
+			}
 		}
 
 	}
