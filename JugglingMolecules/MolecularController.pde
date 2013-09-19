@@ -19,20 +19,47 @@ class MolecularController extends TouchOscController {
 		super();
 	}
 
+	// Update the config with messages from OSC.
 	// Special stuff to update the config w/weird controls, etc.
 	void updateConfig(String fieldName, OscMessage message) {
-		// Handle "Load" and "Save" messages
-		if (fieldName.startsWith("Load/") || fieldName.startsWith("PS")) {
-			String fileName = fieldName.replace("Load/", "");
+
+		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
+		// We'll only save if `saveLock` is true.
+		if (fieldName.equals("Savelock")) {
+			float value = message.get(0).floatValue();
+			this.saveLock = (value == 1);
+println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
+			return;
+		}
+
+		// Load switcher control
+		else if (fieldName.startsWith("Loader")) {
+			println("Loader "+fieldName);
+			int row = this.getZeroBasedRow(message, 10);		// TODO: get # rows from config
+			int col = this.getZeroBasedColumn(message, 10);		// TODO: get # cols from config
+			String fileName = "PS"+row+col;
+			println("!!! Loading from PS"+row+col);
 			gConfig.load(fileName);
 			return;
-		} else if (fieldName.startsWith("Save/")) {
-			String fileName = fieldName.replace("Save/", "");
-			if (this.saveLock) gConfig.save(fileName);
+		}
+		// Save switcher control.
+		// Only works if `saveLock == true`.
+		else if (fieldName.startsWith("Saver")) {
+			if (!this.saveLock) {
+				println("!!!! YOU MUST PRESS SAVE BUTTON TO SAVE, F0O0O0O0O0O0L!!!!");
+				return;
+			}
+			println("Saver "+fieldName);
+			int row = this.getZeroBasedRow(message, 10);		// TODO: get # rows from config
+			int col = this.getZeroBasedColumn(message, 10);		// TODO: get # cols from config
+			String fileName = "PS"+row+col;						// TODO: get "PS" from config
+			println("!!! SAVING to "+fileName);
+			gConfig.save(fileName);
 			return;
 		}
 
 		// Handle screen resolution toggles
+// TODO: move into controller!!!!
 		if (fieldName.startsWith("Screen")) {
 			fieldName = fieldName.replace("Screen", "");
 			String[] _split = split(fieldName, "x");
@@ -46,16 +73,6 @@ class MolecularController extends TouchOscController {
 		}
 
 		float value = message.get(0).floatValue();
-
-		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
-		// We'll only save if `saveLock` is true.
-		if (fieldName.equals("Savelock")) {
-			this.saveLock = (value == 1);
-println("---- saveLock:	"+this.saveLock);
-			return;
-		}
-
-
 
 		// "particleGenerate" x/y pad
 		if (fieldName.equals("particleGenerate")) {

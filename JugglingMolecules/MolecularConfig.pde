@@ -181,7 +181,7 @@ println("MolecularConfig INIT");
 	float MAX_particleForceMultiplier = 300;
 
 	// How fast to return to the noise after force velocities.
-	float particleAccelerationFriction = .7511973;	//.001-.999	// WAS: .075
+	float particleAccelerationFriction = .75;	//.001-.999	// WAS: .075
 	float MIN_particleAccelerationFriction = .001;
 	float MAX_particleAccelerationFriction = .999;
 
@@ -224,7 +224,7 @@ println("MolecularConfig INIT");
 	int MAX_particleMaxCount = 30000;
 
 	// how many particles to emit when mouse/tuio blob move
-	int particleGenerateRate = 10; //2-200
+	int particleGenerateRate = 2; //2-200
 	int MIN_particleGenerateRate = 1;
 	int MAX_particleGenerateRate = 200;
 
@@ -236,11 +236,11 @@ println("MolecularConfig INIT");
 	// Upper and lower bound of particle movement each frame.
 	int particleMinStepSize = 4;
 	int MIN_particleMinStepSize = 2;
-	int MAX_particleMinStepSize = 20;
+	int MAX_particleMinStepSize = 10;
 
 	int particleMaxStepSize = 8;
 	int MIN_particleMaxStepSize = 2;
-	int MAX_particleMaxStepSize = 20;
+	int MAX_particleMaxStepSize = 10;
 
 	// Particle lifetime.
 	int particleLifetime = 400;
@@ -253,11 +253,11 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 
 	// color for optical flow lines
-	color flowLineColor = color(255, 0, 0, 30);
+	color flowLineColor = color(255, 0, 0, 30);	// RED
 
 //TODO: apply alpha separately from hue
 	int flowLineAlpha = 30;
-	int MIN_flowLineAlpha 	= 0;
+	int MIN_flowLineAlpha 	= 10;
 	int MAX_flowLineAlpha 	= 255;
 
 
@@ -265,9 +265,9 @@ println("MolecularConfig INIT");
 //	Depth image drawing
 ////////////////////////////////////////////////////////////
 
-	// `tint` color for the depth image.
+	// color for the depth image.
 	// NOTE: NOT CURRENTLY USED.  see
-	color depthImageColor = color(255,0,0,255);
+	color depthImageColor = color(0,0,0,255);
 
 	int depthImageAlpha = 30;
 	int MIN_depthImageAlpha 	= 0;
@@ -278,63 +278,16 @@ println("MolecularConfig INIT");
 	//	BLEND:       1
 	//	ADD:         2
 	//	SUBTRACT:    4
-	//	DARKEST:     16
 	//	LIGHTEST:    8
+	//	DARKEST:     16
 	//	DIFFERENCE:  32
 	//	EXCLUSION:   64
 	//	MULTIPLY:    128
 	//	SCREEN:      256
 
 	// blend mode for the depth image
+	int[] depthImageChoices = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
 	int depthImageBlendMode = BLEND;
-
-
-
-
-
-////////////////////////////////////////////////////////////
-//	Config manipulation
-////////////////////////////////////////////////////////////
-
-	// Print the current config to the console.
-	void echo() {
-		println("---------------------------------------------------------");
-		println("-------      C U R R E N T     C O N F I G        -------");
-		println("---------------------------------------------------------");
-		println("showParticles	" + showParticles);
-		println("showFlowLines	" + showFlowLines);
-		println("showDepthImage	" + showDepthImage);
-		println("showDepthPixels	" + showDepthPixels);
-		println("showSettings	" + showSettings);
-		println("windowBgColor	" + colorToString(windowBgColor));
-		println("windowOverlayAlpha	" + windowOverlayAlpha);
-		println("flowfieldResolution	" + flowfieldResolution);
-		println("flowfieldPredictionTime	" + flowfieldPredictionTime);
-		println("flowfieldMinVelocity	" + flowfieldMinVelocity);
-		println("flowfieldRegularization	" + flowfieldRegularization);
-		println("flowfieldSmoothing	" + flowfieldSmoothing);
-		println("noiseStrength	" + noiseStrength);
-		println("noiseScale	" + noiseScale);
-		println("particleViscocity	" + particleViscocity);
-		println("particleForceMultiplier	" + particleForceMultiplier);
-		println("particleAccelerationFriction	" + particleAccelerationFriction);
-		println("particleAccelerationLimiter	" + particleAccelerationLimiter);
-		println("particleNoiseVelocity	" + particleNoiseVelocity);
-		println("particleColorScheme	" + particleColorScheme);
-		println("particleColor	" + colorToString(particleColor));
-		println("particleAlpha	" + particleAlpha);
-		println("particleMaxCount	" + particleMaxCount);
-		println("particleGenerateRate	" + particleGenerateRate);
-		println("particleGenerateSpread	" + particleGenerateSpread);
-		println("particleMinStepSize	" + particleMinStepSize);
-		println("particleMaxStepSize	" + particleMaxStepSize);
-		println("particleLifetime	" + particleLifetime);
-		println("flowLineColor	" + colorToString(flowLineColor));
-		println("flowLineAlpha	" + flowLineAlpha);
-		println("depthImageColor	" + colorToString(depthImageColor));
-		println("depthImageAlpha	" + depthImageAlpha);
-		println("---------------------------------------------------------");
-	}
 
 
 }

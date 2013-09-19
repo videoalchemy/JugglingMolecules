@@ -175,4 +175,60 @@ class TouchOscController extends Controller {
 		}
 	}
 
+
+////////////////////////////////////////////////////////////
+//	Exotic controller types
+////////////////////////////////////////////////////////////
+
+	// Return the row associated with an Osc Multi-Toggle control.
+	// Throws an exception if the message doesn't conform to your expectations.
+	// NOTE: Osc Multi-toggles have the BOTTOM row at 0, and rows start with 1.
+	//		 So if you want to convert to TOP-based, starting at 0, do:
+	//			`int row = ROWCOUNT - (controller.getMultiToggleRow(message) - 1);`
+	//		 or use:
+	//			`int row = controller.getZeroBasedRow(message, ROWCOUNT);`
+//UNTESTED
+	int getMultiToggleRow(OscMessage message) throws Exception {
+		String[] msgName = message.addrPattern().split("/");
+		return int(msgName[2]);
+	}
+
+	// Return the column associated with an Osc Multi-Toggle control.
+	// Throws an exception if the message doesn't conform to your expectations.
+	// NOTE: Osc Multi-toggles have the LEFT-MOST row at 1.
+	//		 So if you want to convert to LEFT-based, starting at 0, do:
+	//			`int row = COLCOUNT - (controller.getMultiToggleColumn(message) - 1);`
+	//		 or use:
+	//			`int row = controller.getZeroBasedColumn(message, COLCOUNT);`
+//UNTESTED
+	int getMultiToggleColumn(OscMessage message) throws Exception {
+		String[] msgName = message.addrPattern().split("/");
+		return int(msgName[3]);
+	}
+
+
+	// Return the zero-based, top-left-counting row associated with an Osc Multi-Toggle control.
+	// Returns `-1` on exception.
+	int getZeroBasedRow(OscMessage message, int rowCount) {
+		try {
+			int bottomBasedRow = this.getMultiToggleRow(message);
+			return rowCount - bottomBasedRow;
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+
+	// Return the zero-based, top-left-counting column associated with an Osc Multi-Toggle control.
+	// Returns `-1` on exception.
+	int getZeroBasedColumn(OscMessage message, int ColCount) {
+		try {
+			int bottomBasedCol = this.getMultiToggleColumn(message);
+			return (bottomBasedCol - 1);
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+
+
+
 }
