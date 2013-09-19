@@ -4,7 +4,7 @@ boolean	showFlowLines	false
 boolean	showDepthImage	false
 boolean	showDepthPixels	false
 boolean	showSettings	false
-color	windowBgColor	color(0,0,0,0)
+color	windowBgColor	color(0,0,0,255)
 int	windowOverlayAlpha	20
 int	flowfieldResolution	15
 float	flowfieldPredictionTime	0.5
@@ -15,14 +15,14 @@ int	noiseStrength	100
 int	noiseScale	100
 float	particleViscocity	0.995
 float	particleForceMultiplier	50.0
-float	particleAccelerationFriction	0.75
+float	particleAccelerationFriction	0.7511973
 float	particleAccelerationLimiter	0.35
 float	particleNoiseVelocity	0.0080
 int	particleColorScheme	1
 color	particleColor	color(0,0,255,0)
 int	particleAlpha	50
 int	particleMaxCount	30000
-int	particleGenerateRate	2
+int	particleGenerateRate	10
 int	particleGenerateSpread	20
 int	particleMinStepSize	4
 int	particleMaxStepSize	8
@@ -31,5 +31,4 @@ color	flowLineColor	color(0,0,255,0)
 int	flowLineAlpha	30
 color	depthImageColor	color(0,0,255,0)
 int	depthImageAlpha	30
-UNKNOWN	depthImageChoices	
-int	depthImageBlendMode	1
+int	depthImageBlendMode	16

@@ -80,7 +80,7 @@ class TouchOscController extends Controller {
 		NetAddress outboundAddress = new NetAddress(inboundAddress.address(), gConfig.setupOscOutboundPort);
 		this.outboundAddresses.add(outboundAddress);
 		// tell the config to update all controllers (including us) with the current values
-		gConfig.updateControllers();
+		gConfig.syncControllers();
 	}
 
 

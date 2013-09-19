@@ -111,13 +111,15 @@ println("CONFIG INIT");
 ////////////////////////////////////////////////////////////
 
 	// Tell the controller(s) about the state of all of our FIELDs.
-	void updateControllers() {
+	void syncControllers() {
 		// get normal fields
 		Table table = this.getFieldsAsTable(FIELDS);
 		// add setup fields as well
 		this.getFieldsAsTable(SETUP_FIELDS, table);
 		// now signal that all of those fields have changed
 		this.fieldsChanged(table);
+		// Notify that we're synchronized.
+		if (gController != null) gController.say("Synced");
 	}
 
 	// One of our fields has changed.
@@ -413,7 +415,7 @@ println("CONFIG INIT");
 		}
 
 		// update all controllers with the current value for all FIELDS
-		this.updateControllers();
+		this.syncControllers();
 
 		return changeLog;
 	}

@@ -22,18 +22,8 @@ class MolecularController extends TouchOscController {
 	// Update the config with messages from OSC.
 	// Special stuff to update the config w/weird controls, etc.
 	void updateConfig(String fieldName, OscMessage message) {
-
-		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
-		// We'll only save if `saveLock` is true.
-		if (fieldName.equals("Savelock")) {
-			float value = message.get(0).floatValue();
-			this.saveLock = (value == 1);
-println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
-			return;
-		}
-
 		// Load switcher control
-		else if (fieldName.startsWith("Loader")) {
+		if (fieldName.startsWith("Loader")) {
 			println("Loader "+fieldName);
 			int row = this.getZeroBasedRow(message, 10);		// TODO: get # rows from config
 			int col = this.getZeroBasedColumn(message, 10);		// TODO: get # cols from config
@@ -48,9 +38,20 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			}
 			return;
 		}
+
+
+		// If they're pressing the "Savelock" button, toggle the `saveLock` state.
+		// We'll only save if `saveLock` is true.
+		if (fieldName.equals("Savelock")) {
+			float value = message.get(0).floatValue();
+			this.saveLock = (value == 1);
+println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
+			return;
+		}
+
 		// Save switcher control.
 		// Only works if `saveLock == true`.
-		else if (fieldName.startsWith("Saver")) {
+		if (fieldName.startsWith("Saver")) {
 			if (!this.saveLock) {
 				println("!!!! YOU MUST PRESS SAVE BUTTON TO SAVE, F0O0O0O0O0O0L!!!!");
 				this.say("!!Press SAVE to save!!");
@@ -67,16 +68,29 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			return;
 		}
 
+		if (fieldName.equals("sync")) {
+			gConfig.syncControllers();
+			return;
+		}
+
 		// Handle screen resolution toggles
-// TODO: move into controller!!!!
-		if (fieldName.startsWith("Screen")) {
-			fieldName = fieldName.replace("Screen", "");
-			String[] _split = split(fieldName, "x");
-			int _width = int(_split[0]);
-			int _height = int(_split[1]);
+// TODO: move into controller base class!!!!
+		if (fieldName.startsWith("windowSize")) {
+			int row = this.getZeroBasedRow(message, 3);			// TODO: get # rows from config
+			int col = this.getZeroBasedColumn(message, 2);		// TODO: get # cols from config
+			int value = (row*2)+col;
+			int _width, _height;
+			switch (value) {
+				case 1:		_width = 800; _height = 600; break;
+				case 2:		_width = 1024; _height = 768; break;
+				case 3:		_width = 1280; _height = 800; break;
+				case 4:		_width = 1920; _height = 1200; break;
+				case 5:		_width = 2560; _height = 1440; break;
+				default:	_width = 640; _height = 480; break;
+			}
 			gConfig.setupWindowWidth = _width;
 			gConfig.setupWindowHeight = _height;
-			println("Setting window size to "+_width+"x"+_height);
+			this.say("Restart for "+_width+"x"+_height);
 			gConfig.saveSetup();
 			return;
 		}
