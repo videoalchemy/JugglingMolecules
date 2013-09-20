@@ -89,8 +89,20 @@
 	  for (int col = 0; col < cols; col++) {
 		float yOffset = 0;
 		for (int row = 0; row < rows; row++) {
-		  // Use perlin noise to get an angle between 0 and 2 PI
+		  //check for depth Image.  If depth exists here, then calculate new theta based on depth.
+
+                  // Use perlin noise to get an angle between 0 and 2 PI
 		  float theta = map(noise(xOffset,yOffset),0,1,0,TWO_PI);
+
+//////////////////////////////////////////////////////////////
+ // J :: map depth image greyscale to theta and add to previous theta
+ // if depth image exists at this location, then map brightness
+ // where is Owen's code for calculating depth? DRAWING UTILITIES, of course!
+ 
+ //multiply by 10 gives 10 rotations between DepthMin and DepthMax (or approx 1 full rotation per body width)
+ //theta += map(brightness(depthImageBrightness), 0, 255, 0, TWO_PI*10);
+       
+ ///////////////////////////////////////////////////////////////          
 		  // Polar to cartesian coordinate transformation to get x and y components of the vector
 		  field[col][row] = new PVector(cos(theta),sin(theta));
 		  yOffset += 0.1;

@@ -80,6 +80,7 @@ class Particle {
 		// randomize step size each time we're reset
 		stepSize = random(config.particleMinStepSize, config.particleMaxStepSize);
 
+// J ::  add REFERENCE IMAGE COLOR HERE -->>*******************************
 		// set up now if we're basing particle color on its initial x/y coordinate
 		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
 			int r = (int) map(_x, 0, width, 0, 255);
@@ -105,6 +106,8 @@ class Particle {
 		return (life > 0);
 	}
 
+// J :: add depthIMAGEFLOW code HERE (or at the Flow Field creation point??) ---->>*************** 
+
 	// Update this particle's position.
 	public void update() {
 		prevLocation = location.get();
@@ -116,8 +119,9 @@ class Particle {
 
 //EXTRA CODE HERE
 
-			velocity.x = cos(angle);
-			velocity.y = sin(angle);
+// J :: swap velocity's x and y experiment.  
+                        velocity.x = cos(angle); // original = velocity.x
+			velocity.y = sin(angle); // original = velocity.y
 			velocity.mult(stepSize);
 
 		}
