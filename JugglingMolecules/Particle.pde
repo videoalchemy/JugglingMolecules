@@ -43,6 +43,11 @@ class Particle {
 
 // J :: adding experimental variables
         int particleWidth;    // strokeWeight;
+        
+        PVector depthImageTheta; // to save the angle change vector:
+        float theta;  // hold  the angle for use with depth Image
+        int depthImageResolution; //  How large is each 'cell' of the depthImage
+        int cols, rows; // columns and rows for the depthImage
 
 
 
@@ -62,6 +67,9 @@ class Particle {
 
 // J :: experiments*************************
                 particleWidth = 2;
+                depthImageResolution = 25;
+                //cols = 
+                
 //*****************************************
 	}
 
@@ -111,11 +119,27 @@ class Particle {
 	// Update this particle's position.
 	public void update() {
 		prevLocation = location.get();
-
+    /*          
 		if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
-			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
-			angle *= (float)config.noiseStrength;
+
+// J :: experiment with adding to user's depth info to the particles angle/////////////////
+                        // look up the pixel info from the depth Image at pixel's location.  problem is that PImage gDepthImg is different size than particle screen
+                        // may have to put dDepthImg pixels into different size
+                        //color gDepthImgColor = gDepthImg.get(location.x, location.y); // get the pixel color at this locatoin
+                        
+                        // try extracting pixel info from the main draw screen
+                       // color mainScreenPixel = get(int(location.x), int(location.y));
+                     //   angle =  map(brightness(mainScreenPixel), 0, 255, 0, 10*TWO_PI);
+                       
+                       
+                       
+                        //original//////////////////////
+                        //angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+			//angle *= (float)config.noiseStrength;
+                        //original//////////////////////
+// J :: ///////////////////////////////////////////////////////////////////////////
+
 
 //EXTRA CODE HERE
 
@@ -124,14 +148,56 @@ class Particle {
 			velocity.y = sin(angle); // original = velocity.y
 			velocity.mult(stepSize);
 
+
 		}
 		else {
-			// normalise an invert particle position for lookup in flowfield
-			flowFieldLocation.x = norm(width-location.x, 0, width);		// width-location.x flips the x-axis.
-			flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
-			flowFieldLocation.y = norm(location.y, 0, height);
-			flowFieldLocation.y *= gKinectHeight;
+*/
 
+                        // this lookup code is now calculated everytime and is used for either the flowfield or for the depthImage
+			// normalise an invert particle position for lookup in flowfield
+			// flowFieldLocation.x = norm(width-location.x, 0, width);		// width-location.x flips the x-axis.
+			// flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
+			// flowFieldLocation.y = norm(location.y, 0, height);
+			// flowFieldLocation.y *= gKinectHeight;
+
+//create a new lookup using depthImage
+                if (acceleration.mag() < config.particleAccelerationLimiter) {
+                      life--;
+                      
+                      flowFieldLocation.x = norm(location.x, 0, gDepthImg.width);    // width-location.x flips the x-axis, which we don't want here
+                      flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
+                      flowFieldLocation.y = norm(location.y, 0, gDepthImg.height);
+                      flowFieldLocation.y *= gKinectHeight;
+                      
+                      //  !!!!!!!!!!!!!!!!!!!!!!  THIS ISN"T FUCKING WORKING
+                      // giving up
+                      
+                      
+                      
+                      //use pixel array to look up color at specific pixel instead of the slow get() to find pixel color
+                      int gDepthImgIndex = int(flowFieldLocation.x + flowFieldLocation.y * gDepthImg.width);
+                      int gDepthImgColor = gDepthImg.pixels[gDepthImgIndex-1];
+                      
+                      // dont use the folloing get method....too slow
+                      //color gDepthImgColor = gDepthImg.get(location.x, location.y); // get the pixel color at this locatoin
+                     
+                     // now use the brightness from the pixel and map to theta
+                      angle = map(brightness(gDepthImgColor), 0, 255, 0, TWO_PI);
+                      angle += noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+                      angle *= (float)config.noiseStrength;
+                      
+                      velocity.x = cos(angle); // original = velocity.x
+                      velocity.y = sin(angle); // original = velocity.y
+                      velocity.mult(stepSize);
+////////////////////////////////////////////////////////
+                      
+                }
+                else {
+                      flowFieldLocation.x = norm(width-location.x, 0, width);    // width-location.x flips the x-axis.
+                      flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
+                      flowFieldLocation.y = norm(location.y, 0, height);
+                      flowFieldLocation.y *= gKinectHeight;
+                  
 			desired = manager.flowfield.lookup(flowFieldLocation);
 			desired.x *= -1;	// TODO??? WHAT'S THIS?
 
@@ -144,6 +210,7 @@ class Particle {
 
 // TODO:  HERE IS THE PLACE TO CHANGE ACCELERATION, BEFORE IT IS APPLIED.   ???
 
+// J :: adding steering force of depthImageTheta
 
 // END ACCELERATION
 
