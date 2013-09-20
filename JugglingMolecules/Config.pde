@@ -326,7 +326,7 @@ println("CONFIG INIT");
 	// Return internal color field value as a float, scaled for our controller.
 	float colorForController(Field field, float controllerMin, float controllerMax) throws Exception {
 		color clr = this.getColor(field);
-		return (float) this.hueFromColor(clr);
+		return this.hueFromColor(clr);
 	}
 
 
