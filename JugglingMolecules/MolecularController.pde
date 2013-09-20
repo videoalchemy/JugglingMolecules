@@ -132,7 +132,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		}
 
 		// "noise" x/y pad
-		else if (fieldName.equals("noise")) {
+		if (fieldName.equals("noise")) {
 			// x-y pad which returns 2 values
 			float otherValue = message.get(1).floatValue();
 			gConfig.setFromController("noiseStrength", value, this.minValue, this.maxValue);
@@ -141,33 +141,40 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		}
 
 		// "particleColorScheme-0", "particleColorScheme-1", etc
-		else if (fieldName.startsWith("particleColorScheme-")) {
+		if (fieldName.startsWith("particleColorScheme-")) {
 			int mode = int(fieldName.replace("particleColorScheme-", ""));
 			fieldName = "particleColorScheme";
 			value = (float) mode;
 		}
 
 		// "depthImageBlendMode-0", "depthImageBlendMode-1", etc
-		else if (fieldName.startsWith("depthImageBlendMode-")) {
+		if (fieldName.startsWith("depthImageBlendMode-")) {
 			int mode = int(fieldName.replace("depthImageBlendMode-", ""));
 			fieldName = "depthImageBlendMode";
 			value = (float) mode;
 		}
 
 		// hue controls.  Note that the config currently expects "Color" to be setting hue value.
-		else if (fieldName.contains("Hue")) {
+		if (fieldName.endsWith("Hue")) {
 			fieldName = fieldName.replace("Hue", "") + "Color";
 		}
 
+
+		// generic set from controller
 		gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
 
 
+
+		// if we changed kinect angle, move the device.
 		if (fieldName.startsWith("kinect")) {
 			gConfig.saveSetup();
 			if (fieldName.equals("kinectAngle")) {
 				try {
 					int angle = gConfig.getInt("kinectAngle");
 					gKinecter.kinect.tilt(angle);
+
+					// remember angle on restart
+					gConfig.saveSetup();
 				} catch (Exception e){};
 			}
 		}
