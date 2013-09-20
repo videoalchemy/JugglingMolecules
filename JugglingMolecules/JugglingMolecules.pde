@@ -169,6 +169,11 @@ void oscEvent(OscMessage message) {
 	}
 }
 
+// Take a picture, fool!
+void snapshot() {
+	println("TAKE A PICTURE, FOOL!!!!");
+}
+
 
 // That's all folks!
 void stop() {

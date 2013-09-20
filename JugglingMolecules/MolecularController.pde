@@ -97,7 +97,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		float value = message.get(0).floatValue();
 
 
-
+		// Window background hue/greyscale toggle.
 		if (fieldName.startsWith("windowBg")) {
 			float _hue;
 			if (fieldName.equals("windowBgGreyscale")) {
@@ -113,6 +113,12 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			} else {
 				gConfig.windowBgColor = colorFromHue(_hue);
 			}
+			return;
+		}
+
+		// "snapshot" buttons takes a screen shot.
+		if (fieldName.equals("snapshot")) {
+			snapshot();
 			return;
 		}
 
