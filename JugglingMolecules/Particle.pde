@@ -41,6 +41,10 @@ class Particle {
 	PVector flowFieldLocation;
 
 
+// J :: adding experimental variables
+        int particleWidth;    // strokeWeight;
+
+
 
 	// Particle constructor.
 	// NOTE: you can count on the particle being `reset()` before it will be drawn.
@@ -55,6 +59,10 @@ class Particle {
 		acceleration 		= new PVector(0, 0);
 		velocity 			= new PVector(0, 0);
 		flowFieldLocation 	= new PVector(0, 0);
+
+// J :: experiments*************************
+                particleWidth = 2;
+//*****************************************
 	}
 
 
@@ -149,7 +157,11 @@ class Particle {
 
 	// 2-d render using processing OPENGL rendering context
 	void render() {
-		stroke(clr);
+
+// J :: experiments ***************
+                strokeWeight(particleWidth);	
+//*********************************  
+        	stroke(clr);
 		line(prevLocation.x, prevLocation.y, location.x, location.y);
 	}
 }
