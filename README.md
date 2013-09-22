@@ -370,3 +370,5 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 	- then fill that shape with a texture randomly selected from an Emblem
 
 - **FLOW MAPS**
+	- use SNAPS from OmiCron in addition to perlin noise field
+	- **use RVL video archives to inform flow field**
