@@ -5,7 +5,6 @@ boolean	showDepthImage	true
 boolean	showDepthPixels	false
 boolean	showSettings	false
 color	windowBgColor	color(255,0,0,255)
-boolean	windowBgGreyscale	true
 int	windowOverlayAlpha	0
 int	flowfieldResolution	15
 float	flowfieldPredictionTime	0.11938775
