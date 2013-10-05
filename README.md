@@ -347,6 +347,7 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 		- Turns out, this was way more work than I needed. Instead, I should simply apply the Perlin noise data directly to my object’s velocity vectors and voila, done and done. And without needing to worry about placing thousands of vector arrows into a space that simply didnt need it. In a way, the Perlin noise data can represent an infinite space with an infinite number of vector arrows, and for cheap too.
 - [Flocking in 3D  |  Flight 404 for Eyeo 2012 Festival](https://vimeo.com/43802463)
 - [Shockwave |  Flight 404](https://vimeo.com/43802127)
+- [Benjamin Moore Commercial  |  rotating paint buckets](http://www.youtube.com/watch?v=i_kCJe_VZ-E)
 
 
 ####FlowMaps, Reference Images:
@@ -370,3 +371,5 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 	- then fill that shape with a texture randomly selected from an Emblem
 
 - **FLOW MAPS**
+	- use SNAPS from OmiCron in addition to perlin noise field
+	- **use RVL video archives to inform flow field**
