@@ -2,15 +2,27 @@
 - [images (screenshots and diagrams)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
-###OmiCron-SpiroLight
-- an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
-- the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with its large knobs and glowing buttons.  Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
+###Juggling Molecules
+- A responsive flow-field of illuminated particles designed for the Calistoga Springs' festival Luminescent Playground held Sept 20-23, 2013
+- the interface is a combination of gesture control supplied by a dancer's movement, and knob turning by participants using controls on an iPad.
+- The design originally called for the use of the podium sized OmiCron Interface, which would sit somewhere on the edge of the dance floor enticing users with its 7 large knobs and 4 glowing buttons.   
+- The original design also called for an iPad interface to control the remain 50 variables not intended for public consumption.
+- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help user's deal with the overwhelming number of variables, we created 100 preset buttons and prepopluated them with as many preset configurations prior to the event. 
+- Original plans also included an semi-autonmous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
 
-###Requirements:
-- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
+###Hardware and Software required:
+- Mac Mini
 - Kinect Depth Sensor
 - Processing 2.0.3
 - SimpleOpenNI 1.96
+- iPad running TouchOSC
+- Projector
+- Rigging gear, power cables, VGA cables
+- Rubbermaid container to house the gear and keep it dry (outdoor event and it did rain)
+- 150 inch Portable rear projection screen
+- [Deprecated]:
+	- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
+
 
 ###Interactions:**
 0. Dancer with OmiCron Controller
@@ -56,6 +68,7 @@
 - [] Knobs: Red(Left and Right) Green(L,R), Blue(L,R) control the rotational velocity and distance to next teir.
 - [] Ohmite Knob controls the parameters of the flow field (somehow) and/or z-axis rotation
 - [] Add remainder of tier 2 and 3
+- Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
 - Create SpiroLight structure from Fractal Recursion??
 	- [Fractal Recursion  |  Shiffman](https://vimeo.com/64424402) 
 - **OmiCron Structure:**
