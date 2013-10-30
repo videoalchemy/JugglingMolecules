@@ -4,7 +4,7 @@
 
 
 ###Juggling Molecules -- Documentation:
-- [images of user interaction, pre-event install, screenshots and diagrams from development)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
+- [images of user interaction, pre-event install, screenshots and diagrams from development ](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
 ###Juggling Molecules
