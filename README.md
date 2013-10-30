@@ -7,7 +7,7 @@
 - the interface is a combination of gesture control supplied by a dancer's movement, and knob turning by participants using controls on an iPad.
 - The design originally called for the use of the podium sized OmiCron Interface, which would sit somewhere on the edge of the dance floor enticing users with its 7 large knobs and 4 glowing buttons.   
 - The original design also called for an iPad interface to control the remain 50 variables not intended for public consumption.
-- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help user's deal with the overwhelming number of variables, we created 100 preset buttons and prepopluated them with as many preset configurations prior to the event. 
+- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help users deal with the overwhelming number of variables, we created 100 preset buttons and prepopluated them with as many preset configurations prior to the event. 
 - Original plans also included an semi-autonmous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
 
 ###Hardware and Software required:
