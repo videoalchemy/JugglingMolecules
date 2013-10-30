@@ -1,4 +1,4 @@
-###From Spirograph to a Particle System Framework:
+###From Spirograph to Particle System Framework:
 - what started as a 3D Spirograph app is now a solid framework for precisely creating, controlling, and compiling particle system configurations.
 - The documentation contained in this README reflects this transition from simple project to powerful tool.
 
