@@ -29,7 +29,7 @@
 	- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
 
 
-###Interactions:**
+###Interactions:
 0. Dancer with OmiCron Controller
 1. Dancer with SpiroLight
 2. Dancer with Particles
@@ -41,7 +41,7 @@
 5. OmiCron with Particles
 
 
-###OmiCron: Map Controls to SpiroLight:**
+###OmiCron: Map Controls to SpiroLight:
 - [] Button shuffles ratios for specified tier
 	- where on the circle is arm connected? (make that a Perlin Noise function where button down progresses through perlin noise for all variables.
 - [] First tier Red knobs control overall size of spiroLight, mass, and steering ability toward target.  Mass gets bigger, slower it moves, the larger the circle, the larger the entire spiroLight  (as opposed to following closest point, which changes the size of spiroLight because of perspective being further away, but does not change the mass or the periods)
@@ -131,55 +131,57 @@
 
 ###SpiroLight + Dancer:
 - **Specific Arms Always remain in contact with the DANCER and EDGE DETECT PATH FOLLOW.**  
-		- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
-		- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
-			- AND the closer the arm, the greater the connetion, the brighter.
-			- Whichever arm is path following along body will have perlin noise generated organic branching.
-		- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
-		- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
-	- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
-		- Use the Frame Differencing already used to inform the particle system
-		- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
+	- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
+	- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
+		- AND the closer the arm, the greater the connetion, the brighter.
+		- Whichever arm is path following along body will have perlin noise generated organic branching.
+	- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
+	- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
+- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
+	- Use the Frame Differencing already used to inform the particle system
+	- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
 
 
-###Kinect + Dancer:
-- **Optical Flow:**
-	- Using Optical Flow:
-		- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
-		- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
-		- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
-		- [] If movement > threshold, calc magnitude and orientation of gradient, 
-		- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
-		- **Color Code the Optical Flow**
-			- see the UCF Computer Vision lect at minute 4.  Movement left to right right to left are different colors.  
-			- Method is known as color coding vectors when velocity is mapped to the color intensity
-		- Use Optical FLow to create Motion Based Segmentation (show me only what's moving)
+
+###Optical Flow:  (Kinect + Dancer)
+- **Using Optical Flow:**
+	- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
+	- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
+	- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
+	- [] If movement > threshold, calc magnitude and orientation of gradient, 
+	- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
+	- **Color Code the Optical Flow**
+		- see the UCF Computer Vision lect at minute 4.  Movement left to right right to left are different colors.  
+		- Method is known as color coding vectors when velocity is mapped to the color intensity
+	- Use Optical FLow to create Motion Based Segmentation (show me only what's moving)
+	- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
+
+- **Examples of Optical FLow:**
+	- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
+	- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
+	- [Structure From Motion Using Optical Flow  |  Shows Image, Smoothed Image, MotionVectors  YouTube](http://www.youtube.com/watch?v=qhoC-YetpnM)
+	- [UCF Computer Vision lect.6 Optical Flow](http://www.youtube.com/watch?v=5VyLAH8BhF8)
+	- [OpenCV Optical Flow Tutorial for the Lucas-Kanade Algorithm](http://dasl.mem.drexel.edu/~noahKuntz/openCVTut9.html)
+		- The LK tracker uses three assumptions, brightness constancy between the same pixels from one frame to the next, small movements between frames (requiring image pyramids to track larger movements), and spatial coherence, thats points near each other are on the same surface. Then the basic concept of the tracker is to estimate the velocity of a moving pixel by the ratio of the derivative of the intensity over time divided by the derivative of the intensity over space. 
+	- [Optical FLow Estimation Tutorial  |  pdf](http://www.cs.toronto.edu/pub/jepson/teaching/vision/2503/opticalFlow.pdf)
+	- [Computing Optical Flow with the OpenCV Library  |  Stavans, Stanford AI Lab](http://robots.stanford.edu/cs223b05/notes/CS%20223-B%20T1%20stavens_opencv_optical_flow.pdf)
+	- [Calculating Small Optical Flow  |  tutorial pdf](http://www.cs.umd.edu/~djacobs/CMSC426/OpticalFlow.pdf)
+	- [SimpleFlow: A Non-iterative, Sublinear Optical Flow Algorithm  |  Computer Graphics UC Berkeley](http://graphics.berkeley.edu/papers/Tao-SAN-2012-05/)
+	- [Optical FLow and the Methods of Calculating  |  wikipedia](http://en.wikipedia.org/wiki/Optical_flow)
+	- [Images of Optical FLow](https://www.google.com/search?q=optical+flow&safe=off&tbm=isch&tbo=u&source=univ&sa=X&ei=3lcxUrneJeqWigLPxICADg&ved=0CEUQsAQ&biw=2128&bih=1203&sei=HFgxUsvZKOfgiALE9ICwBw#imgdii=_)
+
+
+- **Pseudo Code for Optical Flow:**
+	- Horn & Shunck Optical Flow Algorithm
 		- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
-	
-	- Examples of Optical FLow:
-		- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
-		- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
-		- [Structure From Motion Using Optical Flow  |  Shows Image, Smoothed Image, MotionVectors  YouTube](http://www.youtube.com/watch?v=qhoC-YetpnM)
-		- [UCF Computer Vision lect.6 Optical Flow](http://www.youtube.com/watch?v=5VyLAH8BhF8)
-		- [OpenCV Optical Flow Tutorial for the Lucas-Kanade Algorithm](http://dasl.mem.drexel.edu/~noahKuntz/openCVTut9.html)
-			- The LK tracker uses three assumptions, brightness constancy between the same pixels from one frame to the next, small movements between frames (requiring image pyramids to track larger movements), and spatial coherence, thats points near each other are on the same surface. Then the basic concept of the tracker is to estimate the velocity of a moving pixel by the ratio of the derivative of the intensity over time divided by the derivative of the intensity over space. 
-		- [Optical FLow Estimation Tutorial  |  pdf](http://www.cs.toronto.edu/pub/jepson/teaching/vision/2503/opticalFlow.pdf)
-		- [Computing Optical Flow with the OpenCV Library  |  Stavans, Stanford AI Lab](http://robots.stanford.edu/cs223b05/notes/CS%20223-B%20T1%20stavens_opencv_optical_flow.pdf)
-		- [Calculating Small Optical Flow  |  tutorial pdf](http://www.cs.umd.edu/~djacobs/CMSC426/OpticalFlow.pdf)
-		- [SimpleFlow: A Non-iterative, Sublinear Optical Flow Algorithm  |  Computer Graphics UC Berkeley](http://graphics.berkeley.edu/papers/Tao-SAN-2012-05/)
-		- [Optical FLow and the Methods of Calculating  |  wikipedia](http://en.wikipedia.org/wiki/Optical_flow)
-		- [Images of Optical FLow](https://www.google.com/search?q=optical+flow&safe=off&tbm=isch&tbo=u&source=univ&sa=X&ei=3lcxUrneJeqWigLPxICADg&ved=0CEUQsAQ&biw=2128&bih=1203&sei=HFgxUsvZKOfgiALE9ICwBw#imgdii=_)
+		- Taylor Series
+	1. Smooth Image with gausian blur
+	2. Compute derivative of filtered image
+	3. Find magnitude and orientation of gradient
+	4. Apply 'non-maximum' suppression
 
+____________________________
 
-
-	- Pseudo Code for Optical Flow:
-		- Horn & Shunck Optical Flow Algorithm
-			- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
-			- Taylor Series
-		1. Smooth Image with gausian blur
-		2. Compute derivative of filtered image
-		3. Find magnitude and orientation of gradient
-		4. Apply 'non-maximum' suppression
 
 - **Point Cloud:**
 	- We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
