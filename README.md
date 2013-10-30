@@ -3,7 +3,7 @@
 - The documentation contained in this README reflects this transition from simple project to powerful tool.
 
 
-###Juggling Molecules -- Documentation:
+###Documentation:
 - [images of user interaction, pre-event install, screenshots and diagrams from development ](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
