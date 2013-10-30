@@ -1,5 +1,10 @@
+###From Spirograph to a Particle System Framework:
+- what started as a 3D Spirograph app is now a solid framework for precisely creating, controlling, and compiling particle system configurations.
+- The documentation contained in this README reflects this transition from simple project to powerful tool.
+
+
 ###Juggling Molecules -- Documentation:
-- [images (screenshots and diagrams)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
+- [images of user interaction, pre-event install, screenshots and diagrams from development)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
 ###Juggling Molecules
@@ -7,8 +12,8 @@
 - the interface is a combination of gesture control supplied by a dancer's movement, and knob turning by participants using controls on an iPad.
 - The design originally called for the use of the podium sized OmiCron Interface, which would sit somewhere on the edge of the dance floor enticing users with its 7 large knobs and 4 glowing buttons.   
 - The original design also called for an iPad interface to control the remain 50 variables not intended for public consumption.
-- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help users deal with the overwhelming number of variables, we created 100 preset buttons and prepopluated them with as many preset configurations prior to the event. 
-- Original plans also included an semi-autonmous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
+- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help users deal with the overwhelming number of variables, we created 100 presets, many pre-populated with configurations prior to the event. 
+- Original plans also included an semi-autonomous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
 
 ###Hardware and Software required:
 - Mac Mini
@@ -31,7 +36,7 @@
 3. Particles with SpiroLight
 	- Autonomous Vehicles AVOID OR PURSUE SpiroLight (Omicron Control)
 	- When emerging from and avoiding spiroLight, particles steer toward Dancer
-	- When emerging from and avoiding dancer, particles steer toward Spirolight.  When within range of outter most arm, particles accelerate like additive flashes of light and disappear inside spirolight.  Born again from Dancer's movement (optical flow)
+	- When emerging from and avoiding dancer, particles steer toward Spirolight.  When within range of outer most arm, particles accelerate like additive flashes of light and disappear inside spirolight.  Born again from Dancer's movement (optical flow)
 4. OmiCron with SpiroLight
 5. OmiCron with Particles
 
@@ -53,7 +58,7 @@
 
 ###OmiCron: Map Controls to SpiroLight:**
 - [] Button shuffles ratios for specified tier
-	- where on the circle is arm connected? (make that a perlin noise function where button down progresses through perlin noise for all variables.
+	- where on the circle is arm connected? (make that a Perlin Noise function where button down progresses through perlin noise for all variables.
 - [] First tier Red knobs control overall size of spiroLight, mass, and steering ability toward target.  Mass gets bigger, slower it moves, the larger the circle, the larger the entire spiroLight  (as opposed to following closest point, which changes the size of spiroLight because of perspective being further away, but does not change the mass or the periods)
 - [] Knobs control Magnitude of all the vectors, while buttons control location within each variables range
 - [] Snap Button = Reverse Emitter Location from Tier 3 to Dancer.
