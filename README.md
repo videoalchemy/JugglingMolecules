@@ -41,21 +41,6 @@
 5. OmiCron with Particles
 
 
-###Next Steps:
-- [] Setup OmiCron:
-	- [] Run Calibration with Processing.  Systems Check
-	- [] Tighten Bolts
-	- [] Study RotaDeva code for how inputs were passed around.
-	- [] Write the code that treats OmiCron as if it were a variety of forces.  
-	- ```omiCron.KnobLeftRed(); // returns a PVector reading for Magnitude, direction, velocity, etc```
-	- ```omiCron.lookup(KnobFoo); // returns an array of PVectors?????```
-	- [] study the code and see how Owen did it.
-	- [] then save this as it's own Tool for use anytime.
-	- [] make a version for SpiroLight
-- [] rewrite the centerPiece_SpiroLight to include OmiCron
-	- [] scale model using foam core or construction paper??
-	- [] get all the inputs with stationary SpiroLight first Tiers 1-3
-
 ###OmiCron: Map Controls to SpiroLight:**
 - [] Button shuffles ratios for specified tier
 	- where on the circle is arm connected? (make that a Perlin Noise function where button down progresses through perlin noise for all variables.
@@ -391,3 +376,18 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 - **FLOW MAPS**
 	- use SNAPS from OmiCron in addition to perlin noise field
 	- **use RVL video archives to inform flow field**
+
+_____________________
+
+###Next Steps:
+- [] Setup OmiCron:
+	- [x] Run Calibration with Processing.  Systems Check
+	- [x] Tighten bolts on OmiCron pedestal
+	- [x] review RotaDeva code for input flow.
+	- [] Write the code that treats OmiCron as if it were a variety of forces.  
+	- ```omiCron.KnobLeftRed(); // returns a PVector reading for Magnitude, direction, velocity, etc```
+	- ```omiCron.lookup(KnobFoo); // returns an array of PVectors?????```
+	- [] make a version for SpiroLight
+- [] rewrite the centerPiece_SpiroLight to include OmiCron
+	- [] scale model using foam core or construction paper??
+	- [] get all the inputs with stationary SpiroLight first Tiers 1-3
