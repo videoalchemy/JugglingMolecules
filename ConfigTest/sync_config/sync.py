@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 """
-	Combine unique config.tsv files from 2 different directories into a third directory.
+	Combine unique PS##.tsv config files from 2 different directories into an output directory.
+	Removes all duplicates from output directory.
+	Any files in dir1 & dir2 with the same name but different contents will be moved as minimally as possible.
 """
 
 import os
@@ -44,7 +46,7 @@ def hashConfigsForPath(path, hashMap=None):
 		hash = hashlib.md5(fileContents).hexdigest()
 
 		# if we don't have it in our hashMap already, add it
-		if not hash in hashMap:
+		if not (hash in hashMap):
 			print filePath +" is unique"
 			config = dict()
 			config['name'] = fileName
@@ -102,6 +104,8 @@ def main(argv):
 		index = configIndex(fileName)
 		if index == None: continue
 		while True:
+#TODO: wrap around if we get to 99
+#TODO: what if there's no space at all for the dupes?
 			index += 1
 			newFileName = configNameForIndex(index)
 			if not (newFileName in nameMap):
@@ -121,7 +125,7 @@ def main(argv):
 	else:
 		fileNames = os.listdir(outputPath)
 		for fileName in fileNames:
-			if fileName.startswith(configPrefix):
+		if fileName.startswith(configPrefix):
 				path = outputPath + fileName
 				print "removing old file "+path
 				os.remove(path)
@@ -131,9 +135,11 @@ def main(argv):
 	fileNames = nameMap.keys()
 	fileNames.sort()
 	for fileName in fileNames:
+#TODO: rename to compact the space?
 		filePath = outputPath + fileName
 		print "outputting to "+filePath
-		file = open(filePath, "w")
+		file = open(filePath, "w+")
+		config = nameMap[fileName]
 		file.write(config['contents'])
 		file.close()
 
