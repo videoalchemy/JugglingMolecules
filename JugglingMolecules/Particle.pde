@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)

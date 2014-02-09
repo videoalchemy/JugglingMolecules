@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -12,12 +12,13 @@
 //
 //  We can load and save these to disk to restore "interesting" states to play with.
 //
-//	Configurations are stored in ".config" files in Tab-Separated-Value format.
-//		We have a header row as 		field<tab>value
-//		and then each row of data is 	<field><tab><value>
-//										<field><tab><value>
+//	Configurations are stored in ".tsv" files in Tab-Separated-Value format.
+//		We have a header row as 		type<TAB>field<TAB>value
+//		and then each row of data is 	<type><TAB><field><TAB><value>
+//										<type><TAB><field><TAB><value>
 //
 //	We can auto-parse these config files using reflection.
+//		TODOC... more details
 //
 ////////////////////////////////////////////////////////////
 
@@ -55,7 +56,7 @@ println("CONFIG INIT");
 	ArrayList<Controller> controllers;
 
 ////////////////////////////////////////////////////////////
-//	Fields that we manage
+//	Sets of fields that we manage
 ////////////////////////////////////////////////////////////
 
 	// List of "setup" fields.
@@ -511,7 +512,7 @@ println("CONFIG INIT");
 
 
 
-	// Set an boolean field to a string value or an boolean value.
+	// Set a boolean field to a string value or an boolean value.
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
@@ -543,7 +544,7 @@ println("CONFIG INIT");
 	}
 
 
-	// Set an color field to a string value or an color value.
+	// Set a color field to a string value or an color value.
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
