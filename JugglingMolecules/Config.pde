@@ -48,6 +48,9 @@ class Config {
 	public Config() {
 println("CONFIG INIT");
 		this.controllers = new ArrayList<Controller>();
+
+		// Set up our file existance map.
+		this.initConfigExistsMap();
 	}
 
 ////////////////////////////////////////////////////////////
@@ -86,9 +89,14 @@ println("CONFIG INIT");
 	String filepath = "config/";
 
 
-	// Extension (including period) for all files of this type.
-	String extension = ".tsv";
+	// Prefix for "normal" config files.
+	String normalFilePrefix = "PS";
 
+	// Extension (including period) for all files of this type.
+	String configExtension = ".tsv";
+
+	// Number of "normal" configs we support in this config.
+	int maxNormalConfigCount = 100;
 
 	// Return the full path for a given config file instance.
 	// If you pass `_fileName`, we'll use that.
@@ -103,9 +111,31 @@ println("CONFIG INIT");
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
 		}
-		return filepath + _fileName + extension;
+		return filepath + _fileName + configExtension;
 	}
 
+	// Return the full path to a "normal" file given an integer index.
+	String getFilePath(int configFileIndex) {
+		String fileName = this.getFileName(configFileIndex);
+		return this.getFilePath(fileName);
+	}
+
+	// Return the FILE NAME to a "normal" file given an integer index
+	//	WITHOUT THE EXTENSION!!!
+	// NOTE: the base implementation assumes we have 2-digit file indexing.
+	//			override this in your subclass if that's not the case!
+	String getFileName(int configFileIndex) {
+		return normalFilePrefix + String.format("%02d", configFileIndex);
+	}
+
+	// Return the index associated with a "normal" config file name.
+	// Returns -1 if it doesn't match our normal config naming pattern.
+	int getFileIndex(String fileName) {
+		if (!fileName.startsWith(normalFilePrefix)) return -1;
+		// reduce down to just numbers
+		String stringValue = fileName.replaceAll( "[^\\d]", "" );
+		return Integer.parseInt(stringValue, 10);
+	}
 
 ////////////////////////////////////////////////////////////
 //	Dealing with change.
@@ -636,6 +666,16 @@ println("CONFIG INIT");
 		}
 		this.debug("Saving to '"+path+"'");
 
+		// update our configExistsMap for this file if it maps to a "normal" file
+		int fileIndex = this.getFileIndex(_fileName);
+		if (fileIndex > -1) {
+			if (fileIndex >= maxNormalConfigCount) {
+				println("Warning: saving '"+_fileName+"' which returned index of "+fileIndex);
+			} else {
+				configExistsMap[fileIndex] = true;
+			}
+		}
+
 		// Get the data as a table
 		Table table = getFieldsAsTable(fields);
 
@@ -1140,6 +1180,27 @@ println("CONFIG INIT");
 
 
 
+////////////////////////////////////////////////////////////
+//	Reflection for our config files on disk.
+////////////////////////////////////////////////////////////
+	// Array of boolean values for whether config files actually exist on disk.
+	boolean[] configExistsMap;
+
+	// Initialize our configExistsMap map.
+	void initConfigExistsMap() {
+		configExistsMap = new boolean[maxNormalConfigCount];
+		for (int i = 0; i < this.maxNormalConfigCount; i++) {
+			configExistsMap[i] = this.configFileExists(i);
+		}
+	}
+
+	boolean configFileExists(int index) {
+		// get local path (relative to sketch)
+		String localPath = this.getFilePath(index);
+		// use sketchPath to convert to full path
+		String path = sketchPath(localPath);
+		return new File(path).exists();
+	}
 
 ////////////////////////////////////////////////////////////
 //	Debugging and error handling.

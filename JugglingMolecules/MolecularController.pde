@@ -19,6 +19,35 @@ class MolecularController extends TouchOscController {
 		super();
 	}
 
+
+	// Update the "Saver" grid with the set of files which already exist.
+	void updateSaverFileGrid() {
+		this.sendActiveFiles("Saver", gConfig.configExistsMap);
+	}
+
+	// Update a multi-toggle control with a set of booleans indicating
+	//	whether or not a given set of files exist.
+	void sendActiveFiles(String controlName, boolean[] fileExistsMap) {
+		OscMessage message = new OscMessage("/"+controlName);
+//		String debug = "/"+controlName;
+		for (int col = 0; col < 10; col++) {
+			for (int row = 9; row >= 0; row--) {
+				int cell = (row*10) + col;
+				boolean exists = fileExistsMap[cell];
+				if (exists) {
+					message.add("1");
+//					debug += " 1";
+				} else {
+					message.add("0");
+//					debug += " 0";
+				}
+			}
+		}
+//		println("sending message "+debug);
+//		message.print();
+		this.sendMessage(message);
+	}
+
 	// Update the config with messages from OSC.
 	// Special stuff to update the config w/weird controls, etc.
 	void updateConfig(String fieldName, OscMessage message) {
@@ -46,6 +75,10 @@ class MolecularController extends TouchOscController {
 			float value = message.get(0).floatValue();
 			this.saveLock = (value == 1);
 println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
+			// if saveLock is down, make sure the "Saver" grid is showing the current state.
+			if (this.saveLock) {
+				this.updateSaverFileGrid();
+			}
 			return;
 		}
 
@@ -65,6 +98,10 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			this.say("Saving "+fileName);
 			gConfig.save(fileName);
 			this.say("Saved "+fileName);
+
+			// update saver file grid
+			this.updateSaverFileGrid();
+
 			return;
 		}
 
@@ -162,8 +199,6 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 
 		// generic set from controller
 		gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
-
-
 
 		// if we changed kinect angle, move the device.
 		if (fieldName.startsWith("kinect")) {

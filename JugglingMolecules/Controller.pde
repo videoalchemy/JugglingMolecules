@@ -191,8 +191,31 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
+	// Set color of a control.
+	// Valid colors are:
+	//		"red", "green", "blue", "yellow", "purple",
+	//		"gray", "orange", "brown", "pink"
+	void setColor(String fieldName, String value) {
+		OscMessage message = new OscMessage("/"+fieldName+"/color");
+		message.add(value);
+		this.sendMessage(message);
+	}
 
+	// Show a named control.
+	void showControl(String fieldName) {
+		OscMessage message = new OscMessage("/"+fieldName+"/visible");
+		message.add(1);
+		this.sendMessage(message);
+	}
 
+	// Hide a named control.
+	void hideControl(String fieldName) {
+		OscMessage message = new OscMessage("/"+fieldName+"/visible");
+		message.add(0);
+		this.sendMessage(message);
+	}
+
+	boolean controlIsOn
 
 ////////////////////////////////////////////////////////////
 //	Talk-back to the user
