@@ -16,6 +16,7 @@ class ParticleManager {
 
 	// Particles we manage.  Currently created DURING init.
 	Particle particles[];
+
 	// Index of next particle to revive when its time to "create" a new particle.
 	int particleId = 0;
 
@@ -25,7 +26,9 @@ class ParticleManager {
 		config = _config;
 
 		// pre-create all particles for efficiency when drawing.
-		int particleCount = config.particleMaxCount;
+		// NOTE: We pre-create the total maximum possible, even though we may be showing less right now.
+		//		 This allows us to dynamically change the particleMaxCount range fully.
+		int particleCount = config.MAX_particleMaxCount;
 		particles = new Particle[particleCount];
 		for (int i=0; i < particleCount; i++) {
 			// initialise maximum particles

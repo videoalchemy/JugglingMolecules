@@ -19,7 +19,7 @@
 	int PARTICLE_COLOR_SCHEME_SAME_COLOR 	= 0;
 	int PARTICLE_COLOR_SCHEME_XY 			= 1;
 	int PARTICLE_COLOR_SCHEME_YX			= 2;
-	int PARTICLE_COLOR_SCHEME_XYX			= 3;
+	int PARTICLE_COLOR_SCHEME_RAINBOW			= 3;
 
 	String[] _SETUP_FIELDS 	 = 	{ "setup*", "kinect*" };
 	String[] _DEFAULT_FIELDS = 	{ "MIN_*", "MAX_*" };
@@ -67,7 +67,7 @@ println("MolecularConfig INIT");
 	int MIN_kinectMinDepth = 0;
 	int MAX_kinectMinDepth = 2047;
 
-	int kinectMaxDepth = 950;
+	int kinectMadx`xDepth = 950;
 	int MIN_kinectMaxDepth = 0;
 	int MAX_kinectMaxDepth = 2047;
 
@@ -204,16 +204,18 @@ println("MolecularConfig INIT");
 //	Particle drawing
 ////////////////////////////////////////////////////////////
 
-	// Scheme for how we name particles.
-	// 	- 0 = all particles same color, coming from `particle[Red|Green|Blue]` below
-	// 	- 1 = particle color set from origin
+	// Scheme for particle color.
+	// 	- 0 = all particles same color, coming from `particleColor` below
+	// 	- 1 = "spring" color set
+	// 	- 2 = "fall" color set
+	// 	- 3 = "rainbow" color set
 	int particleColorScheme = PARTICLE_COLOR_SCHEME_XY;
 
 	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
 	color particleColor		= color(255);
 
 	// Opacity for all particle lines, used for all color schemes.
-	int particleAlpha		= 50;	//0-255
+	int particleAlpha		= 50;
 	int MIN_particleAlpha 	= 10;
 	int MAX_particleAlpha 	= 255;
 

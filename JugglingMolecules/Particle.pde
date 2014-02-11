@@ -58,7 +58,7 @@ class Particle {
 	}
 
 
-	// resets particle with new origin and velocitys
+	// resets particle with new origin and velocity
 	public void reset(float _x,float _y,float _zNoise, float _dx, float _dy) {
 		location.x = prevLocation.x = _x;
 		location.y = prevLocation.y = _y;
@@ -72,22 +72,28 @@ class Particle {
 		// randomize step size each time we're reset
 		stepSize = random(config.particleMinStepSize, config.particleMaxStepSize);
 
-		// set up now if we're basing particle color on its initial x/y coordinate
+		// "spring" color scheme
 		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
 			int r = (int) map(_x, 0, width, 0, 255);
 			int g = (int) map(_y, 0, width, 0, 255);	// NOTE: this is nice w/ Y plotted to width
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_YX) {
+		}
+		// "fall" color scheme
+		else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_YX) {
 			int r = (int) map(_x + _y, 0, width+height, 0, 255);
 			int g = (int) map(_x, 0, width, 0, 255);
 			int b = (int) map(_y, 0, height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XYX) {
+		}
+		// ranibow color according to when created
+		else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
 			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
 			clr = color(colorFromHue(nextHue), config.particleAlpha);
-		} else {	//if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
+		}
+		// monochrome, based on particleColor from color control
+		else {
 			clr = color(config.particleColor, config.particleAlpha);
 		}
 	}

@@ -164,7 +164,7 @@ println("CONFIG INIT");
 		for (Controller controller : this.controllers) {
 			try {
 				float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
-				controller.onFieldChanged(field.getName(), controllerValue, typeName, currentValueString);
+				controller.onConfigFieldChanged(field.getName(), controllerValue, typeName, currentValueString);
 			} catch (Exception e) {
 				this.warn("fieldChanged("+field.getName()+") exception setting controller value", e);
 			}
@@ -235,6 +235,7 @@ println("CONFIG INIT");
 		} catch (Exception e) {
 			this.warn("setFromController("+field.getName()+"): exception setting field value", e);
 		}
+this.debug("setFromController('"+field.getName()+"': update config and/or setup if necessary");
 	}
 
 	// Set internal integer value from controller value.
@@ -387,10 +388,19 @@ println("CONFIG INIT");
 	Table load() {
 		return this.load(null);
 	}
+
+	// Load a numbered config.
+	Table load(int fileIndex) {
+		String _fileName = this.getFileName(fileIndex);
+		this.load(_fileName);
+	}
+
+	// Load a file by name (within our <sketch>/config/ folder).
 	Table load(String _fileName) {
 		// remember filename if passed in
 		if (_fileName != null) {
 			// turn off old button
+// TODO: breaks encapsulation???
 			if (gController != null) gController.togglePresetButton(this.setupLastConfigFile, false);
 			this.setupLastConfigFile = _fileName;
 			// save current setup config
@@ -641,6 +651,13 @@ println("CONFIG INIT");
 	Table save() {
 		return this.save(null);
 	}
+
+	// Load a numbered config.
+	Table save(int fileIndex) {
+		String _fileName = this.getFileName(fileIndex);
+		this.load(_fileName);
+	}
+
 	Table save(String _fileName) {
 		if (_fileName != null) this.setupLastConfigFile = _fileName;
 		return this.saveToFile(this.setupLastConfigFile, this.FIELDS);

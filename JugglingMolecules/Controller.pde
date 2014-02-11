@@ -19,7 +19,9 @@ class Controller {
 	float minValue = 0.0f;
 	float maxValue = 1.0f;
 
-	void onFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {}
+	// A config field has changed.
+	// Update the controller.
+	void onConfigFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {}
 
 	// Return the current SCALED value of our config object from just a field name.
 	float getFieldValue(String fieldName) throws Exception {
@@ -37,12 +39,19 @@ class TouchOscController extends Controller {
 	float minValue = 0.0f;
 	float maxValue = 1.0f;
 
+	// Map of controls we support.
+	HashMap<String, OscControl> controls;
+
+	// Map of flags which are turned on/off by FlagControls.
+	HashMap<String, Boolean> flags;
 
 ////////////////////////////////////////////////////////////
 //	Initial setup.
 ////////////////////////////////////////////////////////////
 
 	public TouchOscController() {
+		this.controls = new HashMap<String, OscControl>();
+		this.flags = new HashMap<String, Boolean>();
 		outboundAddresses = 	new ArrayList<NetAddress>();
 	}
 
@@ -53,21 +62,11 @@ class TouchOscController extends Controller {
 		this.rememberOutboundAddress(message.netAddress());
 
 		try {
-			// get the name of the field being affected, minus the initial slash
-			String fieldName = message.addrPattern().substring(1);
-
 			// update the configuration
-			this.updateConfig(fieldName, message);
+			this.parseMessage(message);
 		} catch (Exception e) {}
 	}
 
-
-	// Tell the config object about the message.
-	// Override if you need to munge values.
-	void updateConfig(String fieldName, OscMessage message) {
-		float value = message.get(0).floatValue();
-		gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
-	}
 
 	// Add an outbound address to the list of addresses that we talk to.
 	// OK to call this more than once with the same address.
@@ -84,8 +83,169 @@ class TouchOscController extends Controller {
 	}
 
 
+
+	// Add a named OscControl.
+	void addControl(String fieldName, OscControl control) {
+		this.controls.put(fieldName, control);
+	}
+
+	// Return a named control.
+	// Returns null if no control with this name defined.
+	OscControl getControl(String fieldName) {
+		return this.controls.get(fieldName);
+	}
+
+	// Return a named control, or create a simple "OscControl" instance if none found.
+	OscControl getOrCreateControl(String fieldName) {
+		OscControl control = this.getControl(fieldName);
+		if (!control) {
+			control = this.makeBasicControl(this, fieldName);
+		}
+		return control
+	}
+
+	// Do we have an existing control for the given field name?
+	void controlExists(String fieldName) {
+		OscControl control = this.controls.get(fieldName);
+		return (control != null);
+	}
+
+	// Make a generic control for the specified field.
+	OscControl makeBasicControl(String fieldName) {
+		return new OscControl(this, fieldName);
+	}
+
+
+
+
 ////////////////////////////////////////////////////////////
-//	Generic send of a prepared message to all controllers.
+//	Deal with changes to the current configuration.
+//	We delegate down to OscControl objects to do the actual work.
+////////////////////////////////////////////////////////////
+
+	// A configuration field has changed.  Tell the controller.
+	void onConfigFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {
+		// update the label
+		this.sendLabel(fieldName, valueLabel);
+
+		OscControl control = this.getOrCreateControl(fieldName);
+		control.onConfigFieldChanged(controllerValue);
+	}
+
+
+
+////////////////////////////////////////////////////////////
+//	Parse messages from the controller, which generally update our config.
+//	We delegate down to OscControl objects to do the actual work.
+////////////////////////////////////////////////////////////
+
+	// A configuration field has changed.  Tell the controller.
+	void parseMessage(OscMessage message) {
+		// get the name of the field being affected, minus the initial slash
+		String fieldName = this.getMessageNamePrefix(message);
+
+		// lop off anything after a "-"
+		int index = fieldName.indexOf("-");
+		if (index > -1) fieldName = fieldName.substr(0, index);
+
+		OscControl control = this.getOrCreateControl(fieldName);
+		float parsedValue = control.parseMessage(message);
+
+		// handle any special actions not covered by our normal controls
+		this.handleSpecialAction(control, parsedValue, message);
+	}
+
+	// Handle a special action from some field being pressed.
+	// Override this to do special things when, eg, specific buttons are pressed.
+	void handleSpecialAction(Control control, OscMessage message) {
+		return;
+	}
+
+	// Update the configuration for a particular field.
+	// Value is the float value we got from OSC.
+	void updateConfigForField(String fieldName, float value) {
+		gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
+	}
+
+
+	// Return the name of a message without the leading "/"
+	String getMessageName(OscMessage message) {
+		return message.addrPattern().substring(1);
+	}
+
+	// Return the name of a message BEFORE the "-"
+	String getMessageNamePrefix(OscMessage message) {
+		// field name minus initial slash
+		String fieldName = this.getMessageName(message);
+		// lop off everything after "-"
+		int index = fieldName.indexOf("-");
+		if (index > -1) fieldName = fieldName.substr(0, index);
+		return fieldName;
+	}
+
+	// Return the name of the message AFTER the "-".
+	// Returns null if no "-" in the name.
+	String getMessageNameSuffix(OscMessage message) {
+		// field name minus initial slash
+		String fieldName = this.getMessageName(message);
+		// is there a "-" ?
+		int index = fieldName.indexOf("-");
+		// if no, return null
+		if (index == -1) return null;
+		// return the bit after the "-"
+		return fieldName.substr(index+1);
+	}
+
+
+	// Return the first "value" of a message as a float.
+	float getMessageValue(OscMessage message) {
+		return this.getMessageValue(message, 0);
+	}
+
+	// Return an arbitrarily-indexed "value" of a message as a float.
+	float getMessageValue(OscMessage message, int valueIndex) {
+		return message.get(valueIndex).floatValue();
+	}
+
+
+	// Return the first "value" of a message as an int.
+	int getMessageValue(OscMessage message) {
+		return this.getMessageValue(message, 0);
+	}
+
+	// Return an arbitrarily-indexed "value" of a message as an int.
+	int getMessageValue(OscMessage message, int valueIndex) {
+		return (int) message.get(valueIndex).floatValue();
+	}
+
+	// Return the first "value" of a message as a boolean.
+	boolean getMessageValue(OscMessage message) {
+		return this.getMessageValue(message, 0);
+	}
+
+	// Return an arbitrarily-indexed "value" of a message as a boolean.
+	boolean getMessageValue(OscMessage message, int valueIndex) {
+		return (message.get(valueIndex).floatValue() != 0);
+	}
+
+
+
+////////////////////////////////////////////////////////////
+//	Flags (eg: buttons which are held down temporarily)
+////////////////////////////////////////////////////////////
+	void setFlag(String fieldName, boolean isOn) {
+		if (isOn) 	this.flags.set(fieldName, true);
+		else		this.flags.remove(fieldName);
+	}
+
+	void flagIsSet(String fieldName) {
+		return (this.flags.get(fieldName) == true);
+	}
+
+
+
+////////////////////////////////////////////////////////////
+//	Send messages to all known controllers.
 ////////////////////////////////////////////////////////////
 
 	// Send a prepared `message` to the OSCTouch controller.
@@ -103,22 +263,6 @@ class TouchOscController extends Controller {
 				}
 			}
 		}
-	}
-
-
-
-
-
-
-////////////////////////////////////////////////////////////
-//	Dealing with changes in the model.
-////////////////////////////////////////////////////////////
-
-	// A configuration field has changed.  Tell the controller.
-	void onFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {
-// TODO: need some field mapping here...
-		this.sendFloat(fieldName, controllerValue);
-		this.sendLabel(fieldName, valueLabel);
 	}
 
 	void sendBoolean(String fieldName, boolean value) {
@@ -141,6 +285,15 @@ class TouchOscController extends Controller {
 		message.add(value);
 		this.sendMessage(message);
 	}
+
+	void sendFloat(String fieldName, boolean value) {
+		float floatValue = (boolean ? 1 : 0)
+		println("  setting controller "+fieldName+" to "+floatValue);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(floatValue);
+		this.sendMessage(message);
+	}
+
 
 	void sendFloats(String fieldName, float value1, float value2) {
 		println("  setting controller "+fieldName+" to "+value1+" "+value2);
@@ -165,17 +318,6 @@ class TouchOscController extends Controller {
 			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
-	}
-
-	// Combine two values together and send as one composite field.
-	void sendXY(String outputFieldName, String firstFieldName, String secondFieldName) {
-		try {
-			float x = this.getFieldValue(firstFieldName);
-			float y = this.getFieldValue(secondFieldName);
-			this.sendFloats(outputFieldName, x, y);
-		} catch (Exception e) {
-			println("Error in sendXY("+outputFieldName+"): "+e);
-		}
 	}
 
 	void togglePresetButton(String presetName, boolean turnOn) {
@@ -259,6 +401,14 @@ class TouchOscController extends Controller {
 	}
 
 
+	// Return the index which corresponds to the row+column in a Multi-Toggle control.
+	// NOTE: this is Top-Left biased, As God Intended™.
+	int getMultiToggleIndex(OscMessage message, int maxRows, int maxCols) {
+		int col = this.getZeroBasedColumn(message, maxCols);
+		int row = this.getZeroBasedRow(message, maxRows);
+		return (row * maxCols) + col;
+	}
+
 	// Return the zero-based, top-left-counting row associated with an Osc Multi-Toggle control.
 	// Returns `-1` on exception.
 	int getZeroBasedRow(OscMessage message, int rowCount) {
@@ -279,38 +429,7 @@ class TouchOscController extends Controller {
 		} catch (Exception e) {
 			return -1;
 		}
-	}
-
-
-
-////////////////////////////////////////////////////////////
-//	Specific senders
-////////////////////////////////////////////////////////////
-
-	// NOTE: multi-toggle is backwards!
-	void showMultiToggle(String control, int row, int col, int maxRows, int maxCols) {
-/*
-println(control+":"+row+":"+col+":"+maxRows+":"+maxCols);
-		OscMessage message = new OscMessage("/"+control);
-		for (int r = maxRows; r > 0; r--) {
-println("row"+r);
-			for (int c = 0; c < maxCols; c++) {
-println("col"+c + "    " + (r == row && c == col ? "YES" : ""));
-				if (r == row && c == col) {
-					message.add(1);
-				} else {
-					message.add(0);
-				}
-			}
-		}
-println("all done!");
-*/
-	}
-
-
-
-
-
+	},
 
 
 }
