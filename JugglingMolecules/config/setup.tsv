@@ -7,5 +7,5 @@ int	setupNoiseSeed	26103
 int	setupOscInboundPort	8000
 int	setupOscOutboundPort	9000
 int	kinectMinDepth	0
-int	kinectMaxDepth	502
+int	kinectMaxDepth	758
 int	kinectAngle	17

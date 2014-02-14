@@ -215,7 +215,6 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	boolean controlIsOn
 
 ////////////////////////////////////////////////////////////
 //	Talk-back to the user
