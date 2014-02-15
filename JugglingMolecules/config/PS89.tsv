@@ -7,7 +7,7 @@ boolean	showSettings	false
 color	fadeColor	color(0,0,0,255)
 boolean	fadeGreyscale	true
 int	fadeAlpha	122
-int	flowfieldResolution	15
+int	setupFlowFieldResolution	15
 float	flowfieldPredictionTime	0.7268708
 int	flowfieldMinVelocity	6
 float	flowfieldRegularization	1.0E8

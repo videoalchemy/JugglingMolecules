@@ -107,7 +107,7 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 
 	// background color (black)
-	color fadeColor = color(0,139,213,50);	// color
+	color fadeColor = color(0,0,0,255);	// black
 
 	// Should we map the window bg to greyscale, or hue?
 	boolean fadeGreyscale = true;
@@ -128,9 +128,10 @@ println("MolecularConfig INIT");
 	// Smaller means more coarse flowfield = faster but less precise
 	// Larger means finer flowfield = slower but better tracking of edges
 	// NOTE: requires restart to change this.
-	int flowfieldResolution = 15;	// 1..50 ?
-	int MIN_flowfieldResolution = 1;
-	int MAX_flowfieldResolution = 50;
+//TODO: make this a "setup" factor? and have a control
+	int setupFlowFieldResolution = 15;	// 1..50 ?
+	int MIN_setupFlowFieldResolution = 1;
+	int MAX_setupFlowFieldResolution = 50;
 
 	// Amount of time (in seconds) between "averages" to compute the flow.
 	float flowfieldPredictionTime = 0.5;
@@ -212,6 +213,10 @@ println("MolecularConfig INIT");
 	// 	- 0 = all particles same color, coming from `particle[Red|Green|Blue]` below
 	// 	- 1 = particle color set from origin
 	int particleColorScheme = PARTICLE_COLOR_SCHEME_XY;
+
+	// if we're in PARTICLE_COLOR_SCHEME_IMAGE, does the color get applied
+	//	when the particle is created, or when it's drawn?
+	boolean applyParticleImageColorAtDrawTime = true;
 
 	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
 	color particleColor		= color(255);
@@ -301,19 +306,19 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 //	Particle image settings
 ////////////////////////////////////////////////////////////
-	int particleImageIndex = 0;
-	int MIN_particleImageIndex = 0;
-	int MAX_particleImageIndex = 0;
+	int particleImage = 0;
+	int MIN_particleImage = 0;
+	int MAX_particleImage = 0;
 
 	PImage _particleImage;
-	int _currentParticleImageIndex = -1;
+	int _currentparticleImage = -1;
 	PImage getParticleImage() {
-		if (particleImageIndex != _currentParticleImageIndex) {
-			String fileName = particleImageIndex+".jpg";
+		if (particleImage != _currentparticleImage) {
+			String fileName = particleImage+".jpg";
 			_particleImage = loadImage(fileName);
 			_particleImage.loadPixels();
 			println("Loaded image "+ fileName+" with dimensions "+_particleImage.width+" x "+_particleImage.height);
-			_currentParticleImageIndex = particleImageIndex;
+			_currentparticleImage = particleImage;
 		}
 		return _particleImage;
 	}

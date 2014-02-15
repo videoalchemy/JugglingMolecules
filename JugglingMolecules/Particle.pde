@@ -81,21 +81,26 @@ class Particle {
 		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
 			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
-			clr = color(colorFromHue(nextHue), config.particleAlpha);
+// NOTE: brightness of .7 so we get jewel tones rather than neon
+			clr = colorFromHue(nextHue, 1, .7);
+			clr = color(clr, config.particleAlpha);
 		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
-			PImage particleImage = gConfig.getParticleImage();
-			// figure out index for this pixel
-			int col = (int) map(constrain(_x, 0, width-1), 0, width, 0, particleImage.width);
-			int row = (int) map(constrain(_y, 0, height-1), 0, height, 0, particleImage.height);
-			int index = (row * particleImage.width) + col;
-//println("x:"+_x+ "  row:"+row+"  y:"+_y+ "  col:"+col+"  index:"+index+"  max:"+ particleImage.pixels.length);
-			// extract the color from the image, which is opaque
-			clr = particleImage.pixels[index];
-			// add the current alpha
-			clr = (clr & 0x00FFFFFF) + (config.particleAlpha << 24);
+			clr = getParticleImageColor(_x, _y);
 		} else {	//if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
 			clr = color(config.particleColor, config.particleAlpha);
 		}
+	}
+
+	color getParticleImageColor(float _x, float _y) {
+		PImage particleImage = gConfig.getParticleImage();
+		// figure out index for this pixel
+		int col = (int) map(constrain(_x, 0, width-1), 0, width, 0, particleImage.width);
+		int row = (int) map(constrain(_y, 0, height-1), 0, height, 0, particleImage.height);
+		int index = (row * particleImage.width) + col;
+		// extract the color from the image, which is opaque
+		clr = particleImage.pixels[index];
+		// add the current alpha
+		return addAlphaToColor(clr, config.particleAlpha);
 	}
 
 	// Is this particle still alive?
@@ -155,6 +160,11 @@ class Particle {
 
 	// 2-d render using processing OPENGL rendering context
 	void render() {
+		// apply image color at draw time?
+		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE && gConfig.applyParticleImageColorAtDrawTime) {
+			clr = getParticleImageColor(location.x, location.y);
+		}
+
 		stroke(clr);
 		line(prevLocation.x, prevLocation.y, location.x, location.y);
 	}

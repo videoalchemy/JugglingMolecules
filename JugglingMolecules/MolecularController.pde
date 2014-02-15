@@ -131,12 +131,12 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			return;
 		}
 
-		// particle image multi-toggle
-		if (fieldName == "particleImage") {
+		if (fieldName.startsWith("imageIndex/")) {
+println(message);
 			int row = this.getZeroBasedRow(message, 4);			// TODO: get # rows from config
 			int col = this.getZeroBasedColumn(message, 3);		// TODO: get # cols from config
 			int value = (row*3)+col;
-			gConfig.particleImageIndex = value;
+			gConfig.setInt("particleImage", value);
 			this.say("Changed image to "+value+".jpg");
 			return;
 		}
@@ -146,6 +146,11 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 
 		// Window background hue/greyscale toggle.
 		if (fieldName.startsWith("fade")) {
+			if (fieldName.startsWith("fadeAlpha")) {
+				gConfig.setFromController("fadeAlpha", value, this.minValue, this.maxValue);
+				return;
+			}
+
 			float _hue;
 			if (fieldName.equals("fadeGreyscale")) {
 				gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
@@ -154,6 +159,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 				_hue = value;
 			}
 
+			color clr;
 			if (gConfig.fadeGreyscale) {
 				int _grey = (int)map(_hue, 0, 1, 0, 255);
 				gConfig.fadeColor = color(_grey);
@@ -223,10 +229,6 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 				} catch (Exception e){};
 			}
 		}
-
-		// tell the controller to save the "RESTART" config
-		//	which we'll use to come back to the same state on restart
-		gConfig.saveRestartState();
 	}
 
 
@@ -236,9 +238,6 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 
 		// map "Color" to "Hue"
 		if (fieldName.endsWith("Color")) fieldName = fieldName.replace("Color", "Hue");
-
-		// always send the raw value
-		this.sendFloat(fieldName, controllerValue);
 
 		// do "specials"
 
@@ -262,6 +261,14 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			this.sendChoice("blendMode", controllerValue, gConfig.blendChoices);
 		}
 
+		else if (fieldName.equals("particleImage")) {
+			int row = 4 - ((int) (gConfig.particleImage / 3));
+			int col = 1 + ((int) (gConfig.particleImage % 3));
+println("fieldChanged for pII to "+ gConfig.particleImage+" row="+row+" col="+col);
+//			this.sendString("imageIndex/"+row+"/"+col, "f");
+			return;
+		}
+
 		// fade overlay
 		else if (fieldName.startsWith("fade")) {
 			this.sendBoolean("fadeGreyscale", gConfig.fadeGreyscale);
@@ -281,6 +288,8 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			}
 		}
 
+		// send the raw value if we haven't returned above
+		this.sendFloat(fieldName, controllerValue);
 	}
 
 }

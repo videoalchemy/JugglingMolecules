@@ -13,11 +13,13 @@
 
 	// Draw the depth image to the screen according to our global config.
 	void drawDepthImage() {
+		// skip if alpha is 0
+		if (gConfig.depthImageAlpha == 0) return;
+
 		pushStyle();
 		pushMatrix();
-//TODO...
-//		tint(depthImageColor);
-//		tint(256,128);
+		color clr = addAlphaToColor(gConfig.depthImageColor, gConfig.depthImageAlpha);
+		tint(clr);
 		scale(-1,1);	// reverse image to mirrored direction
 		image(gDepthImg, 0, 0, -width, height);
 		popMatrix();
@@ -28,7 +30,7 @@
 	// Draw the raw depth info as a pixel at each coordinate.
 	void drawDepthPixels() {
 		pushStyle();
-		int delta = 2;//gConfig.flowfieldResolution;	// 1;
+		int delta = 2;//gConfig.setupFlowFieldResolution;	// 1;
 		for (int row = 0; row < gKinectHeight; row += delta) {
 			for (int col = 0; col < gKinectWidth; col += delta) {
 				int index = col + (row*gKinectWidth);
@@ -105,14 +107,21 @@
 
 	// Given a hue of 0..1, return a fully saturated color().
 	// NOTE: assumes we're normally in RGB mode
-	color colorFromHue(float hue) {
+	color colorFromHue(float _hue) {
+		return colorFromHue(_hue, 1, 1);
+	}
+
+	// Given a hue, saturation and brightness of 0..1, return a color.
+	// NOTE: assumes we're normally in RGB mode
+	color colorFromHue(float _hue, float _saturation, float _brightness) {
 		// switch to HSB color mode
 		colorMode(HSB, 1.0);
-		color clr = color(hue, 1, 1);
+		color clr = color(_hue, _saturation, _brightness);
 		// restore RGB color mode
 		colorMode(RGB, 255);
 		return clr;
 	}
+
 
 	// Given a color, return its hue as 0..1.
 	// NOTE: assumes we're normally in RGB mode
@@ -126,7 +135,9 @@
 	}
 
 
-
+	color addAlphaToColor(color clr, int alfa) {
+		return (clr & 0x00FFFFFF) + (alfa << 24);
+	}
 
 ////////////////////////////////////////////////////////////
 //	Debuggy

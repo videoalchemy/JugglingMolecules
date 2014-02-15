@@ -54,7 +54,7 @@ class OpticalFlow {
 
 		// set up resolution of the flow field.
 		// NOTE: requires a restart or at least a re-initialization to change this.
-		resolution = config.flowfieldResolution;
+		resolution = config.setupFlowFieldResolution;
 
 		// Determine the number of columns and rows based on sketch's width and height
 		cols = gKinectWidth/resolution;

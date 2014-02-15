@@ -1,11 +1,12 @@
 type	field	value
-string	setupLastConfigFile	PS01
+string	setupLastConfigFile	PS00
 int	setupWindowWidth	1024
 int	setupWindowHeight	768
 int	setupFPS	30
 int	setupNoiseSeed	26103
 int	setupOscInboundPort	8000
 int	setupOscOutboundPort	9000
+int	setupFlowFieldResolution	15
 int	kinectMinDepth	0
-int	kinectMaxDepth	758
-int	kinectAngle	17
+int	kinectMaxDepth	950
+int	kinectAngle	20

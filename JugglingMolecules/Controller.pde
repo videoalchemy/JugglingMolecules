@@ -37,6 +37,8 @@ class TouchOscController extends Controller {
 	float minValue = 0.0f;
 	float maxValue = 1.0f;
 
+	// have we been synced already
+	boolean synced = false;
 
 ////////////////////////////////////////////////////////////
 //	Initial setup.
@@ -58,6 +60,10 @@ class TouchOscController extends Controller {
 
 			// update the configuration
 			this.updateConfig(fieldName, message);
+
+			// tell the controller to save the "RESTART" config
+			//	which we'll use to come back to the same state on restart
+			gConfig.saveRestartState();
 		} catch (Exception e) {}
 	}
 
@@ -129,6 +135,21 @@ class TouchOscController extends Controller {
 	}
 
 	void sendInt(String fieldName, int value) {
+		println("  setting controller "+fieldName+" to "+value);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value);
+		this.sendMessage(message);
+	}
+
+	void sendInts(String fieldName, int value1, int value2) {
+		println("  setting controller "+fieldName+" to "+value1+"/"+value2);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value1);
+		message.add(value2);
+		this.sendMessage(message);
+	}
+
+	void sendString(String fieldName, String value) {
 		println("  setting controller "+fieldName+" to "+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
@@ -238,7 +259,6 @@ class TouchOscController extends Controller {
 	//			`int row = ROWCOUNT - (controller.getMultiToggleRow(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedRow(message, ROWCOUNT);`
-//UNTESTED
 	int getMultiToggleRow(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[2]);
@@ -251,7 +271,6 @@ class TouchOscController extends Controller {
 	//			`int row = COLCOUNT - (controller.getMultiToggleColumn(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedColumn(message, COLCOUNT);`
-//UNTESTED
 	int getMultiToggleColumn(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[3]);

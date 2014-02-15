@@ -293,7 +293,14 @@ println("CONFIG INIT");
 		if (field == null) return;
 		float theHue = map(controllerValue, controllerMin, controllerMax, 0, 1);
 		color newValue = this.colorFromHue(theHue);
-		this.debug("setBooleanFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.setColor(field, newValue);
+	}
+
+	void setColorFromController(String fieldName, color newValue) {
+		Field field = this.getField(fieldName, "setColorFromController({{fieldName}}): field not found");
+		if (field == null) return;
+		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
 		this.setColor(field, newValue);
 	}
 
@@ -375,7 +382,9 @@ println("CONFIG INIT");
 		this.loadSetup();
 
 		// load our defaults
-		this.loadDefaults();
+// MOW: NOTE -- there's no reason to load/save defaults to a file
+//				as we can just
+//		this.loadDefaults();
 
 		// attempt to load our "RESTART" file if it exists
 		if (this.configFileExists(this.restartConfigFile)) {
@@ -404,9 +413,9 @@ println("CONFIG INIT");
 	}
 
 	// Load our setup file from disk.
-	Table loadDefaults() {
-		return this.loadFromFile("defaults");
-	}
+//	Table loadDefaults() {
+//		return this.loadFromFile("defaults");
+//	}
 
 	// Load our defaults from disk.
 	Table loadSetup() {
@@ -485,6 +494,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setInt(String fieldName, String stringValue) { this.setInt(fieldName, stringValue, null); }
 	void setInt(Field field, int newValue) { this.setInt(field, newValue, null); }
+	void setInt(String fieldName, int newValue) {
+		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
+		this.setInt(field, newValue, null);
+	}
 	void setInt(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
 		this.setInt(field, stringValue, changeLog);
@@ -517,6 +530,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setFloat(String fieldName, String stringValue) { this.setFloat(fieldName, stringValue, null); }
 	void setFloat(Field field, float newValue) { this.setFloat(field, newValue, null); }
+	void setFloat(String fieldName, float newValue) {
+		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
+		this.setFloat(field, newValue, null);
+	}
 	void setFloat(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
 		this.setFloat(field, stringValue, changeLog);
@@ -550,6 +567,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setBoolean(String fieldName, String stringValue) { this.setBoolean(fieldName, stringValue, null); }
 	void setBoolean(Field field, boolean newValue) { this.setBoolean(field, newValue, null); }
+	void setBoolean(String fieldName, boolean newValue) {
+		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
+		this.setBoolean(field, newValue, null);
+	}
 	void setBoolean(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
 		this.setBoolean(field, stringValue, changeLog);
@@ -582,6 +603,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setColor(String fieldName, String stringValue) { this.setColor(fieldName, stringValue, null); }
 	void setColor(Field field, color newValue) { this.setColor(field, newValue, null); }
+	void setColor(String fieldName, color newValue) {
+		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
+		this.setColor(field, newValue, null);
+	}
 	void setColor(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
 		this.setColor(field, stringValue, changeLog);
@@ -661,9 +686,9 @@ println("CONFIG INIT");
 	}
 
 	// Load our setup file from disk.
-	Table saveDefaults() {
-		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
-	}
+//	Table saveDefaults() {
+//		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
+//	}
 
 	// Save an arbitrary set of fields in our current config to a file.
 	// You must pass `_fileName`.

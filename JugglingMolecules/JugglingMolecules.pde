@@ -44,7 +44,9 @@ import java.util.Iterator;
 	// Depth image, thresholded by `updateKinectDepth()` and displayable.
 	PImage gDepthImg;
 
-// Load our config object on start()
+
+// Start() is the very first thing that's run, then setup().
+// Load our config object first thing!
 void start() {
 	// create the config object
 	gConfig = new MolecularConfig();
@@ -61,8 +63,6 @@ void start() {
 //
 void setup() {
 	// window size comes from config
-	// TODO: well, ideally window size would come from config,
-	//		 but when we call size() it re-runs setup, which messes things up.
 	size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
@@ -102,7 +102,8 @@ void setup() {
 
 	// save our startup state
 	gConfig.saveSetup();
-	gConfig.saveDefaults();
+// MOW: NOTE - no need to save defaults, just pull them from the config variables directly
+//	gConfig.saveDefaults();
 //	gConfig.saveRestartState();
 
 

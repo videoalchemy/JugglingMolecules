@@ -24,7 +24,7 @@ int	MIN_particleMaxStepSize	2
 int	MIN_particleLifetime	50
 int	MIN_flowLineAlpha	0
 int	MIN_depthImageAlpha	0
-int	MIN_particleImageIndex	0
+int	MIN_particleImage	0
 int	MAX_kinectMinDepth	2000
 int	MAX_kinectMaxDepth	2000
 int	MAX_kinectAngle	30
@@ -50,4 +50,4 @@ int	MAX_particleMaxStepSize	20
 int	MAX_particleLifetime	1000
 int	MAX_flowLineAlpha	255
 int	MAX_depthImageAlpha	255
-int	MAX_particleImageIndex	0
+int	MAX_particleImage	0
