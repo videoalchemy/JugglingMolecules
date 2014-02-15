@@ -516,6 +516,18 @@ println("CONFIG INIT");
 	void setInt(Field field, int newValue, Table changeLog) {
 		if (field == null) return;
 		try {
+			// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
+			try {
+				int configMin = this.getInt("MIN_"+field.getName());
+				if (newValue < configMin) newValue = configMin;
+			} catch (Exception e){}
+			// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+			try {
+				int configMax = this.getInt("MAX_"+field.getName());
+				if (newValue > configMax) newValue = configMax;
+			} catch (Exception e){}
+
+			// only continue if we're actually changing the value
 			int oldValue = this.getInt(field);
 			if (oldValue != newValue) {
 				field.setInt(this, newValue);
@@ -552,6 +564,18 @@ println("CONFIG INIT");
 	void setFloat(Field field, float newValue, Table changeLog) {
 		if (field == null) return;
 		try {
+			// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
+			try {
+				float configMin = this.getFloat("MIN_"+field.getName());
+				if (newValue < configMin) newValue = configMin;
+			} catch (Exception e){}
+			// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+			try {
+				float configMax = this.getFloat("MAX_"+field.getName());
+				if (newValue > configMax) newValue = configMax;
+			} catch (Exception e){}
+
+			// only record a change if the value is actually different
 			float oldValue = this.getFloat(field);
 			if (oldValue != newValue) {
 				field.setFloat(this, newValue);
