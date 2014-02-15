@@ -1,5 +1,4 @@
 type	field	value
-string	setupLastConfigFile	PS00
 int	setupWindowWidth	640
 int	setupWindowHeight	480
 int	setupFPS	30

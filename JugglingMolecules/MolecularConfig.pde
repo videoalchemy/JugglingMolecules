@@ -43,9 +43,6 @@ println("MolecularConfig INIT");
 //  Global setup.  Note that we cannot override these at runtime.
 ////////////////////////////////////////////////////////////
 
-	// Name of the last config file we loaded.
-	String setupLastConfigFile = "PS00";
-
 	// Window size
 	int setupWindowWidth = 640;
 	int setupWindowHeight = 480;
@@ -106,9 +103,6 @@ println("MolecularConfig INIT");
 //	OpticalFlow field parameters
 ////////////////////////////////////////////////////////////
 
-	// background color (black)
-	color fadeColor = color(0,0,0,255);	// black
-
 	// Should we map the window bg to greyscale, or hue?
 	boolean fadeGreyscale = true;
 
@@ -117,6 +111,10 @@ println("MolecularConfig INIT");
 	int fadeAlpha = 20;	//	0-255
 	int MIN_fadeAlpha = 0;
 	int MAX_fadeAlpha = 255;
+
+	// background color (black)
+	color fadeColor = color(0,0,0,255);	// black
+
 
 
 
@@ -222,13 +220,14 @@ println("MolecularConfig INIT");
 	//	when the particle is created, or when it's drawn?
 	boolean applyParticleImageColorAtDrawTime = true;
 
-	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
-	color particleColor		= color(255);
-
 	// Opacity for all particle lines, used for all color schemes.
 	int particleAlpha		= 50;	//0-255
 	int MIN_particleAlpha 	= 10;
 	int MAX_particleAlpha 	= 255;
+
+	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
+	color particleColor		= color(255);
+
 
 
 	// Maximum number of particles that can be active at once.
@@ -269,26 +268,28 @@ println("MolecularConfig INIT");
 //	Drawing flow field lines
 ////////////////////////////////////////////////////////////
 
-	// color for optical flow lines
-	color flowLineColor = color(255, 0, 0, 30);	// RED
-
 //TODO: apply alpha separately from hue
 	int flowLineAlpha = 30;
 	int MIN_flowLineAlpha 	= 10;
 	int MAX_flowLineAlpha 	= 255;
+
+	// color for optical flow lines
+	color flowLineColor = color(255, 0, 0, 30);	// RED
+
 
 
 ////////////////////////////////////////////////////////////
 //	Depth image drawing
 ////////////////////////////////////////////////////////////
 
+	int depthImageAlpha = 30;
+	int MIN_depthImageAlpha 	= 10;
+	int MAX_depthImageAlpha 	= 255;
+
 	// color for the depth image.
 	// NOTE: NOT CURRENTLY USED.  see
 	color depthImageColor = color(0,0,0,255);
 
-	int depthImageAlpha = 30;
-	int MIN_depthImageAlpha 	= 10;
-	int MAX_depthImageAlpha 	= 255;
 
 	// Depth image blend mode constants.
 	//	REPLACE:     0

@@ -5,9 +5,9 @@ boolean	showDepthImage	false
 boolean	showNoise	false
 boolean	showFade	true
 boolean	showSettings	false
-color	fadeColor	color(0,0,255,0)
 boolean	fadeGreyscale	true
 int	fadeAlpha	106
+color	fadeColor	color(0,0,0,255)
 float	flowfieldPredictionTime	0.28741497
 int	flowfieldMinVelocity	28
 float	flowfieldRegularization	1.0E8
@@ -20,8 +20,8 @@ float	particleAccelerationFriction	0.034945577
 float	particleAccelerationLimiter	0.35
 float	particleNoiseVelocity	0.0080
 int	particleColorScheme	3
-color	particleColor	color(0,0,255,0)
 int	particleAlpha	255
+color	particleColor	color(0,0,255,0)
 int	particleMaxCount	30000
 int	particleGenerateRate	1
 int	particleGenerateSpread	15
@@ -29,8 +29,8 @@ int	particleMinStepSize	4
 int	particleMaxStepSize	10
 int	particleLifetime	126
 int	particleImage	0
-color	flowLineColor	color(0,0,255,0)
 int	flowLineAlpha	255
-color	depthImageColor	color(0,0,255,0)
+color	flowLineColor	color(0,0,255,0)
 int	depthImageAlpha	255
+color	depthImageColor	color(0,0,255,0)
 int	blendMode	1
