@@ -75,7 +75,7 @@ class Kinecter {
 				gNormalizedDepth[i] = 0;
 
 			} else {
-				gDepthImg.pixels[i] = color(greyScale, 255);//color(greyScale, gConfig.depthImageAlpha);
+				gDepthImg.pixels[i] = color(greyScale);//color(greyScale, gConfig.depthImageAlpha);
 				gNormalizedDepth[i] = 255;
 			}
 		}

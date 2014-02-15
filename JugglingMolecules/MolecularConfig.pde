@@ -141,7 +141,7 @@ println("MolecularConfig INIT");
 	// Velocity must exceed this to add/draw particles in the flow field.
 	int flowfieldMinVelocity = 20;
 	int MIN_flowfieldMinVelocity = 1;
-	int MAX_flowfieldMinVelocity = 50;
+	int MAX_flowfieldMinVelocity = 100;
 
 	// Regularization term for regression.
 	// Larger values for noisy video (?).
@@ -152,7 +152,7 @@ println("MolecularConfig INIT");
 	// Smoothing of flow field.
 	// Smaller value for longer smoothing.
 	float flowfieldSmoothing = 0.05;
-	float MIN_flowfieldSmoothing = 0;
+	float MIN_flowfieldSmoothing = 0.05;	// NOTE: if this goes to 0, we get NO lines at all!
 	float MAX_flowfieldSmoothing = 1;		// ????
 
 ////////////////////////////////////////////////////////////

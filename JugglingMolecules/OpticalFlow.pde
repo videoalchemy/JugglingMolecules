@@ -190,6 +190,9 @@ class OpticalFlow {
 	void solveFlow() {
 		// get time distance between frames at current time
 		df = config.flowfieldPredictionTime * config.setupFPS;
+		color _lineColor = color(gConfig.flowLineColor, gConfig.flowLineAlpha);
+		color _red = color(255,0,0);
+		color _green = color(0,255,0);
 
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
@@ -213,6 +216,7 @@ class OpticalFlow {
 				float u = df * sflowx[index];
 				float v = df * sflowy[index];
 
+				// amplitude of the vector
 				float a = sqrt(u * u + v * v);
 
 //println ("distance 'a' between 'u' and 'v' = " + a);  //debug: all vectors flowing to the left
@@ -223,13 +227,20 @@ class OpticalFlow {
 
 					// show optical flow as lines in `flowLineColor`
 					if (config.showFlowLines) {
-						stroke(gConfig.flowLineColor, gConfig.flowLineAlpha);
+						stroke(_lineColor);
 						float startX = width - (((float) x0) * gKinectToWindowWidth);
 						float startY = ((float) y0) * gKinectToWindowHeight;
 						float endX	 = width - (((float) (x0+u)) * gKinectToWindowWidth);
 						float endY	 = ((float) (y0+v)) * gKinectToWindowHeight;
 //println(startX+","+startY+" : "+endX+","+endY);
 						line(startX, startY, endX, endY);
+
+						// draw a red dot at the start point
+						stroke(_red);
+						rect(startX-1, startY-1, 2, 2);
+						// draw a green dot at the end point
+						stroke(_green);
+						rect(endX-1, endY-1, 2, 2);
 					}
 
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
