@@ -111,7 +111,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 		}
 		// Handle screen resolution toggles
 // TODO: move into controller base class!!!!
-		if (fieldName.startsWith("windowSize")) {
+		if (fieldName.startsWith("screenSize")) {
 			int row = this.getZeroBasedRow(message, 3);			// TODO: get # rows from config
 			int col = this.getZeroBasedColumn(message, 2);		// TODO: get # cols from config
 			int value = (row*2)+col;
@@ -131,24 +131,34 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			return;
 		}
 
+		// particle image multi-toggle
+		if (fieldName == "particleImage") {
+			int row = this.getZeroBasedRow(message, 4);			// TODO: get # rows from config
+			int col = this.getZeroBasedColumn(message, 3);		// TODO: get # cols from config
+			int value = (row*3)+col;
+			gConfig.particleImageIndex = value;
+			this.say("Changed image to "+value+".jpg");
+			return;
+		}
+
 		float value = message.get(0).floatValue();
 
 
 		// Window background hue/greyscale toggle.
-		if (fieldName.startsWith("windowBg")) {
+		if (fieldName.startsWith("fade")) {
 			float _hue;
-			if (fieldName.equals("windowBgGreyscale")) {
+			if (fieldName.equals("fadeGreyscale")) {
 				gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
-				_hue = gConfig.hueFromColor(gConfig.windowBgColor);
+				_hue = gConfig.hueFromColor(gConfig.fadeColor);
 			} else {
 				_hue = value;
 			}
 
-			if (gConfig.windowBgGreyscale) {
+			if (gConfig.fadeGreyscale) {
 				int _grey = (int)map(_hue, 0, 1, 0, 255);
-				gConfig.windowBgColor = color(_grey);
+				gConfig.fadeColor = color(_grey);
 			} else {
-				gConfig.windowBgColor = colorFromHue(_hue);
+				gConfig.fadeColor = colorFromHue(_hue);
 			}
 			return;
 		}
@@ -184,10 +194,10 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			value = (float) mode;
 		}
 
-		// "depthImageBlendMode-0", "depthImageBlendMode-1", etc
-		if (fieldName.startsWith("depthImageBlendMode-")) {
-			int mode = int(fieldName.replace("depthImageBlendMode-", ""));
-			fieldName = "depthImageBlendMode";
+		// "blendMode-0", "blendMode-1", etc
+		if (fieldName.startsWith("blendMode-")) {
+			int mode = int(fieldName.replace("blendMode-", ""));
+			fieldName = "blendMode";
 			value = (float) mode;
 		}
 
@@ -213,6 +223,10 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 				} catch (Exception e){};
 			}
 		}
+
+		// tell the controller to save the "RESTART" config
+		//	which we'll use to come back to the same state on restart
+		gConfig.saveRestartState();
 	}
 
 
@@ -243,28 +257,27 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			this.sendChoice("particleColorScheme", controllerValue, 3);
 		}
 
-		// depthImageBlendMode toggles
-		else if (fieldName.equals("depthImageBlendMode")) {
-			int[] choices = {0,1,2,4,8,16,32,64,128,256};
-			this.sendChoice("depthImageBlendMode", controllerValue, choices);
+		// blendMode toggles
+		else if (fieldName.equals("blendMode")) {
+			this.sendChoice("blendMode", controllerValue, gConfig.blendChoices);
 		}
 
-		// window bg
-		else if (fieldName.startsWith("windowBg")) {
-			this.sendBoolean("windowBgGreyscale", gConfig.windowBgGreyscale);
+		// fade overlay
+		else if (fieldName.startsWith("fade")) {
+			this.sendBoolean("fadeGreyscale", gConfig.fadeGreyscale);
 			float hueValue;
 			try {
-				if (gConfig.windowBgGreyscale) {
+				if (gConfig.fadeGreyscale) {
 					println("GREYSCALE");
 // TODO...
-					hueValue = this.getFieldValue("windowBgColor");
+					hueValue = this.getFieldValue("fadeColor");
 				} else{
 					println("COLOR");
-					hueValue = this.getFieldValue("windowBgColor");
+					hueValue = this.getFieldValue("fadeColor");
 				}
-				this.sendFloat("windowBgHue", hueValue);
+				this.sendFloat("fadeHue", hueValue);
 			} catch (Exception e) {
-				println("Exception setting windowBgHue: "+e);
+				println("Exception setting fadeHue: "+e);
 			}
 		}
 

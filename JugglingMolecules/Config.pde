@@ -41,8 +41,13 @@ class Config {
 	//	which would normally be swallowed silently.
 	boolean debugging = true;
 
+	String restartConfigFile = "RESTART";
+
+	// Default config file to load if "RESTART" config not found.
+	String defaultConfigFile = "PS01";
+
 	// Name of the last config file we loaded.
-	String setupLastConfigFile = "PS01";
+	String lastConfigFileSaved;
 
 	// constructor
 	public Config() {
@@ -100,13 +105,12 @@ println("CONFIG INIT");
 
 	// Return the full path for a given config file instance.
 	// If you pass `_fileName`, we'll use that.
-	// Otherwise we'll use our internal `setupLastConfigFile` (but won't set it).
 	// Returns `null` if no filename specified.
 	String getFilePath() {
 		return this.getFilePath(null);
 	}
 	String getFilePath(String _fileName) {
-		if (_fileName == null) _fileName = this.setupLastConfigFile;
+		if (_fileName == null) _fileName = this.defaultConfigFile;
 		if (_fileName == null) {
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
@@ -373,10 +377,13 @@ println("CONFIG INIT");
 		// load our defaults
 		this.loadDefaults();
 
-		// if our .setupAutoLoadLast is true, load our last config file
-		if (this.setupLastConfigFile != null) {
-			return this.load(this.setupLastConfigFile);
+		// attempt to load our "RESTART" file if it exists
+		if (this.configFileExists(this.restartConfigFile)) {
+			this.load(this.restartConfigFile);
+		} else {
+			this.load(this.defaultConfigFile);
 		}
+
 		return null;
 	}
 
@@ -390,14 +397,9 @@ println("CONFIG INIT");
 	Table load(String _fileName) {
 		// remember filename if passed in
 		if (_fileName != null) {
-			// turn off old button
-			if (gController != null) gController.togglePresetButton(this.setupLastConfigFile, false);
-			this.setupLastConfigFile = _fileName;
 			// save current setup config
 			this.saveSetup();
 		}
-		// turn on new button
-		if (gController != null) gController.togglePresetButton(_fileName, true);
 		return this.loadFromFile(_fileName);
 	}
 
@@ -642,8 +644,15 @@ println("CONFIG INIT");
 		return this.save(null);
 	}
 	Table save(String _fileName) {
-		if (_fileName != null) this.setupLastConfigFile = _fileName;
-		return this.saveToFile(this.setupLastConfigFile, this.FIELDS);
+		if (_fileName != null) this.lastConfigFileSaved = _fileName;
+//println("SAVING "+_fileName);
+		return this.saveToFile(this.lastConfigFileSaved, this.FIELDS);
+	}
+
+	// Save our current state so we'll restart in the same place.
+	Table saveRestartState() {
+//println("SAVING RESTART STATE");
+		return this.saveToFile(this.restartConfigFile, this.FIELDS);
 	}
 
 	// Load our defaults from disk.
@@ -1197,6 +1206,15 @@ println("CONFIG INIT");
 	boolean configFileExists(int index) {
 		// get local path (relative to sketch)
 		String localPath = this.getFilePath(index);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configFileExists(String name) {
+		String localPath = this.getFilePath(name);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configPathExists(String localPath) {
 		// use sketchPath to convert to full path
 		String path = sketchPath(localPath);
 		return new File(path).exists();

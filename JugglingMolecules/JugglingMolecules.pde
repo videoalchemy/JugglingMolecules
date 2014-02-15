@@ -44,7 +44,6 @@ import java.util.Iterator;
 	// Depth image, thresholded by `updateKinectDepth()` and displayable.
 	PImage gDepthImg;
 
-
 // Load our config object on start()
 void start() {
 	// create the config object
@@ -74,7 +73,7 @@ void setup() {
 	gConfig.addController(gController);
 
 	// set up display parametets
-	background(gConfig.windowBgColor);
+	background(gConfig.fadeColor);
 
 	// set up noise seed
 	noiseSeed(gConfig.setupNoiseSeed);
@@ -104,7 +103,7 @@ void setup() {
 	// save our startup state
 	gConfig.saveSetup();
 	gConfig.saveDefaults();
-	gConfig.save();
+//	gConfig.saveRestartState();
 
 
 /*	print out the blendModes...
@@ -128,24 +127,22 @@ void draw() {
 	pushStyle();
 	pushMatrix();
 
-	// partially fade the screen by drawing a semi-opaque rectangle over everything
-	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayAlpha);
-
 	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
 	gKinecter.updateKinectDepth();
+
+	// draw the depth image underneath the particles
+	if (gConfig.showDepthImage) drawDepthImage();
 
 	// update the optical flow vectors from the gKinecter depth image
 	// NOTE: also draws the force vectors if `showFlowLines` is true
 	gFlowfield.update();
 
-	// draw raw depth pixels
-	if (gConfig.showDepthPixels) drawDepthPixels();
-
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();
 
-	// draw the depth image over the particles
-	if (gConfig.showDepthImage) drawDepthImage();
+	// apply a full-screen color overlay
+	// NOTE: this is where the blend mode is applied!
+	if (gConfig.showFade) fadeScreen(gConfig.fadeColor, gConfig.fadeAlpha);
 
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();

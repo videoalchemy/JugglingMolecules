@@ -78,15 +78,21 @@ class Particle {
 			int g = (int) map(_y, 0, width, 0, 255);	// NOTE: this is nice w/ Y plotted to width
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_YX) {
-			int r = (int) map(_x + _y, 0, width+height, 0, 255);
-			int g = (int) map(_x, 0, width, 0, 255);
-			int b = (int) map(_y, 0, height, 0, 255);
-			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XYX) {
+		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
 			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
 			clr = color(colorFromHue(nextHue), config.particleAlpha);
+		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
+			PImage particleImage = gConfig.getParticleImage();
+			// figure out index for this pixel
+			int col = (int) map(constrain(_x, 0, width-1), 0, width, 0, particleImage.width);
+			int row = (int) map(constrain(_y, 0, height-1), 0, height, 0, particleImage.height);
+			int index = (row * particleImage.width) + col;
+//println("x:"+_x+ "  row:"+row+"  y:"+_y+ "  col:"+col+"  index:"+index+"  max:"+ particleImage.pixels.length);
+			// extract the color from the image, which is opaque
+			clr = particleImage.pixels[index];
+			// add the current alpha
+			clr = (clr & 0x00FFFFFF) + (config.particleAlpha << 24);
 		} else {	//if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
 			clr = color(config.particleColor, config.particleAlpha);
 		}

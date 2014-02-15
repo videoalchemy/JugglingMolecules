@@ -4,9 +4,9 @@ boolean	showFlowLines	true
 boolean	showDepthImage	true
 boolean	showDepthPixels	false
 boolean	showSettings	false
-color	windowBgColor	color(98,98,98,255)
-boolean	windowBgGreyscale	true
-int	windowOverlayAlpha	96
+color	fadeColor	color(98,98,98,255)
+boolean	fadeGreyscale	true
+int	fadeAlpha	96
 int	flowfieldResolution	15
 float	flowfieldPredictionTime	0.5
 int	flowfieldMinVelocity	20
@@ -32,4 +32,4 @@ color	flowLineColor	color(5,255,0,255)
 int	flowLineAlpha	104
 color	depthImageColor	color(11,255,0,226)
 int	depthImageAlpha	30
-int	depthImageBlendMode	16
+int	blendMode	16

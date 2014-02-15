@@ -18,13 +18,14 @@
 // Particle color schemes
 	int PARTICLE_COLOR_SCHEME_SAME_COLOR 	= 0;
 	int PARTICLE_COLOR_SCHEME_XY 			= 1;
-	int PARTICLE_COLOR_SCHEME_YX			= 2;
-	int PARTICLE_COLOR_SCHEME_XYX			= 3;
+	int PARTICLE_COLOR_SCHEME_RAINBOW		= 2;
+	int PARTICLE_COLOR_SCHEME_IMAGE			= 3;
 
 	String[] _SETUP_FIELDS 	 = 	{ "setup*", "kinect*" };
 	String[] _DEFAULT_FIELDS = 	{ "MIN_*", "MAX_*" };
-	String[] _FIELDS 		 =  { "show*", "window*", "flowfield*", "noise*",
-								  "particle*", "flowLine*", "depthImage*"
+	String[] _FIELDS 		 =  { "show*", "fade*", "flowfield*", "noise*",
+								  "particle*", "flowLine*", "depthImage*",
+								  "blend*"
 								};
 
 
@@ -43,7 +44,7 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 
 	// Name of the last config file we loaded.
-	String setupLastConfigFile = "PS01";
+	String setupLastConfigFile = "PS00";
 
 	// Window size
 	int setupWindowWidth = 640;
@@ -91,8 +92,11 @@ println("MolecularConfig INIT");
 	// Show the depth image.
 	boolean showDepthImage = false;
 
-	// Show depth pixels
-	boolean showDepthPixels = false;
+	// Show perlin noise field
+	boolean showNoise = true;
+
+	// Show "fade" overlay
+	boolean showFade = true;
 
 	// Show setup screen OVER the rest of the screen.
 	boolean showSettings = false;
@@ -103,16 +107,16 @@ println("MolecularConfig INIT");
 ////////////////////////////////////////////////////////////
 
 	// background color (black)
-	color windowBgColor = color(0,139,213,50);	// color
+	color fadeColor = color(0,139,213,50);	// color
 
 	// Should we map the window bg to greyscale, or hue?
-	boolean windowBgGreyscale = true;
+	boolean fadeGreyscale = true;
 
 	// Amount to "dim" the background each round by applying partially opaque background
 	// Higher number means less of each screen sticks around on subsequent draw cycles.
-	int windowOverlayAlpha = 20;	//	0-255
-	int MIN_windowOverlayAlpha = 0;
-	int MAX_windowOverlayAlpha = 255;
+	int fadeAlpha = 20;	//	0-255
+	int MIN_fadeAlpha = 0;
+	int MAX_fadeAlpha = 255;
 
 
 
@@ -251,6 +255,7 @@ println("MolecularConfig INIT");
 	int MAX_particleLifetime = 1000;
 
 
+
 ////////////////////////////////////////////////////////////
 //	Drawing flow field lines
 ////////////////////////////////////////////////////////////
@@ -289,8 +294,28 @@ println("MolecularConfig INIT");
 	//	SCREEN:      256
 
 	// blend mode for the depth image
-	int[] _depthImageChoices = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
-	int depthImageBlendMode = BLEND;
+	int[] blendChoices = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
+	int blendMode = BLEND;
 
 
+////////////////////////////////////////////////////////////
+//	Particle image settings
+////////////////////////////////////////////////////////////
+	int particleImageIndex = 0;
+	int MIN_particleImageIndex = 0;
+	int MAX_particleImageIndex = 0;
+
+	PImage _particleImage;
+	int _currentParticleImageIndex = -1;
+	PImage getParticleImage() {
+		if (particleImageIndex != _currentParticleImageIndex) {
+			String fileName = particleImageIndex+".jpg";
+			_particleImage = loadImage(fileName);
+			_particleImage.loadPixels();
+			println("Loaded image "+ fileName+" with dimensions "+_particleImage.width+" x "+_particleImage.height);
+			_currentParticleImageIndex = particleImageIndex;
+		}
+		return _particleImage;
+	}
 }
+

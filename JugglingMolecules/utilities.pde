@@ -19,13 +19,12 @@
 //		tint(depthImageColor);
 //		tint(256,128);
 		scale(-1,1);	// reverse image to mirrored direction
-		blendMode(gConfig.depthImageBlendMode);
 		image(gDepthImg, 0, 0, -width, height);
-		blendMode(BLEND);	// NOTE: things don't look good if you don't restore this!
 		popMatrix();
 		popStyle();
 	}
 
+/*
 	// Draw the raw depth info as a pixel at each coordinate.
 	void drawDepthPixels() {
 		pushStyle();
@@ -43,18 +42,21 @@
 		}
 		popStyle();
 	}
-
+*/
 
 ////////////////////////////////////////////////////////////
 //	Drawing utilities.
 ////////////////////////////////////////////////////////////
 
 	// Partially fade the screen by drawing a translucent black rectangle over everything.
+	// NOTE: this applies the current blendMode all over everything
 	void fadeScreen(color bgColor, int opacity) {
 		pushStyle();
+		blendMode(gConfig.blendMode);
 		noStroke();
 		fill(bgColor, opacity);
 		rect(0, 0, width, height);
+		blendMode(BLEND);
 		popStyle();
 	}
 
