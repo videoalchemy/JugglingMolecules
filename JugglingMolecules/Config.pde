@@ -147,6 +147,9 @@ println("CONFIG INIT");
 
 	// Tell the controller(s) about the state of all of our FIELDs.
 	void syncControllers() {
+		println("-------------------------");
+		println("SYNC");
+		println("-------------------------");
 		// get normal fields
 		Table table = this.getFieldsAsTable(FIELDS);
 		// add setup fields as well
@@ -156,7 +159,6 @@ println("CONFIG INIT");
 		// Notify that we're synchronized.
 		if (gController != null) {
 			gController.sync();
-			gController.say("Synced");
 		}
 	}
 

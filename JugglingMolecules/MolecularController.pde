@@ -258,12 +258,14 @@ println(message);
 
 		// particleColorScheme toggles
 		else if (fieldName.equals("particleColorScheme"))	{
-			this.sendChoice("particleColorScheme", controllerValue, 3);
+			this.sendChoice("particleColorScheme", (int)controllerValue, 3);
+			return;
 		}
 
 		// blendMode toggles
 		else if (fieldName.equals("blendMode")) {
-			this.sendChoice("blendMode", controllerValue, gConfig.blendChoices);
+			this.sendChoice("blendMode", (int)controllerValue, gConfig.blendChoices);
+			return;
 		}
 
 		else if (fieldName.equals("particleImage")) {

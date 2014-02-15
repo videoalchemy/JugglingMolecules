@@ -95,6 +95,7 @@ class TouchOscController extends Controller {
 ////////////////////////////////////////////////////////////
 	void sync() {
 		// override in your subclass to do anything special
+		gController.say("Synced");
 	}
 
 
@@ -179,19 +180,19 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	// Send a series of messages for different choice values, from 0 - maxValue.
-	void sendChoice(String fieldName, float value, int maxValue) {
-		for (int i = 0; i <= maxValue; i++) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
+	// Send a series of messages for different choice values, from 0 - maxValues, inclusive.
+	void sendChoice(String fieldName, int value, int maxValues) {
+		for (int i = 0; i <= maxValues; i++) {
+			this.sendInt(fieldName+"-"+i, (value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
 	}
 
 	// Send a series of messages for different choice values,
 	//	with choices as an array of ints.
-	void sendChoice(String fieldName, float value, int[] choices) {
+	void sendChoice(String fieldName, int value, int[] choices) {
 		for (int i : choices) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
+			this.sendFloat(fieldName+"-"+i, (value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
 	}

@@ -213,8 +213,8 @@ println("MolecularConfig INIT");
 	//	- 2 = rainbow
 	//	- 3 = set according to particleImage, which is loaded automatically
 	int particleColorScheme = PARTICLE_COLOR_SCHEME_XY;
-	int MIN_particleColorScheme = 0;
-	int MAX_particleColorScheme = 3;
+//	int MIN_particleColorScheme = 0;
+//	int MAX_particleColorScheme = 3;
 
 	// if we're in PARTICLE_COLOR_SCHEME_IMAGE, does the color get applied
 	//	when the particle is created, or when it's drawn?
