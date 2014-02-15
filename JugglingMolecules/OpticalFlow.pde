@@ -38,10 +38,10 @@ class OpticalFlow {
 	// internally used variables
 	float ar,ag,ab; // used as return value of pixave
 	//float ag;	// used as return value of pixave greyscale
-	float[] dtr, dtg, dtb; // differentiation by t (red,gree,blue)
-	float[] dxr, dxg, dxb; // differentiation by x (red,gree,blue)
-	float[] dyr, dyg, dyb; // differentiation by y (red,gree,blue)
-	float[] par, pag, pab; // averaged grid values (red,gree,blue)
+	float[] dtr; // differentiation by t (red,gree,blue)
+	float[] dxr; // differentiation by x (red,gree,blue)
+	float[] dyr; // differentiation by y (red,gree,blue)
+	float[] par; // averaged grid values (red,gree,blue)
 	float[] flowx, flowy; // computed optical flow
 	float[] sflowx, sflowy; // slowly changing version of the flow
 	int clockNow,clockPrev, clockDiff; // for timing check
@@ -62,21 +62,12 @@ class OpticalFlow {
 		field = makePerlinNoiseField(rows, cols);
 
 		avSize = resolution * 2;
-		df = config.flowfieldPredictionTime * config.setupFPS;
 
 		// arrays
 		par = new float[cols*rows];
-		pag = new float[cols*rows];
-		pab = new float[cols*rows];
 		dtr = new float[cols*rows];
-		dtg = new float[cols*rows];
-		dtb = new float[cols*rows];
 		dxr = new float[cols*rows];
-		dxg = new float[cols*rows];
-		dxb = new float[cols*rows];
 		dyr = new float[cols*rows];
-		dyg = new float[cols*rows];
-		dyb = new float[cols*rows];
 		flowx = new float[cols*rows];
 		flowy = new float[cols*rows];
 		sflowx = new float[cols*rows];
@@ -197,6 +188,9 @@ class OpticalFlow {
 
 	// 3rd sweep : solving optical flow
 	void solveFlow() {
+		// get time distance between frames at current time
+		df = config.flowfieldPredictionTime * config.setupFPS;
+
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
 			for (int row = 1; row < rows-1; row++) {
@@ -204,9 +198,9 @@ class OpticalFlow {
 				int index = row * cols + col;
 
 				// prepare vectors fx, fy, ft
-				getNeigboringPixels(dxr, fx, index, 0); // dx red
-				getNeigboringPixels(dyr, fy, index, 0); // dy red
-				getNeigboringPixels(dtr, ft, index, 0); // dt red
+				getNeigboringPixels(dxr, fx, index, 0); // dx grey
+				getNeigboringPixels(dyr, fy, index, 0); // dy grey
+				getNeigboringPixels(dtr, ft, index, 0); // dt grey
 
 				// solve for (flowx, flowy) such that:
 				//	 fx flowx + fy flowy + ft = 0
