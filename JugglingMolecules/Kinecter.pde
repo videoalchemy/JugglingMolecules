@@ -51,21 +51,32 @@ class Kinecter {
 		}
 	}
 
+	int lowestMin = 2047;
+	int highestMax = 0;
 	public void updateKinectDepth() {
 		if (!isKinected) return;
 
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
 		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
-			if (gRawDepth[i] >= gConfig.kinectMinDepth && gRawDepth[i] <= gConfig.kinectMaxDepth) {
-				int greyScale = (int)map((float)gRawDepth[i], gConfig.kinectMinDepth, gConfig.kinectMaxDepth, 255, 0);
-//TODO: use depthImageColor
-				gDepthImg.pixels[i] = color(greyScale, gConfig.depthImageAlpha);//color(0, greyScale, greyScale, 0);
+			int depth = gRawDepth[i];
+			int greyScale = (int)map((float)depth, gConfig.kinectMinDepth, gConfig.kinectMaxDepth, 255, 0);
+
+			if (depth < lowestMin) println("LOWEST: "+(lowestMin = depth)+"::"+greyScale);
+			if (depth > highestMax) println("HIGHEST: "+(highestMax = depth)+"::"+greyScale);
+
+			// if less than min, make it white
+			if (depth <= gConfig.kinectMinDepth) {
+				gDepthImg.pixels[i] = color(255);	// solid white
 				gNormalizedDepth[i] = 255;
-			}
-			else {
+
+			} else if (depth >= gConfig.kinectMaxDepth) {
 				gDepthImg.pixels[i] = 0;	// transparent black
 				gNormalizedDepth[i] = 0;
+
+			} else {
+				gDepthImg.pixels[i] = color(greyScale, 255);//color(greyScale, gConfig.depthImageAlpha);
+				gNormalizedDepth[i] = 255;
 			}
 		}
 
