@@ -154,7 +154,10 @@ println("CONFIG INIT");
 		// now signal that all of those fields have changed
 		this.fieldsChanged(table);
 		// Notify that we're synchronized.
-		if (gController != null) gController.say("Synced");
+		if (gController != null) {
+			gController.sync();
+			gController.say("Synced");
+		}
 	}
 
 	// One of our fields has changed.

@@ -20,6 +20,11 @@ class MolecularController extends TouchOscController {
 	}
 
 
+	void sync() {
+		super.sync();
+		updateSaverFileGrid();
+	}
+
 	// Update the "Saver" grid with the set of files which already exist.
 	void updateSaverFileGrid() {
 		this.sendActiveFiles("Saver", gConfig.configExistsMap);
