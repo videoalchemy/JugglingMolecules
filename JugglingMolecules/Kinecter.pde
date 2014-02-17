@@ -13,8 +13,10 @@ import org.openkinect.processing.*;
 ////////////////////////////////////////////////////////////
 //	Kinect setup (constant for all configs)
 ////////////////////////////////////////////////////////////
-	// size of the kinect
-	int	 gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
+
+	// size of the kinect, use by optical flow and particles
+	int	gKinectWidth=640;
+	int gKinectHeight = 480;
 
 
 class Kinecter {
@@ -31,6 +33,7 @@ class Kinecter {
 			kinect.enableDepth(true);
 			kinect.tilt(kAngle);
 
+			// the below makes getRawDepth() faster
 			kinect.processDepthImage(false);
 
 			isKinected = true;
@@ -49,7 +52,8 @@ class Kinecter {
 
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
-		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
+		int lastPixel = gRawDepth.length;
+		for (int i=0; i < lastPixel; i++) {
 			int depth = gRawDepth[i];
 
 			// if less than min, make it white
