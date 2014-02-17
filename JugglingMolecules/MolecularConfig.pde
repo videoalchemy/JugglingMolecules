@@ -290,6 +290,8 @@ println("MolecularConfig INIT");
 	// NOTE: NOT CURRENTLY USED.  see
 	color depthImageColor = color(0,0,0,255);
 
+	// show depth image as black/white or greyscale?
+	boolean depthImageAsGreyscale = false;
 
 	// Depth image blend mode constants.
 	//	REPLACE:     0

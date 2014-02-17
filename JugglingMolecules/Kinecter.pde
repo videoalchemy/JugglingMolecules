@@ -15,11 +15,6 @@ import org.openkinect.processing.*;
 ////////////////////////////////////////////////////////////
 	// size of the kinect
 	int	 gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/(float)gKinectHeight;	 	 // inverse of screen dimensions
-	// set in constructor below
-	float gKinectToWindowWidth	= 0;			 		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = 0;			 		// multiplier for kinect size to window size
 
 
 class Kinecter {
@@ -30,10 +25,6 @@ class Kinecter {
 	int thresholdRange = 2047;
 
 	public Kinecter(PApplet parent) {
-		// multiplier for kinect size to window size
-		gKinectToWindowWidth  = ((float) width)	* gInvKWidth;
-		gKinectToWindowHeight = ((float) height) * gInvKHeight;
-
 		try {
 			kinect = new Kinect(parent);
 			kinect.start();
@@ -76,7 +67,7 @@ class Kinecter {
 //				if (depth < lowestMin) println("LOWEST: "+(lowestMin = depth)+"::"+greyScale);
 //				if (depth > highestMax) println("HIGHEST: "+(highestMax = depth)+"::"+greyScale);
 
-				gDepthImg.pixels[i] = color(greyScale);//color(greyScale, gConfig.depthImageAlpha);
+				gDepthImg.pixels[i] = (gConfig.depthImageAsGreyscale ? color(greyScale) : 255);
 				gNormalizedDepth[i] = 255;
 			}
 		}
