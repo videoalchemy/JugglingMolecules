@@ -42,6 +42,7 @@ class Kinecter {
 		catch (Throwable t) {
 			isKinected = false;
 			println("KINECT NOT INITIALISED");
+			println(t);
 		}
 	}
 
