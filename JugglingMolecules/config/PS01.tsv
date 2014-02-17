@@ -1,7 +1,7 @@
 type	field	value
 boolean	showParticles	true
 boolean	showFlowLines	false
-boolean	showDepthImage	false
+boolean	showDepthImage	true
 boolean	showDepthPixels	false
 boolean	showSettings	false
 color	windowBgColor	color(0,0,255,0)
@@ -32,4 +32,4 @@ color	flowLineColor	color(0,0,255,0)
 int	flowLineAlpha	30
 color	depthImageColor	color(0,0,255,0)
 int	depthImageAlpha	30
-int	depthImageBlendMode	16
+int	depthImageBlendMode	0

@@ -24,29 +24,32 @@ class MolecularController extends OscController {
 		new OscXYControl(this, "particleGenerate", "particleGenerateSpread", "particleGenerateRate");
 		new OscXYControl(this, "noise", "noiseStrength", "noiseScale");
 
-//		new OscChoiceControl(this, "particleColorScheme", 4);
-//		new OscChoiceControl(this, "depthImageBlendMode", {0,1,2,4,8,16,32,64,128,256});
+		new OscChoiceControl(this, "particleColorScheme", 4);
+		new OscChoiceControl(this, "depthImageBlendMode", new int[] {0,1,2,4,8,16,32,64,128,256});
+
+		new OscButton(this, "sync");
+		new OscButton(this, "snapshot");
+
+		new OscGridControl(this, "image", 4, 3);
 
 //		new OscGridControl(this, "windowSize", 3, 2);
 
 //		Loader = new OscGridControl(this, "Loader", 10, 10, true);
 //		Saver  = new OscMultiGridControl(this, "Saver", 10, 10, false);
 	}
-/*
-	void handleSpecialAction(Control control, float parsedValue, OscMessage message) {
-		String fieldName = control.fieldName;
 
-		if 		(fieldName == "Loader") 			this.loadConfig(control, message);
-		else if	(fieldName == "Saver") 				this.saveConfig(control, message);
-		else if (fieldName == "Savelock")			this.updateSaverFileGrid();
-		else if (fieldName == "sync")  				gConfig.syncControllers();
-		else if (fieldName == "windowSize")  		this.setWindowSize(control, message);
-		else if (fieldName == "snapshot")			snapshot();		// NOTE: calling a global method, breaks encapsulation
-		else if (fieldName == "kinectAngle")		this.updateKinectAngle(message);	// TODO: config should handle this???
+	void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
+		if (fieldName.equals("sync")) 	 			if (parsedValue == 1) gConfig.syncControllers();
+//		else if (fieldName.equals("snapshot"))		snapshot();		// NOTE: calling a global method, breaks encapsulation
+//		else if	(fieldName.equals("Loader")) 		this.loadConfig(control, message);
+//		else if	(fieldName.equals("Saver")) 		this.saveConfig(control, message);
+//		else if (fieldName.equals("Savelock"))		this.updateSaverFileGrid();
+//		else if (fieldName.equals("windowSize"))  	this.setWindowSize(control, message);
+//		else if (fieldName.equals("kinectAngle"))	this.updateKinectAngle(message);	// TODO: config should handle this???
 	}
+/*
 
-
-	void loadConfig(Control control, OscMessage message) {
+	void loadConfig(OscControl control, OscMessage message) {
 		int index = control.index(message);
 		try {
 			gConfig.load(index);
@@ -73,7 +76,7 @@ class MolecularController extends OscController {
 		}
 	}
 
-	void setWindowSize(Control control, OscMessage message) {
+	void setWindowSize(OscControl control, OscMessage message) {
 		int index = control.index(message);
 		int _width, _height;
 // TODO: send as string to controller ???
@@ -100,7 +103,6 @@ class MolecularController extends OscController {
 
 // TODO: breaks encapsulation, the config should handle this!
 	void updateKinectAngle(OscMessage message) {
-		gConfig.saveSetup();
 		try {
 			int angle = gConfig.getInt("kinectAngle");
 			gKinecter.kinect.tilt(angle);

@@ -4,7 +4,16 @@
 //	OscControl classes for working with TouchOSC
 ////////////////////////////////////////////////////////////
 
-// A basic 0..1 control, eg: a button or slider.
+
+////////////////////////
+//
+//	OscControl class
+// 	A basic 0..1 control, eg: a button or slider.
+//
+//	NOTE: You don't have to create "normal" OscControls manually,
+//			they controller will automatically create them for you as needed.
+//
+////////////////////////
 class OscControl {
 	OscController controller;
 	String fieldName;
@@ -26,13 +35,82 @@ class OscControl {
 
 	// A field from our config has changed -- update the controller.
 	void onConfigFieldChanged(float controllerValue) {
-		controller.updateConfigForField(fieldName, controllerValue);
+		controller.sendFloat(fieldName, controllerValue);
 	}
 }
 
 
+////////////////////////
+//
+//	OscButton class
+// 	A button which has an affect on the controller, not necessarily on the config.
+//
+// 	Implement the action via `yourController.handlespecialAction()`, eg:
+//				void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
+//					if (fieldName.equals("myButton"))	doSomething();
+//					else if (fieldName.equals("..."))	...
+//					...
+//				}
+//
+// 	NOTE: Osc buttons will send a "1" value when the control goes down, and a "0" value when the control goes up,
+//			so you'll likely want to check the parsedValue() and only invoke your action
+//			when the value is 1, eg:
+//				void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
+//					if (fieldNameequals("myButton"))	if (parsedValue == 1) doSomething();
+//					...
+//				}
+//
+////////////////////////
+class OscButton extends OscControl {
+	public OscButton(OscController _controller, String _fieldName) {
+		super(_controller, _fieldName);
+	}
 
-// OSC X-Y control, mapping two config values to one control.
+	// When receiving a message from a button, the value will be 1 if pressed, or 0 if released.
+	float parseMessage(OscMessage message) {
+		float value = controller.getMessageValue(message);
+println("button "+fieldName+" pressed with value "+value);
+		return value;
+	}
+
+	void onConfigFieldChanged(float controllerValue) {
+		// NOTE: this should never be called for a button!
+	}
+}
+
+
+////////////////////////
+//
+//	OscFlagControl	class
+// 	A flag is a button which toggles a "flag" on the CONTROLLER to be on or off.
+//	Access the current state of the flag as    `gController.flagIsSet(fieldName)`
+//
+////////////////////////
+class OscFlagControl extends OscControl {
+	public OscFlagControl(OscController _controller, String _fieldName) {
+		super(_controller, _fieldName);
+	}
+
+	// Map the name of the actual button pressed to the right config parameter.
+	float parseMessage(OscMessage message) {
+		boolean isOn = (controller.getMessageValue(message) != 0);
+		controller.setFlag(fieldName, isOn);
+		return (isOn ? 1 : 0);
+	}
+
+	// Turn each button on or off as appropriate when the config value changes.
+	void onConfigFieldChanged(float controllerValue) {
+		// NOTE: this should never be called!
+	}
+}
+
+
+////////////////////////
+//
+//	OscXYControl class
+// 	OSC X-Y control, mapping two config values to one control.
+//
+////////////////////////
 class OscXYControl extends OscControl {
 	String xField;
 	String yField;
@@ -69,96 +147,89 @@ class OscXYControl extends OscControl {
 	}
 }
 
-/*
-// A bunch of buttons which act as radio buttons for a set of choices.
+
+////////////////////////
+//
+//	OscChoiceControl class
+// 	A bunch of buttons which act as radio buttons for a set of choices.
+//
+////////////////////////
 class OscChoiceControl extends OscControl {
 	int[] choices;
 
+
 	// Construct with just the number of choices.
 	public OscChoiceControl(OscController _controller, String _fieldName, int choiceCount) {
-		int[] _choices = new int[choiceCount];
+		super(_controller, _fieldName);
+		this.choices = new int[choiceCount];
 		for (int i = 0; i < choiceCount; i++) {
-			_choices[i] = i;
+			choices[i] = i;
 		}
-//		super(_controller, _fieldName, _choices);
+		this.addControlsForChoices();
 	}
+
 
 	// Construct with an explicit set of choices.
 	public OscChoiceControl(OscController _controller, String _fieldName, int[] _choices) {
-		this.fieldName = _fieldName;
+		super(_controller, _fieldName);
 		this.choices = _choices;
-
-		this.controller = _controller;
-		this.controller.addControl(fieldName, this);
+		this.addControlsForChoices();
+	}
+	void addControlsForChoices() {
 		// add to controller under all choice indexes
 		for (int i = 0; i < choices.length; i++) {
-			name = fieldName + "-" + choices[i];
+			String name = fieldName + "-" + choices[i];
 			this.controller.addControl(name, this);
 		}
 	}
 
-	// Map the name of the actual button pressed to the right config parameter.
+	// Map the name of the actual button pressed to the right config value.
 	float parseMessage(OscMessage message) {
 		String stringValue = controller.getMessageNameSuffix(message);
 		if (stringValue == null) {
-			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+"): value must start with '-'");
-			return;
+			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+")"
+						+"): value must start with '-'");
+			return -1;
 		}
-		float value = (float) int(stringValue);
-		if (value >= choices.length) {
-			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+"): returned index of "+value+" which is greater than the number of choices!");
-			return;
-		}
-		controller.updateConfigForField(fieldName, value);
-		return value;
+		return (float) gConfig.setInt(fieldName, stringValue);
 	}
 
 	// Turn each button on or off as appropriate when the config value changes.
 	void onConfigFieldChanged(float controllerValue) {
-		int value = (int)value;
+		int value = (int)controllerValue;
 		for (int i = 0; i < choices.length; i++) {
-			name = fieldName + "-" + i;
-			controller.sendFloat(name, value == i);
+			String name = fieldName + "-" + choices[i];
+			controller.sendBoolean(name, value == choices[i]);
 		}
 	}
 }
 
 
-// A flag is a button which is currently either on or off.
-class OscFlagControl extends OscControl {
-
-	// Map the name of the actual button pressed to the right config parameter.
-	float parseMessage(OscMessage message) {
-		boolean isOn = controller.getMessageValue(message);
-		controller.setFlag(fieldName, isOn);
-	}
-
-	// Turn each button on or off as appropriate when the config value changes.
-	void onConfigFieldChanged(float controllerValue) {
-		// NOTE: this should never be called!
-	}
-}
-
-
-
-// Multi-toggle control, MAPPED SO TOP-LEFT ITEM IS 0,0!!!
-// NOTE: the default is an NON-EXCLUSIVE control,
-//		 meaning that only one value will be selected at a time.
+////////////////////////
+//
+//	OscGridControl class
+// 	Multi-toggle control, MAPPED SO TOP-LEFT ITEM IS 0,0!!!
+//
+// 	NOTE: this is an EXCLUSIVE control, meaning that only one value will be selected at a time.
+//			See OscMultiGridControl for a grid which shows multiple values at once.
+//
+////////////////////////
 class OscGridControl extends OscControl {
 	int rowCount;
 	int colCount;
 
 	// Construct with explicit rowCount and colCount.
 	public OscGridControl(OscController _controller, String _fieldName, int _rowCount, int _colCount) {
+		super(_controller, _fieldName);
+
 		this.rowCount = _rowCount;
 		this.colCount = _colCount;
-
-		super(_controller, _fieldName);
 	}
 
 	// Map the value of the message to the button that was pressed.
 	float parseMessage(OscMessage message) {
 		int value = this.index(message);
+		gConfig.setField(fieldName, ""+value);
 		return (float) value;
 	}
 
@@ -179,7 +250,7 @@ class OscGridControl extends OscControl {
 			// get the row from bit 2 of the message
 			//	and then invert it's row number
 			//	(since TouchOsc is bottom-based and we're top-based)
-			return = rowCount - int(msgName[2]);
+			return rowCount - int(msgName[2]);
 		} catch (Exception e) {
 			return -1;
 		}
@@ -209,12 +280,14 @@ class OscGridControl extends OscControl {
 		return (row * colCount) + col;
 	}
 }
+/*
 
-
-
-// Multi-toggle control, MAPPED SO TOP-LEFT ITEM IS 0,0!!!
-// NOTE: the default is an NON-EXCLUSIVE control,
-//		 meaning that only one value will be selected at a time.
+////////////////////////
+//
+//	OscMultiGridControl class
+//	Multi-toggle control which deals with a large set of non-exclusive values.
+//
+////////////////////////
 class OscMultiGridControl extends OscControl {
 	int rowCount;
 	int colCount;

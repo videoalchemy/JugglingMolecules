@@ -143,6 +143,9 @@ println("CONFIG INIT");
 
 	// Tell the controller(s) about the state of all of our FIELDs.
 	void syncControllers() {
+		println("-------------------------------------------");
+		println("    S  Y  N  C");
+		println("-------------------------------------------");
 		// get normal fields
 		Table table = this.getFieldsAsTable(FIELDS);
 		// add setup fields as well
@@ -235,7 +238,6 @@ println("CONFIG INIT");
 		} catch (Exception e) {
 			this.warn("setFromController("+field.getName()+"): exception setting field value", e);
 		}
-this.debug("setFromController('"+field.getName()+"': update config and/or setup if necessary");
 	}
 
 	// Set internal integer value from controller value.
@@ -491,31 +493,35 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	void setInt(String fieldName, String stringValue) { this.setInt(fieldName, stringValue, null); }
-	void setInt(Field field, int newValue) { this.setInt(field, newValue, null); }
-	void setInt(String fieldName, String stringValue, Table changeLog) {
+	int setInt(String fieldName, String stringValue) { return this.setInt(fieldName, stringValue, null); }
+	int setInt(Field field, int newValue) { return this.setInt(field, newValue, null); }
+	int setInt(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
-		this.setInt(field, stringValue, changeLog);
+		return this.setInt(field, stringValue, changeLog);
 	}
-	void setInt(Field field, String stringValue, Table changeLog) {
+	int setInt(Field field, String stringValue, Table changeLog) {
 		try {
 			int newValue = this.stringToInt(stringValue);
-			this.setInt(field, newValue, changeLog);
+			return this.setInt(field, newValue, changeLog);
 		} catch (Exception e) {
 			this.warn("setInt("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
+			return -1;
 		}
 	}
-	void setInt(Field field, int newValue, Table changeLog) {
-		if (field == null) return;
-		try {
-			int oldValue = this.getInt(field);
-			if (oldValue != newValue) {
-				field.setInt(this, newValue);
-				this.recordChange(field,  this.getTypeName(_INT_TYPE), this.intFieldToString(field), changeLog);
+	int setInt(Field field, int newValue, Table changeLog) {
+		if (field != null) {
+			try {
+				int oldValue = this.getInt(field);
+				if (oldValue != newValue) {
+					field.setInt(this, newValue);
+					this.recordChange(field,  this.getTypeName(_INT_TYPE), this.intFieldToString(field), changeLog);
+				}
+				return newValue;
+			} catch (Exception e) {
+				this.warn("setInt("+field.getName()+"): exception setting value '"+newValue+"'", e);
 			}
-		} catch (Exception e) {
-			this.warn("setInt("+field.getName()+"): exception setting value '"+newValue+"'", e);
 		}
+		return -1;
 	}
 
 
@@ -523,31 +529,35 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	void setFloat(String fieldName, String stringValue) { this.setFloat(fieldName, stringValue, null); }
-	void setFloat(Field field, float newValue) { this.setFloat(field, newValue, null); }
-	void setFloat(String fieldName, String stringValue, Table changeLog) {
+	float setFloat(String fieldName, String stringValue) { return this.setFloat(fieldName, stringValue, null); }
+	float setFloat(Field field, float newValue) { return this.setFloat(field, newValue, null); }
+	float setFloat(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
-		this.setFloat(field, stringValue, changeLog);
+		return this.setFloat(field, stringValue, changeLog);
 	}
-	void setFloat(Field field, String stringValue, Table changeLog) {
+	float setFloat(Field field, String stringValue, Table changeLog) {
 		try {
 			float newValue = this.stringToFloat(stringValue);
-			this.setFloat(field, newValue, changeLog);
+			return this.setFloat(field, newValue, changeLog);
 		} catch (Exception e) {
 			this.warn("setFloat("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
+			return -1;
 		}
 	}
-	void setFloat(Field field, float newValue, Table changeLog) {
-		if (field == null) return;
-		try {
-			float oldValue = this.getFloat(field);
-			if (oldValue != newValue) {
-				field.setFloat(this, newValue);
-				this.recordChange(field,  this.getTypeName(_FLOAT_TYPE), this.floatFieldToString(field), changeLog);
+	float setFloat(Field field, float newValue, Table changeLog) {
+		if (field != null) {
+			try {
+				float oldValue = this.getFloat(field);
+				if (oldValue != newValue) {
+					field.setFloat(this, newValue);
+					this.recordChange(field,  this.getTypeName(_FLOAT_TYPE), this.floatFieldToString(field), changeLog);
+				}
+				return newValue;
+			} catch (Exception e) {
+				this.warn("setFloat("+field.getName()+"): exception setting value '"+newValue+"'", e);
 			}
-		} catch (Exception e) {
-			this.warn("setFloat("+field.getName()+"): exception setting value '"+newValue+"'", e);
 		}
+		return -1;
 	}
 
 
@@ -556,31 +566,35 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	void setBoolean(String fieldName, String stringValue) { this.setBoolean(fieldName, stringValue, null); }
-	void setBoolean(Field field, boolean newValue) { this.setBoolean(field, newValue, null); }
-	void setBoolean(String fieldName, String stringValue, Table changeLog) {
+	boolean setBoolean(String fieldName, String stringValue) { return this.setBoolean(fieldName, stringValue, null); }
+	boolean setBoolean(Field field, boolean newValue) { return this.setBoolean(field, newValue, null); }
+	boolean setBoolean(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
-		this.setBoolean(field, stringValue, changeLog);
+		return this.setBoolean(field, stringValue, changeLog);
 	}
-	void setBoolean(Field field, String stringValue, Table changeLog) {
+	boolean setBoolean(Field field, String stringValue, Table changeLog) {
 		try {
 			boolean newValue = this.stringToBoolean(stringValue);
-			this.setBoolean(field, newValue, changeLog);
+			return this.setBoolean(field, newValue, changeLog);
 		} catch (Exception e) {
 			this.warn("setBoolean("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
+			return false;
 		}
 	}
-	void setBoolean(Field field, boolean newValue, Table changeLog) {
-		if (field == null) return;
-		try {
-			boolean oldValue = this.getBoolean(field);
-			if (oldValue != newValue) {
-				field.setBoolean(this, newValue);
-				this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.booleanFieldToString(field), changeLog);
+	boolean setBoolean(Field field, boolean newValue, Table changeLog) {
+		if (field != null) {
+			try {
+				boolean oldValue = this.getBoolean(field);
+				if (oldValue != newValue) {
+					field.setBoolean(this, newValue);
+					this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.booleanFieldToString(field), changeLog);
+				}
+				return newValue;
+			} catch (Exception e) {
+				this.warn("setBoolean("+field.getName()+"): exception setting value '"+newValue+"'", e);
 			}
-		} catch (Exception e) {
-			this.warn("setBoolean("+field.getName()+"): exception setting value '"+newValue+"'", e);
 		}
+		return false;
 	}
 
 
@@ -588,31 +602,35 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	void setColor(String fieldName, String stringValue) { this.setColor(fieldName, stringValue, null); }
-	void setColor(Field field, color newValue) { this.setColor(field, newValue, null); }
-	void setColor(String fieldName, String stringValue, Table changeLog) {
+	color setColor(String fieldName, String stringValue) { return this.setColor(fieldName, stringValue, null); }
+	color setColor(Field field, color newValue) { return this.setColor(field, newValue, null); }
+	color setColor(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
-		this.setColor(field, stringValue, changeLog);
+		return this.setColor(field, stringValue, changeLog);
 	}
-	void setColor(Field field, String stringValue, Table changeLog) {
+	color setColor(Field field, String stringValue, Table changeLog) {
 		try {
 			color newValue = this.stringToColor(stringValue);
-			this.setColor(field, newValue, changeLog);
+			return this.setColor(field, newValue, changeLog);
 		} catch (Exception e) {
 			this.warn("setColor("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
+			return color(0);
 		}
 	}
-	void setColor(Field field, color newValue, Table changeLog) {
-		if (field == null) return;
-		try {
-			color oldValue = this.getColor(field);
-			if (oldValue != newValue) {
-				field.setInt(this, (int)newValue);
-				this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.colorFieldToString(field), changeLog);
+	color setColor(Field field, color newValue, Table changeLog) {
+		if (field != null) {
+			try {
+				color oldValue = this.getColor(field);
+				if (oldValue != newValue) {
+					field.setInt(this, (int)newValue);
+					this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.colorFieldToString(field), changeLog);
+				}
+				return newValue;
+			} catch (Exception e) {
+				this.warn("setColor("+field.getName()+"): exception setting value '"+newValue+"'", e);
 			}
-		} catch (Exception e) {
-			this.warn("setColor("+field.getName()+"): exception setting value '"+newValue+"'", e);
 		}
+		return color(0);
 	}
 
 

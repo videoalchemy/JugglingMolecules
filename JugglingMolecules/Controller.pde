@@ -144,20 +144,18 @@ class OscController extends Controller {
 		// get the name of the field being affected, minus the initial slash
 		String fieldName = this.getMessageNamePrefix(message);
 
-		// lop off anything after a "-"
-		int index = fieldName.indexOf("-");
-		if (index > -1) fieldName = fieldName.substring(0, index);
+println("::::"+message.addrPattern()+"::"+fieldName);
 
 		OscControl control = this.getOrCreateControl(fieldName);
 		float parsedValue = control.parseMessage(message);
 
 		// handle any special actions not covered by our normal controls
-		this.handleSpecialAction(control, parsedValue, message);
+		this.handleSpecialAction(control, control.fieldName, parsedValue, message);
 	}
 
 	// Handle a special action from some field being pressed.
 	// Override this to do special things when, eg, specific buttons are pressed.
-	void handleSpecialAction(OscControl control, float parsedValue, OscMessage message) {
+	void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
 		return;
 	}
 
@@ -177,9 +175,16 @@ class OscController extends Controller {
 	String getMessageNamePrefix(OscMessage message) {
 		// field name minus initial slash
 		String fieldName = this.getMessageName(message);
-		// lop off everything after "-"
-		int index = fieldName.indexOf("-");
+
+		// for "multi-toggle" controls, lop off everything after "/"
+		int index = fieldName.indexOf("/");
 		if (index > -1) fieldName = fieldName.substring(0, index);
+
+		// for "composite" controls, lop off everything after "-"
+		index = fieldName.indexOf("-");
+		if (index > -1) fieldName = fieldName.substring(0, index);
+
+		// lop off
 		return fieldName;
 	}
 
@@ -266,21 +271,21 @@ class OscController extends Controller {
 	}
 
 	void sendBoolean(String fieldName, boolean value) {
-		println("  setting controller "+fieldName+" to "+value);
+		println("  sending boolean "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
 		this.sendMessage(message);
 	}
 
 	void sendInt(String fieldName, int value) {
-		println("  setting controller "+fieldName+" to "+value);
+		println("  sending int "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
 		this.sendMessage(message);
 	}
 
 	void sendFloat(String fieldName, float value) {
-		println("  setting controller "+fieldName+" to "+value);
+		println("  sending float "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
 		this.sendMessage(message);
@@ -288,15 +293,12 @@ class OscController extends Controller {
 
 	void sendFloat(String fieldName, boolean value) {
 		float floatValue = (value ? 1 : 0);
-		println("  setting controller "+fieldName+" to "+floatValue);
-		OscMessage message = new OscMessage("/"+fieldName);
-		message.add(floatValue);
-		this.sendMessage(message);
+		this.sendFloat(fieldName, floatValue);
 	}
 
 
 	void sendFloats(String fieldName, float value1, float value2) {
-		println("  setting controller "+fieldName+" to "+value1+" "+value2);
+		println("  sending floats "+fieldName+"="+value1+" "+value2);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value1);
 		message.add(value2);
