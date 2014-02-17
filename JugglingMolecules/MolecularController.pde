@@ -122,7 +122,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			int value = (row*2)+col;
 			int _width, _height;
 			switch (value) {
-				case 1:		_width = 800; _height = 600; break;
+				case 1:		_width = 1280; _height = 960; break;
 				case 2:		_width = 1024; _height = 768; break;
 				case 3:		_width = 1280; _height = 800; break;
 				case 4:		_width = 1920; _height = 1200; break;

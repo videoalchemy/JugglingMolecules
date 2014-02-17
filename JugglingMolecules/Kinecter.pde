@@ -13,13 +13,10 @@ import org.openkinect.processing.*;
 ////////////////////////////////////////////////////////////
 //	Kinect setup (constant for all configs)
 ////////////////////////////////////////////////////////////
-	// size of the kinect
-	int	 gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/(float)gKinectHeight;	 	 // inverse of screen dimensions
-	// set in constructor below
-	float gKinectToWindowWidth	= 0;			 		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = 0;			 		// multiplier for kinect size to window size
+
+	// size of the kinect, use by optical flow and particles
+	int	gKinectWidth=640;
+	int gKinectHeight = 480;
 
 
 class Kinecter {
@@ -30,16 +27,13 @@ class Kinecter {
 	int thresholdRange = 2047;
 
 	public Kinecter(PApplet parent) {
-		// multiplier for kinect size to window size
-		gKinectToWindowWidth  = ((float) width)	* gInvKWidth;
-		gKinectToWindowHeight = ((float) height) * gInvKHeight;
-
 		try {
 			kinect = new Kinect(parent);
 			kinect.start();
 			kinect.enableDepth(true);
 			kinect.tilt(kAngle);
 
+			// the below makes getRawDepth() faster
 			kinect.processDepthImage(false);
 
 			isKinected = true;
@@ -48,6 +42,7 @@ class Kinecter {
 		catch (Throwable t) {
 			isKinected = false;
 			println("KINECT NOT INITIALISED");
+			println(t);
 		}
 	}
 
@@ -58,7 +53,8 @@ class Kinecter {
 
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
-		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
+		int lastPixel = gRawDepth.length;
+		for (int i=0; i < lastPixel; i++) {
 			int depth = gRawDepth[i];
 
 			// if less than min, make it white
@@ -76,7 +72,7 @@ class Kinecter {
 //				if (depth < lowestMin) println("LOWEST: "+(lowestMin = depth)+"::"+greyScale);
 //				if (depth > highestMax) println("HIGHEST: "+(highestMax = depth)+"::"+greyScale);
 
-				gDepthImg.pixels[i] = color(greyScale);//color(greyScale, gConfig.depthImageAlpha);
+				gDepthImg.pixels[i] = (gConfig.depthImageAsGreyscale ? color(greyScale) : 255);
 				gNormalizedDepth[i] = 255;
 			}
 		}
