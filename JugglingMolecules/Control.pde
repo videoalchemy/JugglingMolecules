@@ -6,11 +6,15 @@
 
 // A basic 0..1 control, eg: a button or slider.
 class OscControl {
-	Controller controller;
+	OscController controller;
+	String fieldName;
 
-	public OscControl(Controller _controller, String fieldName) {
-		this.controller = _controller;
-		this.controller.addControl(fieldName, this);
+	public OscControl() {}
+
+	public OscControl(OscController _controller, String _fieldName) {
+		controller = _controller;
+		fieldName = _fieldName;
+		controller.addControl(fieldName, this);
 	}
 
 	// Parse a message and update the config.
@@ -33,14 +37,14 @@ class OscXYControl extends OscControl {
 	String xField;
 	String yField;
 
-	public OscXYControl(Controller _controller, String _fieldName, String _xField, String _yField) {
-		this.fieldName = _fieldName;
+	public OscXYControl(OscController _controller, String _fieldName, String _xField, String _yField) {
+		super(_controller, _fieldName);
+
+		// remember x and y field names
 		this.xField 	 = _xField;
 		this.yField		 = _yField;
 
-		this.controller = _controller;
-		// add to controller under all three fields
-		this.controller.addControl(fieldName, this);
+		// add to controller under x/y fields as well
 		this.controller.addControl(xField, this);
 		this.controller.addControl(yField, this);
 	}
@@ -56,8 +60,8 @@ class OscXYControl extends OscControl {
 
 	void onConfigFieldChanged(float controllerValue) {
 		try {
-			float xValue = controller.getFieldValue(firstFieldName);
-			float yValue = controller.getFieldValue(secondFieldName);
+			float xValue = controller.getFieldValue(xField);
+			float yValue = controller.getFieldValue(yField);
 			controller.sendFloats(fieldName, xValue, yValue);
 		} catch (Exception e) {
 			println("Error in OscXYControl.onConfigFieldChanged("+fieldName+"): "+e);
@@ -65,22 +69,22 @@ class OscXYControl extends OscControl {
 	}
 }
 
-
+/*
 // A bunch of buttons which act as radio buttons for a set of choices.
 class OscChoiceControl extends OscControl {
 	int[] choices;
 
 	// Construct with just the number of choices.
-	public OscChoiceControl(Controller _controller, String _fieldName, int choiceCount) {
-		int[] _choices = int[choiceCount];
+	public OscChoiceControl(OscController _controller, String _fieldName, int choiceCount) {
+		int[] _choices = new int[choiceCount];
 		for (int i = 0; i < choiceCount; i++) {
 			_choices[i] = i;
 		}
-		super(_controller, _fieldName, _choices);
+//		super(_controller, _fieldName, _choices);
 	}
 
 	// Construct with an explicit set of choices.
-	public OscChoiceControl(Controller _controller, String _fieldName, int[] _choices) {
+	public OscChoiceControl(OscController _controller, String _fieldName, int[] _choices) {
 		this.fieldName = _fieldName;
 		this.choices = _choices;
 
@@ -97,12 +101,12 @@ class OscChoiceControl extends OscControl {
 	float parseMessage(OscMessage message) {
 		String stringValue = controller.getMessageNameSuffix(message);
 		if (stringValue == null) {
-			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)"): value must start with '-'");
+			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+"): value must start with '-'");
 			return;
 		}
 		float value = (float) int(stringValue);
 		if (value >= choices.length) {
-			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)"): returned index of "+value+" which is greater than the number of choices!");
+			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+"): returned index of "+value+" which is greater than the number of choices!");
 			return;
 		}
 		controller.updateConfigForField(fieldName, value);
@@ -145,8 +149,7 @@ class OscGridControl extends OscControl {
 	int colCount;
 
 	// Construct with explicit rowCount and colCount.
-	public OscGridControl(Controller _controller, String _fieldName, int _rowCount, int _colCount)
-	{
+	public OscGridControl(OscController _controller, String _fieldName, int _rowCount, int _colCount) {
 		this.rowCount = _rowCount;
 		this.colCount = _colCount;
 
@@ -212,12 +215,12 @@ class OscGridControl extends OscControl {
 // Multi-toggle control, MAPPED SO TOP-LEFT ITEM IS 0,0!!!
 // NOTE: the default is an NON-EXCLUSIVE control,
 //		 meaning that only one value will be selected at a time.
-class OscNonExclusiveGridControl extends OscControl {
+class OscMultiGridControl extends OscControl {
 	int rowCount;
 	int colCount;
 
 	// Construct with explicit rowCount and colCount.
-	public OscNonExclusiveGridControl(Controller _controller, String _fieldName, int _rowCount, int _colCount)
+	public OscMultiGridControl(OscController _controller, String _fieldName, int _rowCount, int _colCount)
 	{
 		super(_controller, _fieldName);
 	}
@@ -258,3 +261,4 @@ class OscNonExclusiveGridControl extends OscControl {
 
 }
 
+*/

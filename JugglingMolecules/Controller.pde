@@ -30,7 +30,7 @@ class Controller {
 
 }
 
-class TouchOscController extends Controller {
+class OscController extends Controller {
 	OscP5 oscMessenger;
 
 	ArrayList<NetAddress> outboundAddresses;
@@ -49,7 +49,7 @@ class TouchOscController extends Controller {
 //	Initial setup.
 ////////////////////////////////////////////////////////////
 
-	public TouchOscController() {
+	public OscController() {
 		this.controls = new HashMap<String, OscControl>();
 		this.flags = new HashMap<String, Boolean>();
 		outboundAddresses = 	new ArrayList<NetAddress>();
@@ -98,14 +98,14 @@ class TouchOscController extends Controller {
 	// Return a named control, or create a simple "OscControl" instance if none found.
 	OscControl getOrCreateControl(String fieldName) {
 		OscControl control = this.getControl(fieldName);
-		if (!control) {
-			control = this.makeBasicControl(this, fieldName);
+		if (control == null) {
+			control = this.makeBasicControl(fieldName);
 		}
-		return control
+		return control;
 	}
 
 	// Do we have an existing control for the given field name?
-	void controlExists(String fieldName) {
+	boolean controlExists(String fieldName) {
 		OscControl control = this.controls.get(fieldName);
 		return (control != null);
 	}
@@ -146,7 +146,7 @@ class TouchOscController extends Controller {
 
 		// lop off anything after a "-"
 		int index = fieldName.indexOf("-");
-		if (index > -1) fieldName = fieldName.substr(0, index);
+		if (index > -1) fieldName = fieldName.substring(0, index);
 
 		OscControl control = this.getOrCreateControl(fieldName);
 		float parsedValue = control.parseMessage(message);
@@ -157,7 +157,7 @@ class TouchOscController extends Controller {
 
 	// Handle a special action from some field being pressed.
 	// Override this to do special things when, eg, specific buttons are pressed.
-	void handleSpecialAction(Control control, OscMessage message) {
+	void handleSpecialAction(OscControl control, float parsedValue, OscMessage message) {
 		return;
 	}
 
@@ -179,7 +179,7 @@ class TouchOscController extends Controller {
 		String fieldName = this.getMessageName(message);
 		// lop off everything after "-"
 		int index = fieldName.indexOf("-");
-		if (index > -1) fieldName = fieldName.substr(0, index);
+		if (index > -1) fieldName = fieldName.substring(0, index);
 		return fieldName;
 	}
 
@@ -193,7 +193,7 @@ class TouchOscController extends Controller {
 		// if no, return null
 		if (index == -1) return null;
 		// return the bit after the "-"
-		return fieldName.substr(index+1);
+		return fieldName.substring(index+1);
 	}
 
 
@@ -207,7 +207,7 @@ class TouchOscController extends Controller {
 		return message.get(valueIndex).floatValue();
 	}
 
-
+/*
 	// Return the first "value" of a message as an int.
 	int getMessageValue(OscMessage message) {
 		return this.getMessageValue(message, 0);
@@ -227,18 +227,18 @@ class TouchOscController extends Controller {
 	boolean getMessageValue(OscMessage message, int valueIndex) {
 		return (message.get(valueIndex).floatValue() != 0);
 	}
-
+*/
 
 
 ////////////////////////////////////////////////////////////
 //	Flags (eg: buttons which are held down temporarily)
 ////////////////////////////////////////////////////////////
 	void setFlag(String fieldName, boolean isOn) {
-		if (isOn) 	this.flags.set(fieldName, true);
+		if (isOn) 	this.flags.put(fieldName, true);
 		else		this.flags.remove(fieldName);
 	}
 
-	void flagIsSet(String fieldName) {
+	boolean flagIsSet(String fieldName) {
 		return (this.flags.get(fieldName) == true);
 	}
 
@@ -287,7 +287,7 @@ class TouchOscController extends Controller {
 	}
 
 	void sendFloat(String fieldName, boolean value) {
-		float floatValue = (boolean ? 1 : 0)
+		float floatValue = (value ? 1 : 0);
 		println("  setting controller "+fieldName+" to "+floatValue);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(floatValue);
@@ -357,7 +357,7 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	boolean controlIsOn
+
 
 ////////////////////////////////////////////////////////////
 //	Talk-back to the user
@@ -429,7 +429,7 @@ class TouchOscController extends Controller {
 		} catch (Exception e) {
 			return -1;
 		}
-	},
+	}
 
 
 }

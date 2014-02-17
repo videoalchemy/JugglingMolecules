@@ -67,7 +67,7 @@ println("MolecularConfig INIT");
 	int MIN_kinectMinDepth = 0;
 	int MAX_kinectMinDepth = 2047;
 
-	int kinectMadx`xDepth = 950;
+	int kinectMaxDepth = 950;
 	int MIN_kinectMaxDepth = 0;
 	int MAX_kinectMaxDepth = 2047;
 

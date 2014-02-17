@@ -11,10 +11,10 @@
 //  TouchOsc controller for JugglingMolecules sketch
 ////////////////////////////////////////////////////////////
 
-class MolecularController extends TouchOscController {
+class MolecularController extends OscController {
 
-	OscMultiToggleControl Loader;
-	OscMultiToggleControl Saver;
+//	OscMultiToggleControl Loader;
+//	OscMultiToggleControl Saver;
 
 	public MolecularController() {
 		super();
@@ -24,15 +24,15 @@ class MolecularController extends TouchOscController {
 		new OscXYControl(this, "particleGenerate", "particleGenerateSpread", "particleGenerateRate");
 		new OscXYControl(this, "noise", "noiseStrength", "noiseScale");
 
-		new OscChoiceControl(this, "particleColorScheme", 4);
-		new OscChoiceControl(this, "depthImageBlendMode", {0,1,2,4,8,16,32,64,128,256});
+//		new OscChoiceControl(this, "particleColorScheme", 4);
+//		new OscChoiceControl(this, "depthImageBlendMode", {0,1,2,4,8,16,32,64,128,256});
 
-		new OscGridControl(this, "windowSize", 3, 2);
+//		new OscGridControl(this, "windowSize", 3, 2);
 
-		Loader = new OscGridControl(this, "Loader", 10, 10, true);
-		Saver  = new OscNonExclusiveGridControl(this, "Saver", 10, 10, false);
+//		Loader = new OscGridControl(this, "Loader", 10, 10, true);
+//		Saver  = new OscMultiGridControl(this, "Saver", 10, 10, false);
 	}
-
+/*
 	void handleSpecialAction(Control control, float parsedValue, OscMessage message) {
 		String fieldName = control.fieldName;
 
@@ -174,5 +174,5 @@ class MolecularController extends TouchOscController {
 		}
 
 	}
-
+*/
 }

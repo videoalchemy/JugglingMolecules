@@ -47,7 +47,7 @@ class Config {
 	// constructor
 	public Config() {
 println("CONFIG INIT");
-		this.controllers = new ArrayList<Controller>();
+		this.controllers = new ArrayList<OscController>();
 
 		// Set up our file existance map.
 		this.initConfigExistsMap();
@@ -56,7 +56,7 @@ println("CONFIG INIT");
 ////////////////////////////////////////////////////////////
 //	Controllers that we're aware of.
 ////////////////////////////////////////////////////////////
-	ArrayList<Controller> controllers;
+	ArrayList<OscController> controllers;
 
 ////////////////////////////////////////////////////////////
 //	Sets of fields that we manage
@@ -161,7 +161,7 @@ println("CONFIG INIT");
 	}
 	void fieldChanged(Field field, String typeName, String currentValueString) {
 		if (field == null) return;
-		for (Controller controller : this.controllers) {
+		for (OscController controller : this.controllers) {
 			try {
 				float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
 				controller.onConfigFieldChanged(field.getName(), controllerValue, typeName, currentValueString);
@@ -204,10 +204,10 @@ println("CONFIG INIT");
 ////////////////////////////////////////////////////////////
 //	Dealing with controllers and messages from controllers.
 ////////////////////////////////////////////////////////////
-	void addController(Controller controller) {
+	void addController(OscController controller) {
 		this.controllers.add(controller);
 	}
-	void removeController(Controller controller) {
+	void removeController(OscController controller) {
 		this.controllers.remove(controller);
 	}
 
@@ -392,7 +392,7 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Load a numbered config.
 	Table load(int fileIndex) {
 		String _fileName = this.getFileName(fileIndex);
-		this.load(_fileName);
+		return this.load(_fileName);
 	}
 
 	// Load a file by name (within our <sketch>/config/ folder).
@@ -655,7 +655,7 @@ this.debug("setFromController('"+field.getName()+"': update config and/or setup 
 	// Load a numbered config.
 	Table save(int fileIndex) {
 		String _fileName = this.getFileName(fileIndex);
-		this.load(_fileName);
+		return this.load(_fileName);
 	}
 
 	Table save(String _fileName) {
