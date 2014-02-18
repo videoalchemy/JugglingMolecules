@@ -47,17 +47,21 @@ class OscControl {
 //	OscButton class
 // 	A button which has an affect on the controller, not necessarily on the config.
 //
-// 	Implement the action via `yourController.handlespecialAction()`, eg:
-//				void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
-//					if (fieldName.equals("myButton"))	doSomething();
-//					else if (fieldName.equals("..."))	...
+// 	Implement the action in your controller as "onButtonName", eg:
+//				public YourController() {
 //					...
+//					new OscButton(this, "myButton");
+//					...
+//				}
+//				...
+//				void onMyButton(OscControl control, OscMessage message) {
+//					... do your thing here! ...
 //				}
 //
 // 	NOTE: TouchOSC will send an event with value "1" for finger down, and "0" for finger up.
 //		  Normally we eat the "down" event and just send the "up" event (as you don't generally need to handle both).
-//		  If you *do* want to handle both, use constructor:
-//				new OscButton(controller, "btnName", false);
+//		  If you *DO* want to handle both, use the constructor:
+//				new OscButton(controller, "myButton", false);
 //
 ////////////////////////
 class OscButton extends OscControl {

@@ -33,25 +33,30 @@ class MolecularController extends OscController {
 		new OscGridControl(this, "particleImage", 4, 3);
 		new OscGridControl(this, "setupWindowSize", 3, 2);
 
-//		new OscGridControl(this, "windowSize", 3, 2);
-
 //		Loader = new OscGridControl(this, "Loader", 10, 10, true);
 //		Saver  = new OscMultiGridControl(this, "Saver", 10, 10, false);
 	}
 
-	void handleSpecialAction(OscControl control, String fieldName, float controllerValue, OscMessage message) {
-		if (fieldName.equals("sync"))						gConfig.syncControllers();
-//		else if (fieldName.equals("snapshot"))				snapshot();		// NOTE: calling a global method, breaks encapsulation
-//		else if	(fieldName.equals("Loader")) 				this.loadConfig(control, message);
-//		else if	(fieldName.equals("Saver")) 				this.saveConfig(control, message);
-//		else if (fieldName.equals("Savelock"))				this.updateSaverFileGrid();
-		else if (fieldName.equals("setupWindowSize"))  		this.onWindowSizeChanged();
-		else if (fieldName.equals("kinectAngle"))			this.onKinectAngleChanged();
+
+	//////////////////
+	//
+	// Handlers for special fields/buttons/etc
+	//
+	//////////////////
+
+
+	// Sync button pressed.
+	void onSync(OscControl control, OscMessage message) {
+		gConfig.syncControllers();
 	}
 
+	// Snapshot button pressed.
+	void onSnapshot(OscControl control, OscMessage message) {
+		snapshot();
+	}
 
 	// When window size is changed from the controller, notify them they'll have to restart.
-	void onWindowSizeChanged() {
+	void onSetupWindowSize(OscControl control, OscMessage message) {
 		// notify about new size on restart
 		int wdSize	 = gConfig.setupWindowSize;
 		int wdWidth  = gConfig.windowWidths[wdSize];
@@ -59,10 +64,10 @@ class MolecularController extends OscController {
 		this.say("Restart for "+wdWidth+"x"+wdHeight);
 	}
 
-	void onKinectAngleChanged() {
+	// When kinect angle is changed, actually move the kinect!
+	void onKinectAngle(OscControl control, OscMessage message) {
 		try {
 			int newAngle = gConfig.kinectAngle;
-//println("changed kinect angle to "+newAngle);
 			gKinecter.kinect.tilt(newAngle);
 		} catch (Exception e){
 			println("Exception updating kinect angle: "+e);
@@ -105,19 +110,6 @@ class MolecularController extends OscController {
 		Saver.updateStates(gConfig.configExistsMap);
 	}
 
-
-// TODO: breaks encapsulation, the config should handle this!
-	void updateKinectAngle(OscMessage message) {
-		try {
-			int angle = gConfig.getInt("kinectAngle");
-			gKinecter.kinect.tilt(angle);
-
-			// remember angle on restart
-			gConfig.saveSetup();
-		} catch (Exception e){
-			println("Exception updating kinect angle: "+e);
-		};
-	}
 
 	// Update the config with messages from OSC.
 	// Special stuff to update the config w/weird controls, etc.

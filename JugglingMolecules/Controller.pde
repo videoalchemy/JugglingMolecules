@@ -157,20 +157,33 @@ class OscController extends Controller {
 			return;
 		}
 
+		// Use reflection to call an "onXxx" method if defined
+		Class myClass = this.getClass();
+		Class[] args  = new Class[] { OscControl.class, OscMessage.class };
+		String handlerName = "on" + fieldName.substring(0,1).toUpperCase()
+								  + fieldName.substring(1);
+		try {
+			Method method = myClass.getMethod(handlerName, args);
+			method.invoke(this, control, message);
+		} catch (NoSuchMethodException e) {
+			// if we can't find a method, forget it
+		} catch (Exception e) {
+			println("--------------------------------------------------------");
+			println("parseMessage("+fieldName+"): Error invoking controller."+handlerName+"()");
+			println(e);
+			println("--------------------------------------------------------");
+		}
+
+/*
 		// handle any special actions not covered by our normal controls
 		this.handleSpecialAction(control, control.fieldName, parsedValue, message);
-
+*/
 		// if we're dealing with a setup field, save the setup automatically
 		if (gConfig.isSetupField(fieldName)) {
 			gConfig.saveSetup();
 		}
 	}
 
-	// Handle a special action from some field being pressed.
-	// Override this to do special things when, eg, specific buttons are pressed.
-	void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
-		return;
-	}
 
 	// Update the configuration for a particular field.
 	// Value is the float value we got from OSC.
