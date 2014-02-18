@@ -145,10 +145,25 @@ class OscController extends Controller {
 		String fieldName = this.getMessageNamePrefix(message);
 
 		OscControl control = this.getOrCreateControl(fieldName);
-		float parsedValue = control.parseMessage(message);
+
+		// have the control attempt to parse the value
+		// if it's not valid, or it's not something we want to deal with,
+		//	the control can throw an exception and we'll stop processing.
+		float parsedValue;
+		try {
+			parsedValue = control.parseMessage(message);
+		} catch (Exception e) {
+//println(e);
+			return;
+		}
 
 		// handle any special actions not covered by our normal controls
 		this.handleSpecialAction(control, control.fieldName, parsedValue, message);
+
+		// if we're dealing with a setup field, save the setup automatically
+		if (gConfig.isSetupField(fieldName)) {
+			gConfig.saveSetup();
+		}
 	}
 
 	// Handle a special action from some field being pressed.

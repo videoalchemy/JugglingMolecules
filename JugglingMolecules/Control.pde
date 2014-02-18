@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 
 
+
+
 ////////////////////////
 //
 //	OscControl class
@@ -27,7 +29,7 @@ class OscControl {
 	}
 
 	// Parse a message and update the config.
-	float parseMessage(OscMessage message) {
+	float parseMessage(OscMessage message) throws Exception {
 		float value = controller.getMessageValue(message);
 		controller.updateConfigForField(fieldName, value);
 		return value;
@@ -52,24 +54,30 @@ class OscControl {
 //					...
 //				}
 //
-// 	NOTE: Osc buttons will send a "1" value when the control goes down, and a "0" value when the control goes up,
-//			so you'll likely want to check the parsedValue() and only invoke your action
-//			when the value is 1, eg:
-//				void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
-//					if (fieldNameequals("myButton"))	if (parsedValue == 1) doSomething();
-//					...
-//				}
+// 	NOTE: TouchOSC will send an event with value "1" for finger down, and "0" for finger up.
+//		  Normally we eat the "down" event and just send the "up" event (as you don't generally need to handle both).
+//		  If you *do* want to handle both, use constructor:
+//				new OscButton(controller, "btnName", false);
 //
 ////////////////////////
 class OscButton extends OscControl {
+	boolean ignoreTouchDown = true;
+
 	public OscButton(OscController _controller, String _fieldName) {
 		super(_controller, _fieldName);
 	}
 
+	public OscButton(OscController _controller, String _fieldName, boolean _ignoreTouchDown) {
+		super(_controller, _fieldName);
+		this.ignoreTouchDown = _ignoreTouchDown;
+	}
+
 	// When receiving a message from a button, the value will be 1 if pressed, or 0 if released.
-	float parseMessage(OscMessage message) {
+	float parseMessage(OscMessage message) throws Exception{
 		float value = controller.getMessageValue(message);
-println("button "+fieldName+" pressed with value "+value);
+		if (this.ignoreTouchDown && value == 1) {
+			throw new Exception("OscButton('"+fieldName+"): ignoring touch down");
+		}
 		return value;
 	}
 
@@ -132,7 +140,7 @@ class OscXYControl extends OscControl {
 		float yValue = controller.getMessageValue(message, 1);
 		controller.updateConfigForField(xField, xValue);
 		controller.updateConfigForField(yField, yValue);
-		// can't return a sensical value, so forget it
+		// can't return a sensical value, so return -1
 		return -1;
 	}
 
@@ -184,12 +192,13 @@ class OscChoiceControl extends OscControl {
 	}
 
 	// Map the name of the actual button pressed to the right config value.
-	float parseMessage(OscMessage message) {
+	float parseMessage(OscMessage message) throws Exception {
 		String stringValue = controller.getMessageNameSuffix(message);
 		if (stringValue == null) {
-			println("Error in OscChoiceControl.parseMessage("+controller.getMessageName(message)+")"
-						+"): value must start with '-'");
-			return -1;
+			String name = controller.getMessageName(message);
+			println("Error in OscChoiceControl.parseMessage("+name+"): "
+						+"value must start with '-'");
+			throw new Exception("OscChoiceControl('"+name+"): can't parse value out of message name");
 		}
 		return (float) gConfig.setInt(fieldName, stringValue);
 	}
@@ -236,9 +245,17 @@ class OscGridControl extends OscControl {
 	}
 
 	// Map the value of the message to the button that was pressed.
-	float parseMessage(OscMessage message) {
+	float parseMessage(OscMessage message) throws Exception{
+		// ignore touch up events
+		if (controller.getMessageValue(message) == 0) {
+			throw new Exception("OscGridControl("+fieldName+"): Ignore grid touch up events");
+		}
+
+		// pull our zero-based index out of the message and make sure it's valid
 		int index = this.index(message);
-		if (controller.getMessageValue(message) == 0) return -1;
+		if (index == -1 || index >= this.itemCount()) {
+			throw new Exception("OscGridControl("+fieldName+"): can't parse valid index out of message");
+		}
 		gConfig.setField(fieldName, ""+index);
 		return (float) index;
 	}
@@ -316,8 +333,7 @@ class OscMultiGridControl extends OscControl {
 	int colCount;
 
 	// Construct with explicit rowCount and colCount.
-	public OscMultiGridControl(OscController _controller, String _fieldName, int _rowCount, int _colCount)
-	{
+	public OscMultiGridControl(OscController _controller, String _fieldName, int _rowCount, int _colCount) {
 		super(_controller, _fieldName);
 	}
 

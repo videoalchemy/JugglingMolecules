@@ -22,7 +22,6 @@
 	int PARTICLE_COLOR_SCHEME_RAINBOW			= 3;
 
 	String[] _SETUP_FIELDS 	 = 	{ "setup*", "kinect*" };
-	String[] _DEFAULT_FIELDS = 	{ "MIN_*", "MAX_*" };
 	String[] _FIELDS 		 =  { "show*", "window*", "flowfield*", "noise*",
 								  "particle*", "flowLine*", "depthImage*"
 								};
@@ -34,7 +33,6 @@ class MolecularConfig extends Config {
 	public MolecularConfig() {
 println("MolecularConfig INIT");
 		this.SETUP_FIELDS 	= this.expandFieldList(_SETUP_FIELDS);
-		this.DEFAULT_FIELDS = this.expandFieldList(_DEFAULT_FIELDS);
 		this.FIELDS 		= this.expandFieldList(_FIELDS);
 	}
 
@@ -46,8 +44,10 @@ println("MolecularConfig INIT");
 	String setupLastConfigFile = "PS01";
 
 	// Window size
-	int setupWindowWidth = 640;
-	int setupWindowHeight = 480;
+	// TODO: this is grotty... breaks encapsulation with window size in control...  :-(
+	int setupWindowSize = 0;
+	int[] windowWidths  = new int[] { 640,  800, 1024, 1280, 1920, 2560 };
+	int[] windowHeights = new int[] { 480,  600,  768,  800, 1200, 1440 };
 
 	// Desired frame rate
 	// NOTE: requires restart to change.

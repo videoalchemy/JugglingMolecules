@@ -31,6 +31,7 @@ class MolecularController extends OscController {
 		new OscButton(this, "snapshot");
 
 		new OscGridControl(this, "particleImage", 4, 3);
+		new OscGridControl(this, "setupWindowSize", 3, 2);
 
 //		new OscGridControl(this, "windowSize", 3, 2);
 
@@ -38,15 +39,36 @@ class MolecularController extends OscController {
 //		Saver  = new OscMultiGridControl(this, "Saver", 10, 10, false);
 	}
 
-	void handleSpecialAction(OscControl control, String fieldName, float parsedValue, OscMessage message) {
-		if (fieldName.equals("sync")) 	 			if (parsedValue == 1) gConfig.syncControllers();
-//		else if (fieldName.equals("snapshot"))		snapshot();		// NOTE: calling a global method, breaks encapsulation
-//		else if	(fieldName.equals("Loader")) 		this.loadConfig(control, message);
-//		else if	(fieldName.equals("Saver")) 		this.saveConfig(control, message);
-//		else if (fieldName.equals("Savelock"))		this.updateSaverFileGrid();
-//		else if (fieldName.equals("windowSize"))  	this.setWindowSize(control, message);
-//		else if (fieldName.equals("kinectAngle"))	this.updateKinectAngle(message);	// TODO: config should handle this???
+	void handleSpecialAction(OscControl control, String fieldName, float controllerValue, OscMessage message) {
+		if (fieldName.equals("sync"))						gConfig.syncControllers();
+//		else if (fieldName.equals("snapshot"))				snapshot();		// NOTE: calling a global method, breaks encapsulation
+//		else if	(fieldName.equals("Loader")) 				this.loadConfig(control, message);
+//		else if	(fieldName.equals("Saver")) 				this.saveConfig(control, message);
+//		else if (fieldName.equals("Savelock"))				this.updateSaverFileGrid();
+		else if (fieldName.equals("setupWindowSize"))  		this.onWindowSizeChanged();
+		else if (fieldName.equals("kinectAngle"))			this.onKinectAngleChanged();
 	}
+
+
+	// When window size is changed from the controller, notify them they'll have to restart.
+	void onWindowSizeChanged() {
+		// notify about new size on restart
+		int wdSize	 = gConfig.setupWindowSize;
+		int wdWidth  = gConfig.windowWidths[wdSize];
+		int wdHeight = gConfig.windowHeights[wdSize];
+		this.say("Restart for "+wdWidth+"x"+wdHeight);
+	}
+
+	void onKinectAngleChanged() {
+		try {
+			int newAngle = gConfig.kinectAngle;
+//println("changed kinect angle to "+newAngle);
+			gKinecter.kinect.tilt(newAngle);
+		} catch (Exception e){
+			println("Exception updating kinect angle: "+e);
+		}
+	}
+
 /*
 
 	void loadConfig(OscControl control, OscMessage message) {
@@ -76,23 +98,6 @@ class MolecularController extends OscController {
 		}
 	}
 
-	void setWindowSize(OscControl control, OscMessage message) {
-		int index = control.index(message);
-		int _width, _height;
-// TODO: send as string to controller ???
-		switch (value) {
-			case 1:		_width = 800; _height = 600; break;
-			case 2:		_width = 1024; _height = 768; break;
-			case 3:		_width = 1280; _height = 800; break;
-			case 4:		_width = 1920; _height = 1200; break;
-			case 5:		_width = 2560; _height = 1440; break;
-			default:	_width = 640; _height = 480; break;
-		}
-		gConfig.setupWindowWidth = _width;
-		gConfig.setupWindowHeight = _height;
-		this.say("Restart for "+_width+"x"+_height);
-		gConfig.saveSetup();
-	}
 
 
 	// Update the "Saver" grid with the set of configs which already exist.

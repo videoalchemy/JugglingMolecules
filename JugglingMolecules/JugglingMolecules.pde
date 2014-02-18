@@ -62,9 +62,9 @@ void start() {
 //
 void setup() {
 	// window size comes from config
-	// TODO: well, ideally window size would come from config,
-	//		 but when we call size() it re-runs setup, which messes things up.
-	size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
+	int wdWidth  = gConfig.windowWidths[gConfig.setupWindowSize];
+	int wdHeight = gConfig.windowHeights[gConfig.setupWindowSize];
+	size(wdWidth, wdHeight, OPENGL);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
 	gOscMaster = new OscP5(this, 8000);
@@ -103,7 +103,6 @@ void setup() {
 
 	// save our startup state
 	gConfig.saveSetup();
-	gConfig.saveDefaults();
 	gConfig.save();
 
 

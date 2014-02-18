@@ -67,12 +67,6 @@ println("CONFIG INIT");
 	//	BEFORE initialization begins (so you can have dynamic screen size, etc).
 	String[] SETUP_FIELDS;
 
-	// List of "default" fields.
-	// These will be loaded/saved in "config/defaults.config" and will be loaded
-	//	at startup BEFORE the "main" config file is loaded.
-	// Put your "MIN_" and "MAX_" constants in here.
-	String[] DEFAULT_FIELDS;
-
 	// Names of all of our "normal" configuration fields.
 	// These are what are actually saved per each configuration.
 	String[] FIELDS;
@@ -373,9 +367,6 @@ println("CONFIG INIT");
 		// load our setup fields
 		this.loadSetup();
 
-		// load our defaults
-		this.loadDefaults();
-
 		// if our .setupAutoLoadLast is true, load our last config file
 		if (this.setupLastConfigFile != null) {
 			return this.load(this.setupLastConfigFile);
@@ -411,11 +402,6 @@ println("CONFIG INIT");
 		// turn on new button
 		if (gController != null) gController.togglePresetButton(_fileName, true);
 		return this.loadFromFile(_fileName);
-	}
-
-	// Load our setup file from disk.
-	Table loadDefaults() {
-		return this.loadFromFile("defaults");
 	}
 
 	// Load our defaults from disk.
@@ -686,11 +672,6 @@ println("CONFIG INIT");
 		return this.saveToFile("setup", this.SETUP_FIELDS);
 	}
 
-	// Load our setup file from disk.
-	Table saveDefaults() {
-		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
-	}
-
 	// Save an arbitrary set of fields in our current config to a file.
 	// You must pass `_fileName`.
 	Table saveToFile(String _fileName, String[] fields) {
@@ -835,6 +816,14 @@ println("CONFIG INIT");
 		}
 	}
 
+
+	// Return true if a particular field is in our SETUP_FIELDS list.
+	boolean isSetupField(String fieldName) {
+		for (String setupFieldName : this.SETUP_FIELDS) {
+			if (fieldName.equals(setupFieldName)) return true;
+		}
+		return false;
+	}
 
 	////////////////////////////////////////////////////////////
 	//	Getting "logical" field types.
