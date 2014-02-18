@@ -2000,13 +2000,10 @@ println("all done!");
 ////////////////////////////////////////////////////////////
 //	Kinect setup (constant for all configs)
 ////////////////////////////////////////////////////////////
-	// size of the kinect
-	int	 gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/(float)gKinectHeight;	 	 // inverse of screen dimensions
-	// set in constructor below
-	float gKinectToWindowWidth	= 0;			 		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = 0;			 		// multiplier for kinect size to window size
+
+	// size of the kinect, use by optical flow and particles
+	int	gKinectWidth=640;
+	int gKinectHeight = 480;
 
 
 class Kinecter {
@@ -2017,16 +2014,13 @@ class Kinecter {
 	int thresholdRange = 2047;
 
 	public Kinecter(PApplet parent) {
-		// multiplier for kinect size to window size
-		gKinectToWindowWidth  = ((float) width)	* gInvKWidth;
-		gKinectToWindowHeight = ((float) height) * gInvKHeight;
-
 		try {
 			kinect = new Kinect(parent);
 			kinect.start();
 			kinect.enableDepth(true);
 			kinect.tilt(kAngle);
 
+			// the below makes getRawDepth() faster
 			kinect.processDepthImage(false);
 
 			isKinected = true;
@@ -2035,6 +2029,7 @@ class Kinecter {
 		catch (Throwable t) {
 			isKinected = false;
 			println("KINECT NOT INITIALISED");
+			println(t);
 		}
 	}
 
@@ -2045,7 +2040,8 @@ class Kinecter {
 
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
-		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
+		int lastPixel = gRawDepth.length;
+		for (int i=0; i < lastPixel; i++) {
 			int depth = gRawDepth[i];
 
 			// if less than min, make it white
@@ -2063,7 +2059,7 @@ class Kinecter {
 //				if (depth < lowestMin) println("LOWEST: "+(lowestMin = depth)+"::"+greyScale);
 //				if (depth > highestMax) println("HIGHEST: "+(highestMax = depth)+"::"+greyScale);
 
-				gDepthImg.pixels[i] = color(greyScale);//color(greyScale, gConfig.depthImageAlpha);
+				gDepthImg.pixels[i] = (gConfig.depthImageAsGreyscale ? color(greyScale) : 255);
 				gNormalizedDepth[i] = 255;
 			}
 		}
@@ -2369,6 +2365,8 @@ println("MolecularConfig INIT");
 	// NOTE: NOT CURRENTLY USED.  see
 	int depthImageColor = color(0,0,0,255);
 
+	// show depth image as black/white or greyscale?
+	boolean depthImageAsGreyscale = false;
 
 	// Depth image blend mode constants.
 	//	REPLACE:     0
@@ -2532,7 +2530,7 @@ println("--- saveLock:	" +  (this.saveLock ? "ON" : "OFF"));
 			int value = (row*2)+col;
 			int _width, _height;
 			switch (value) {
-				case 1:		_width = 800; _height = 600; break;
+				case 1:		_width = 1280; _height = 960; break;
 				case 2:		_width = 1024; _height = 768; break;
 				case 3:		_width = 1280; _height = 800; break;
 				case 4:		_width = 1920; _height = 1200; break;
@@ -2748,15 +2746,12 @@ class OpticalFlow {
 	int regressionVectorLength = 3*9; // length of the vectors
 
 	// internally used variables
-	float ar,ag,ab; // used as return value of pixave
-	//float ag;	// used as return value of pixave greyscale
-	float[] dtr; // differentiation by t (red,gree,blue)
-	float[] dxr; // differentiation by x (red,gree,blue)
-	float[] dyr; // differentiation by y (red,gree,blue)
-	float[] par; // averaged grid values (red,gree,blue)
-	float[] flowx, flowy; // computed optical flow
-	float[] sflowx, sflowy; // slowly changing version of the flow
-	int clockNow,clockPrev, clockDiff; // for timing check
+	float[] dtr; 				// differentiation by t (red,gree,blue)
+	float[] dxr; 				// differentiation by x (red,gree,blue)
+	float[] dyr; 				// differentiation by y (red,gree,blue)
+	float[] par; 				// averaged grid values (red,gree,blue)
+	float[] flowx, flowy; 		// computed optical flow
+	float[] sflowx, sflowy; 	// slowly changing version of the flow
 
 
 	OpticalFlow(MolecularConfig _config, ParticleManager _particles) {
@@ -2802,30 +2797,21 @@ class OpticalFlow {
 	}
 
 	// Calculate average pixel value (r,g,b) for rectangle region
-	public void averagePixelsGrayscale(int x1, int y1, int x2, int y2) {
-		//float sumr,sumg,sumb;
-		float sumg;
-		int pix;
-		float g;
-		int n;
-
+	public float averagePixelsGrayscale(int x1, int y1, int x2, int y2) {
 		if (x1 < 0)					x1 = 0;
 		if (x2 >= gKinectWidth)		x2 = gKinectWidth - 1;
 		if (y1 < 0)					y1 = 0;
 		if (y2 >= gKinectHeight)	y2 = gKinectHeight - 1;
 
-		//sumr=sumg=sumb=0.0;
-		sumg = 0.0f;
+		float sum = 0.0f;
 		for (int y = y1; y <= y2; y++) {
 			for (int i = gKinectWidth * y + x1; i <= gKinectWidth * y+x2; i++) {
-				 sumg += gNormalizedDepth[i];
+				 sum += gNormalizedDepth[i];
 			}
 		}
-		n = (x2-x1+1) * (y2-y1+1); // number of pixels
-		// the results are stored in static variables
-		ar = sumg / n;
-		ag = ar;
-		ab = ar;
+		int pixelCount = (x2-x1+1) * (y2-y1+1); // number of pixels
+
+		return sum / pixelCount;
 	}
 
 	// extract values from 9 neighbour grids
@@ -2873,11 +2859,11 @@ class OpticalFlow {
 				int y0 = row * resolution + resolution/2;
 				int index = row * cols + col;
 				// compute average pixel at (x0,y0)
-				averagePixelsGrayscale(x0-avSize, y0-avSize, x0+avSize, y0+avSize);
+				float avg = averagePixelsGrayscale(x0-avSize, y0-avSize, x0+avSize, y0+avSize);
 				// compute time difference
-				dtr[index] = ar-par[index]; // red
+				dtr[index] = avg - par[index]; // red
 				// save the pixel
-				par[index] = ar;
+				par[index] = avg;
 			}
 		}
 	}
@@ -2905,6 +2891,12 @@ class OpticalFlow {
 		int _lineColor = color(gConfig.flowLineColor, gConfig.flowLineAlpha);
 		int _red = color(255,0,0);
 		int _green = color(0,255,0);
+
+		// for kinect to window size mapping below
+		float normalizedKinectWidth   = 1.0f / ((float) gKinectWidth);
+		float normalizedKinectHeight  = 1.0f / ((float) gKinectHeight);
+		float kinectToWindowWidth  = ((float) width) * normalizedKinectWidth;
+		float kinectToWindowHeight = ((float) height) * normalizedKinectHeight;
 
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
@@ -2940,10 +2932,10 @@ class OpticalFlow {
 					// show optical flow as lines in `flowLineColor`
 					if (config.showFlowLines) {
 						stroke(_lineColor);
-						float startX = width - (((float) x0) * gKinectToWindowWidth);
-						float startY = ((float) y0) * gKinectToWindowHeight;
-						float endX	 = width - (((float) (x0+u)) * gKinectToWindowWidth);
-						float endY	 = ((float) (y0+v)) * gKinectToWindowHeight;
+						float startX = width - (((float) x0) * kinectToWindowWidth);
+						float startY = ((float) y0) * kinectToWindowHeight;
+						float endX	 = width - (((float) (x0+u)) * kinectToWindowWidth);
+						float endY	 = ((float) (y0+v)) * kinectToWindowHeight;
 //println(startX+","+startY+" : "+endX+","+endY);
 						line(startX, startY, endX, endY);
 
@@ -2956,11 +2948,11 @@ class OpticalFlow {
 					}
 
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
-					float mouseNormX = (x0+u) * gInvKWidth;
-					float mouseNormY = (y0+v) * gInvKHeight;
-					float mouseVelX	= ((x0+u) - x0) * gInvKWidth;
-					float mouseVelY	= ((y0+v) - y0) * gInvKHeight;
-					particles.addParticlesForForce(1-mouseNormX, mouseNormY, -mouseVelX, mouseVelY);
+					float normalizedX = (x0+u) * normalizedKinectWidth;
+					float normalizedY = (y0+v) * normalizedKinectHeight;
+					float velocityX	= ((x0+u) - x0) * normalizedKinectWidth;
+					float velocityY	= ((y0+v) - y0) * normalizedKinectHeight;
+					particles.addParticlesForForce(1-normalizedX, normalizedY, -velocityX, velocityY);
 				}
 			}
 		}

@@ -104,6 +104,26 @@
 	  return field;
 	}
 
+	// Renders a vector object 'v' as an arrow and a location 'x,y'
+	void drawVector(PVector v, float x, float y, float scayl) {
+		pushMatrix();
+		float arrowsize = 4;
+		//Translate the location to render vector
+		translate(x,y);
+		stroke (0,155);
+		//Call vector heading function to get direction, then rotate in that direction
+		//note: heading 0 = up
+		rotate(v.heading2D());
+		//calculate length of vector & scale it to be bigger or smaller if necessary
+		float len = v.mag()*scaly;
+		// Draw three lines to make an arrow 
+		// (draw with heading 0 pointing up since image already rotated in correct)
+		line(0,0,len,0);
+		//line(len,0,len-arrowsize,+arrowsize/2);
+        //line(len,0,len-arrowsize,-arrowsize/2);
+        popMatrix();
+	}
+
 
 	// Given a hue of 0..1, return a fully saturated color().
 	// NOTE: assumes we're normally in RGB mode
