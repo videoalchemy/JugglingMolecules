@@ -30,7 +30,7 @@ class MolecularController extends OscController {
 		new OscButton(this, "sync");
 		new OscButton(this, "snapshot");
 
-		new OscGridControl(this, "image", 4, 3);
+		new OscGridControl(this, "particleImage", 4, 3);
 
 //		new OscGridControl(this, "windowSize", 3, 2);
 

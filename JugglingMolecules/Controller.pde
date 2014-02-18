@@ -144,8 +144,6 @@ class OscController extends Controller {
 		// get the name of the field being affected, minus the initial slash
 		String fieldName = this.getMessageNamePrefix(message);
 
-println("::::"+message.addrPattern()+"::"+fieldName);
-
 		OscControl control = this.getOrCreateControl(fieldName);
 		float parsedValue = control.parseMessage(message);
 
@@ -256,7 +254,7 @@ println("::::"+message.addrPattern()+"::"+fieldName);
 	// Send a prepared `message` to the OSCTouch controller.
 	// NOTE: if `gOscMasterAddress` hasn't been set up, we'll show a warning and bail.
 	// TODO: support many controllers?
-	void sendMessage(OscMessage message) {
+	void send(OscMessage message) {
 		if (this.outboundAddresses.size() == 0) {
 			println("osc.sendMessageToController("+message.addrPattern()+"): controller.outboundAddress not set up!  Skipping message.");
 		} else {
@@ -270,69 +268,73 @@ println("::::"+message.addrPattern()+"::"+fieldName);
 		}
 	}
 
-	void sendBoolean(String fieldName, boolean value) {
+	void send(String fieldName, boolean value) {
 		println("  sending boolean "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
-	void sendInt(String fieldName, int value) {
+	void send(String fieldName, int value) {
 		println("  sending int "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
-	void sendFloat(String fieldName, float value) {
+	void send(String fieldName, int value1, int value2) {
+		println("  sending ints "+fieldName+"="+value1+" "+value2);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value1);
+		message.add(value2);
+		this.send(message);
+	}
+
+	void send(String fieldName, int value1, int value2, int value3) {
+		println("  sending ints "+fieldName+"="+value1+" "+value2+" "+value3);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value1);
+		message.add(value2);
+		message.add(value3);
+		this.send(message);
+	}
+
+	void send(String fieldName, float value) {
 		println("  sending float "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
-	void sendFloat(String fieldName, boolean value) {
-		float floatValue = (value ? 1 : 0);
-		this.sendFloat(fieldName, floatValue);
-	}
-
-
-	void sendFloats(String fieldName, float value1, float value2) {
+	void send(String fieldName, float value1, float value2) {
 		println("  sending floats "+fieldName+"="+value1+" "+value2);
 		OscMessage message = new OscMessage("/"+fieldName);
 		message.add(value1);
 		message.add(value2);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
-	// Send a series of messages for different choice values, from 0 - maxValue.
-	void sendChoice(String fieldName, float value, int maxValue) {
-		for (int i = 0; i <= maxValue; i++) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
-		}
-		this.sendFloat(fieldName, value);
+	void send(String fieldName, float value1, float value2, float value3) {
+		println("  sending floats "+fieldName+"="+value1+" "+value2+" "+value3);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value1);
+		message.add(value2);
+		message.add(value3);
+		this.send(message);
 	}
 
-	// Send a series of messages for different choice values,
-	//	with choices as an array of ints.
-	void sendChoice(String fieldName, float value, int[] choices) {
-		for (int i : choices) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
-		}
-		this.sendFloat(fieldName, value);
-	}
 
 	void togglePresetButton(String presetName, boolean turnOn) {
-		this.sendInt("/"+presetName, turnOn ? 1 : 0);
-//		this.sendInt("/Load/"+presetName, turnOn ? 1 : 0);
-//		this.sendInt("/Save/"+presetName, turnOn ? 1 : 0);
+		this.send("/"+presetName, turnOn ? 1 : 0);
+//		this.send("/Load/"+presetName, turnOn ? 1 : 0);
+//		this.send("/Save/"+presetName, turnOn ? 1 : 0);
 	}
 
 	void sendLabel(String fieldName, String value) {
 		println("  sending label "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName+"Label");
 		message.add(fieldName+"="+value);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
 	// Set color of a control.
@@ -342,21 +344,21 @@ println("::::"+message.addrPattern()+"::"+fieldName);
 	void setColor(String fieldName, String value) {
 		OscMessage message = new OscMessage("/"+fieldName+"/color");
 		message.add(value);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
 	// Show a named control.
 	void showControl(String fieldName) {
 		OscMessage message = new OscMessage("/"+fieldName+"/visible");
 		message.add(1);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
 	// Hide a named control.
 	void hideControl(String fieldName) {
 		OscMessage message = new OscMessage("/"+fieldName+"/visible");
 		message.add(0);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
 
@@ -368,7 +370,7 @@ println("::::"+message.addrPattern()+"::"+fieldName);
 		println("  saying "+msgText);
 		OscMessage message = new OscMessage("/message");
 		message.add(msgText);
-		this.sendMessage(message);
+		this.send(message);
 	}
 
 

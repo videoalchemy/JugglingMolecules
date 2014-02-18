@@ -35,7 +35,7 @@ class OscControl {
 
 	// A field from our config has changed -- update the controller.
 	void onConfigFieldChanged(float controllerValue) {
-		controller.sendFloat(fieldName, controllerValue);
+		controller.send(fieldName, controllerValue);
 	}
 }
 
@@ -140,7 +140,7 @@ class OscXYControl extends OscControl {
 		try {
 			float xValue = controller.getFieldValue(xField);
 			float yValue = controller.getFieldValue(yField);
-			controller.sendFloats(fieldName, xValue, yValue);
+			controller.send(fieldName, xValue, yValue);
 		} catch (Exception e) {
 			println("Error in OscXYControl.onConfigFieldChanged("+fieldName+"): "+e);
 		}
@@ -199,7 +199,7 @@ class OscChoiceControl extends OscControl {
 		int value = (int)controllerValue;
 		for (int i = 0; i < choices.length; i++) {
 			String name = fieldName + "-" + choices[i];
-			controller.sendBoolean(name, value == choices[i]);
+			controller.send(name, value == choices[i]);
 		}
 	}
 }
@@ -212,6 +212,15 @@ class OscChoiceControl extends OscControl {
 //
 // 	NOTE: this is an EXCLUSIVE control, meaning that only one value will be selected at a time.
 //			See OscMultiGridControl for a grid which shows multiple values at once.
+//
+//	NOTE: You MUST make the corresponding TouchOSC MultiToggle:
+//				[ X ] Local feedback off
+//				[ X ] Exclusive mode
+//		  If you don't, you'll get endless loop behavior sometimes.  :-(
+//
+//	NOTE: for config property "foo", if you DO NOT create MIN_foo and MAX_foo config constants,
+//			the value coming in to onConfigFieldChanged will be the actual value of "foo".
+//			If you DO set MIN_xxx and/or MAX_xxx, the value will be foo normalized to 0..1.
 //
 ////////////////////////
 class OscGridControl extends OscControl {
@@ -228,13 +237,27 @@ class OscGridControl extends OscControl {
 
 	// Map the value of the message to the button that was pressed.
 	float parseMessage(OscMessage message) {
-		int value = this.index(message);
-		gConfig.setField(fieldName, ""+value);
-		return (float) value;
+		int index = this.index(message);
+		if (controller.getMessageValue(message) == 0) return -1;
+		gConfig.setField(fieldName, ""+index);
+		return (float) index;
 	}
 
-	// TODO ???
-	void onConfigFieldChanged(float controllerValue) {}
+	// Map the controller value to show the selected row/column.
+	void onConfigFieldChanged(float controllerValue) {
+		int value = (int)controllerValue;
+		value = constrain(value, 0, this.itemCount());
+
+		// convert to our 0-based, top-left rows
+		int row = (int) value / colCount;
+		int col = (int) value % colCount;
+
+		// send to the controller w/1-based, bottom-left rows
+		int controllerRow = rowCount - row;
+		int controllerCol = col + 1;
+//println("========> "+controllerRow + " " + controllerCol + " " + 1);
+		controller.send(fieldName, controllerRow, controllerCol, 1);
+	}
 
 
 	// Max number of items we're expecting.
@@ -318,18 +341,14 @@ class OscMultiGridControl extends OscControl {
 			return;
 		}
 		OscMessage message = new OscMessage("/"+fieldName);
-		for (int col = 0; col < colCount; col++) {
-			for (int row = rowCount; row >= 0; row--) {
-				int cell = (row*colCount) + col;
-				boolean exists = states[cell];
-				if (exists) {
-					message.add(1);
-				} else {
-					message.add(0);
-				}
+		for (int row = rowCount-1; row >= 0; row--) {
+			for (int col = 0; col < colCount; col++) {
+				int index = (row*colCount) + col;
+//				println(index+":"+(states[index]));
+				message.add(states[index] ? 1 : 0);
 			}
 		}
-		controller.sendMessage(message);
+		controller.send(message);
 	}
 
 }

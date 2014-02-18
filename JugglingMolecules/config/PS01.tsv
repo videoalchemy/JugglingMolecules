@@ -28,6 +28,7 @@ int	particleGenerateSpread	20
 int	particleMinStepSize	4
 int	particleMaxStepSize	8
 int	particleLifetime	400
+int	particleImage	11
 color	flowLineColor	color(0,0,255,0)
 int	flowLineAlpha	30
 color	depthImageColor	color(0,0,255,0)
