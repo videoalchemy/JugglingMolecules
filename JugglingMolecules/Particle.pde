@@ -119,7 +119,18 @@ class Particle {
 			angle *= (float)config.noiseStrength;
 
 //EXTRA CODE HERE
-                        
+
+/* Error= array out of bounds again and again
+//J :: adding depth image check
+                        int depthPixelIndex = int(((location.x*location.y) + location.x));
+                        int depthPixel = gRawDepth[depthPixelIndex-1];
+                        //if (brightness(depthPixel) > 10) {
+                          float thetaBrightness = map(brightness(depthPixel), 10,255, 0, TWO_PI*10);
+                          theta += thetaBrightness;
+                          //theta = 0;
+                        //}
+*/
+
                         
                         //velocity = PVector.fromAngle(theta);
 			velocity.x = cos(angle);
@@ -136,16 +147,6 @@ class Particle {
 			flowFieldLocation.y *= gKinectHeight;
 
 
-/*
-//J :: adding depth image check
-                        int depthPixelIndex = int(((flowFieldLocation.x*flowFieldLocation.y) + flowFieldLocation.x));
-                        int depthPixel = gRawDepth[depthPixelIndex];
-                        if (brightness(depthPixel) > 10) {
-                          float thetaBrightness = map(brightness(depthPixel), 10,255, 0, TWO_PI*10);
-                          theta += thetaBrightness;
-                          //theta = 0;
-                        }
-*/
 			
                         desired = manager.flowfield.lookup(flowFieldLocation);
 			desired.x *= -1;	// TODO??? WHAT'S THIS?
