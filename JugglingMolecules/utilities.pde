@@ -103,10 +103,19 @@
 
 	// Given a hue of 0..1, return a fully saturated color().
 	// NOTE: assumes we're normally in RGB mode
-	color colorFromHue(float hue) {
+	color colorFromHue(float _hue) {
+		return colorFromHue(_hue, 1);
+	}
+	// Same as above, but allows you to set the alpha (0..255).
+	color colorFromHue(float _hue, int _alpha) {
+		float _alphaFloat = map(_alpha, 0, 255, 0, 1);
+		return colorFromHue(_hue, _alphaFloat);
+	}
+	// Same as above, but allows you to set the alpha (0..1).
+	color colorFromHue(float _hue, float _alpha) {
 		// switch to HSB color mode
 		colorMode(HSB, 1.0);
-		color clr = color(hue, 1, 1);
+		color clr = color(_hue, 1, 1, _alpha);
 		// restore RGB color mode
 		colorMode(RGB, 255);
 		return clr;

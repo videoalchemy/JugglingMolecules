@@ -159,11 +159,18 @@ println("CONFIG INIT");
 	void fieldChanged(Field field, String typeName, String currentValueString) {
 		if (field == null) return;
 		for (OscController controller : this.controllers) {
+			String fieldName = field.getName();
 			try {
-				float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
-				controller.onConfigFieldChanged(field.getName(), controllerValue, typeName, currentValueString);
+				// handle colors specially
+				if (fieldName.endsWith("Color")) {
+					color controllerValue = this.getColor(field);
+					controller.onConfigColorChanged(fieldName, controllerValue, currentValueString);
+				} else {
+					float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
+					controller.onConfigFieldChanged(fieldName, controllerValue, typeName, currentValueString);
+				}
 			} catch (Exception e) {
-				this.warn("fieldChanged("+field.getName()+") exception setting controller value", e);
+				this.warn("fieldChanged("+fieldName+") exception setting controller value", e);
 			}
 		}
 	}
@@ -589,6 +596,10 @@ println("CONFIG INIT");
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	color setColor(String fieldName, String stringValue) { return this.setColor(fieldName, stringValue, null); }
+	color setColor(String fieldName, color newValue) {
+		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
+		return this.setColor(field, newValue, null);
+	}
 	color setColor(Field field, color newValue) { return this.setColor(field, newValue, null); }
 	color setColor(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
@@ -1182,16 +1193,25 @@ println("CONFIG INIT");
 
 	// Given a hue of 0..1, return a fully saturated color().
 	// NOTE: assumes we're normally in RGB mode
-	color colorFromHue(float hue) {
+	color colorFromHue(float _hue) {
+		return colorFromHue(_hue, 1);
+	}
+	// Same as above, but you can set alpha of 0..255
+	color colorFromHue(float _hue, int _alpha) {
+		float _floatAlpha = map(_alpha, 0, 255, 0, 1);
+		return colorFromHue(_hue, _floatAlpha);
+	}
+	// Same as above, but you can set alpha of 0..1
+	color colorFromHue(float _hue, float _alpha) {
 		// switch to HSB color mode
 		colorMode(HSB, 1.0);
-		color clr = color(hue, 1, 1);
+		color clr = color(_hue, 1, 1, _alpha);
 		// restore RGB color mode
 		colorMode(RGB, 255);
 		return clr;
 	}
 
-	// Given a color, return its hue as 0..1.
+	// Given a color, return its _hue as 0..1.
 	// NOTE: assumes we're normally in RGB mode
 	float hueFromColor(color clr) {
 		// switch to HSB color mode

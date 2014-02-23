@@ -36,8 +36,15 @@ class OscControl {
 	}
 
 	// A field from our config has changed -- update the controller.
+	// This variant deals with a float.
 	void onConfigFieldChanged(float controllerValue) {
 		controller.send(fieldName, controllerValue);
+	}
+
+	// A field from our config has changed -- update the controller.
+	// This variant deals with a color.
+	void onConfigColorChanged(color _color) {
+		controller.send(fieldName, _color);
 	}
 }
 
@@ -324,6 +331,124 @@ class OscGridControl extends OscControl {
 		return (row * colCount) + col;
 	}
 }
+
+
+////////////////////////
+//
+//	OscColorClass class
+// 	Uses a set of controls to manage a color:
+//		MyControl-greyscale		- if on, hue control is greyscale.  If off, hue is color hue.
+//		MyControl-hue			- hue of color, or greyscale level if `greyscale` control is on
+//		MyControl-alpha			- alpha of color
+//
+//
+////////////////////////
+class OscColorControl extends OscControl {
+	boolean greyscale;
+
+	public OscColorControl(OscController _controller, String _fieldName) {
+		super(_controller, _fieldName);
+
+		// register each of our sub-controls so we'll receive messages from each
+		controller.addControl(fieldName+"-greyscale", this);
+		controller.addControl(fieldName+"-hue", this);
+		controller.addControl(fieldName+"-alpha", this);
+
+		// initialize our local variables
+		greyscale = false;
+	}
+
+	float parseMessage(OscMessage message) throws Exception {
+		float controllerValue = controller.getMessageValue(message);
+		color startColor = gConfig.getColor(this.fieldName), endColor;
+		int _alpha = (int)alpha(startColor);
+
+		String msgPrefix = "OscColorControl.parseMessage(" + this.controller.getMessageName(message)+"): ";
+		println(msgPrefix + "value = "+controllerValue+" start color = "+gConfig.colorToString(startColor));
+
+		// figure out which sub-control was activated
+		String controlName = controller.getMessageNameSuffix(message);
+		if (controlName == null) {
+			throw new Exception(msgPrefix + "controlName is null!");
+		}
+
+		if (controlName.equals("greyscale")) {
+			this.greyscale = (controllerValue != 0);
+			println(msgPrefix + "greyscale changed to "+(this.greyscale ? "on" : "off"));
+			if (this.greyscale) {
+				// default to black
+				endColor = color(0, _alpha);
+			} else {
+				// default to red
+				endColor = color(255, 0, 0, _alpha);
+			}
+
+		} else if (controlName.equals("hue")) {
+			if (this.greyscale) {
+				int grey = (int)map(controllerValue, 0, 1, 0, 255);
+				println(msgPrefix + "grey changed to "+grey);
+				endColor = color(grey, _alpha);
+
+			} else {
+				endColor = colorFromHue(controllerValue, _alpha);
+				println(msgPrefix + "hue changed to "+hue(endColor));
+			}
+
+		} else if (controlName.equals("alpha")) {
+			int newAlpha = (int)map(controllerValue, 0, 1, 0, 255);
+			println(msgPrefix + "alpha changed to "+newAlpha);
+			endColor = (startColor & 0xffffff) | (newAlpha << 24);
+		} else {
+			println(msgPrefix+" control type not understood");
+			endColor = startColor;
+		}
+
+		this.updateColorControls(endColor);
+
+	println("");
+	println("");
+	println("");
+
+		String fieldName = this.controller.getMessageNamePrefix(message);
+		gConfig.setColor(fieldName, endColor);
+
+		return -1;
+	}
+
+	void onConfigColorChanged(color _color) {
+		// set our various controls according to the value
+		println("OscColorControl.onConfigColorChanged("+_color+")");
+
+		this.updateColorControls(_color);
+	}
+
+	void updateColorControls(color _color) {
+		println("OscColorControl.updateColorControls("+gConfig.colorToString(_color)+")");
+
+		// send greyscale flag
+		this.controller.send(this.fieldName+"-greyscale", this.greyscale);
+
+		// send alpha
+		float _alpha = map(alpha(_color), 0, 255, 0, 1);
+		this.controller.send(this.fieldName+"-alpha", _alpha);
+
+		// send hue/grey level
+		if (this.greyscale) {
+			// just send the red as a proxy for the "grey"
+			float _grey = map(red(_color), 0, 255, 0, 1);
+			this.controller.send(this.fieldName+"-hue", _grey);
+
+		} else {
+			// send hue
+			float _hue = map(hue(_color), 0, 255, 0, 1);
+			this.controller.send(this.fieldName+"-hue", _hue);
+		}
+	}
+
+}
+
+
+
 /*
 
 ////////////////////////

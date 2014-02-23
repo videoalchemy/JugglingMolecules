@@ -19,9 +19,13 @@ class Controller {
 	float minValue = 0.0f;
 	float maxValue = 1.0f;
 
-	// A config field has changed.
+	// A config field has changed to a new float.
 	// Update the controller.
 	void onConfigFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {}
+
+	// A config field has changed to a new color.
+	// Update the controller.
+	void onConfigColorChanged(String fieldName, color _color, String valueLabel) {}
 
 	// Return the current SCALED value of our config object from just a field name.
 	float getFieldValue(String fieldName) throws Exception {
@@ -112,7 +116,11 @@ class OscController extends Controller {
 
 	// Make a generic control for the specified field.
 	OscControl makeBasicControl(String fieldName) {
-		return new OscControl(this, fieldName);
+		if (fieldName.endsWith("Color")) {
+			return new OscColorControl(this, fieldName);
+		} else {
+			return new OscControl(this, fieldName);
+		}
 	}
 
 
@@ -123,7 +131,7 @@ class OscController extends Controller {
 //	We delegate down to OscControl objects to do the actual work.
 ////////////////////////////////////////////////////////////
 
-	// A configuration field has changed.  Tell the controller.
+	// A configuration field has changed.  Tell the controller by sending the value through the appropriate control.
 	void onConfigFieldChanged(String fieldName, float controllerValue, String typeName, String valueLabel) {
 		// update the label
 		this.sendLabel(fieldName, valueLabel);
@@ -131,6 +139,15 @@ class OscController extends Controller {
 		OscControl control = this.getOrCreateControl(fieldName);
 		control.onConfigFieldChanged(controllerValue);
 	}
+
+	void onConfigColorChanged(String fieldName, color _color, String valueLabel) {
+		// update the label
+		this.sendLabel(fieldName, valueLabel);
+
+		OscControl control = this.getOrCreateControl(fieldName);
+		control.onConfigColorChanged(_color);
+	}
+
 
 
 
