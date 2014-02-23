@@ -12,8 +12,8 @@ float	flowfieldPredictionTime	0.5
 int	flowfieldMinVelocity	20
 float	flowfieldRegularization	1.0E8
 float	flowfieldSmoothing	0.05
-int	noiseStrength	42
-int	noiseScale	243
+int	noiseStrength	146
+int	noiseScale	382
 float	particleViscocity	0.995
 float	particleForceMultiplier	50.0
 float	particleAccelerationFriction	0.7511973

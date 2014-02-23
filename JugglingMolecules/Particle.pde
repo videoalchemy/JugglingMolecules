@@ -33,6 +33,7 @@ class Particle {
 	// working calculations
 	PVector velocity;
 	float angle;
+        float theta;
 
 
 	// for flowfield
@@ -112,32 +113,47 @@ class Particle {
 	public void update() {
 		prevLocation = location.get();
 
-		if (acceleration.mag() < config.particleAccelerationLimiter) {
+		//if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
-			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+			angle= noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
 			angle *= (float)config.noiseStrength;
 
 //EXTRA CODE HERE
-
+                        
+                        
+                        //velocity = PVector.fromAngle(theta);
 			velocity.x = cos(angle);
 			velocity.y = sin(angle);
 			velocity.mult(stepSize);
+                        
 
-		}
-		else {
+		//}
+		//else {
 			// normalise an invert particle position for lookup in flowfield
 			flowFieldLocation.x = norm(width-location.x, 0, width);		// width-location.x flips the x-axis.
 			flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
 			flowFieldLocation.y = norm(location.y, 0, height);
 			flowFieldLocation.y *= gKinectHeight;
 
-			desired = manager.flowfield.lookup(flowFieldLocation);
+
+/*
+//J :: adding depth image check
+                        int depthPixelIndex = int(((flowFieldLocation.x*flowFieldLocation.y) + flowFieldLocation.x));
+                        int depthPixel = gRawDepth[depthPixelIndex];
+                        if (brightness(depthPixel) > 10) {
+                          float thetaBrightness = map(brightness(depthPixel), 10,255, 0, TWO_PI*10);
+                          theta += thetaBrightness;
+                          //theta = 0;
+                        }
+*/
+			
+                        desired = manager.flowfield.lookup(flowFieldLocation);
 			desired.x *= -1;	// TODO??? WHAT'S THIS?
 
 			steer = PVector.sub(desired, velocity);
 			steer.limit(stepSize);	// Limit to maximum steering force
 			acceleration.add(steer);
-		}
+		//}
 
 		acceleration.mult(config.particleAccelerationFriction);
 

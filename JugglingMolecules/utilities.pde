@@ -96,7 +96,25 @@
 		  //check for depth Image.  If depth exists here, then calculate new theta based on depth.
 
                   // Use perlin noise to get an angle between 0 and 2 PI
-		  float theta = map(noise(xOffset,yOffset),0,1,0,TWO_PI);
+		 float theta = map(noise(xOffset,yOffset),0,1,0,TWO_PI);
+                  //float theta = 0;
+                 
+                 
+///////////////////////////////////////////////////////////                 
+                  // calc theta from depthImage.   NOTE:  This only applies to optical flow field and not to noise field pixels.
+                  // if depth == 0 then keep going, otherwise map brightness to brightness and add theta.
+                  /*
+                  int depthPixelIndex = ((cols*rows) + cols);
+                  int depthPixel = gRawDepth[depthPixelIndex];
+                  if (brightness(depthPixel) > 10) {
+                          float thetaBrightness = map(brightness(depthPixel), 10,255, 0, TWO_PI*100);
+                          //theta += thetaBrightness;
+                          theta = 0;
+                  
+                  }
+                  */
+                  
+                
 
 //////////////////////////////////////////////////////////////
  // J :: map depth image greyscale to theta and add to previous theta
@@ -108,7 +126,8 @@
        
  ///////////////////////////////////////////////////////////////          
 		  // Polar to cartesian coordinate transformation to get x and y components of the vector
-		  field[col][row] = new PVector(cos(theta),sin(theta));
+		  field[col][row] = PVector.fromAngle(theta);
+                  //field[col][row] = new PVector(cos(theta),sin(theta));
 		  yOffset += 0.1;
 		}
 		xOffset += 0.1;

@@ -229,12 +229,14 @@ class OpticalFlow {
 //println(startX+","+startY+" : "+endX+","+endY);
 						line(startX, startY, endX, endY);
 
-						// draw a red dot at the start point
+						/*
+                                                // draw a red dot at the start point
 						stroke(_red);
 						rect(startX-1, startY-1, 2, 2);
 						// draw a green dot at the end point
 						stroke(_green);
 						rect(endX-1, endY-1, 2, 2);
+                                                */
 					}
 
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
