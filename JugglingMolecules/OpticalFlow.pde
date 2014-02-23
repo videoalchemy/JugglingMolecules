@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -36,15 +36,12 @@ class OpticalFlow {
 	int regressionVectorLength = 3*9; // length of the vectors
 
 	// internally used variables
-	float ar,ag,ab; // used as return value of pixave
-	//float ag;	// used as return value of pixave greyscale
-	float[] dtr, dtg, dtb; // differentiation by t (red,gree,blue)
-	float[] dxr, dxg, dxb; // differentiation by x (red,gree,blue)
-	float[] dyr, dyg, dyb; // differentiation by y (red,gree,blue)
-	float[] par, pag, pab; // averaged grid values (red,gree,blue)
-	float[] flowx, flowy; // computed optical flow
-	float[] sflowx, sflowy; // slowly changing version of the flow
-	int clockNow,clockPrev, clockDiff; // for timing check
+	float[] dtr; 				// differentiation by t (red,gree,blue)
+	float[] dxr; 				// differentiation by x (red,gree,blue)
+	float[] dyr; 				// differentiation by y (red,gree,blue)
+	float[] par; 				// averaged grid values (red,gree,blue)
+	float[] flowx, flowy; 		// computed optical flow
+	float[] sflowx, sflowy; 	// slowly changing version of the flow
 
 
 	OpticalFlow(MolecularConfig _config, ParticleManager _particles) {
@@ -54,7 +51,7 @@ class OpticalFlow {
 
 		// set up resolution of the flow field.
 		// NOTE: requires a restart or at least a re-initialization to change this.
-		resolution = config.flowfieldResolution;
+		resolution = config.setupFlowFieldResolution;
 
 		// Determine the number of columns and rows based on sketch's width and height
 		cols = gKinectWidth/resolution;
@@ -62,21 +59,12 @@ class OpticalFlow {
 		field = makePerlinNoiseField(rows, cols);
 
 		avSize = resolution * 2;
-		df = config.flowfieldPredictionTime * config.setupFPS;
 
 		// arrays
 		par = new float[cols*rows];
-		pag = new float[cols*rows];
-		pab = new float[cols*rows];
 		dtr = new float[cols*rows];
-		dtg = new float[cols*rows];
-		dtb = new float[cols*rows];
 		dxr = new float[cols*rows];
-		dxg = new float[cols*rows];
-		dxb = new float[cols*rows];
 		dyr = new float[cols*rows];
-		dyg = new float[cols*rows];
-		dyb = new float[cols*rows];
 		flowx = new float[cols*rows];
 		flowy = new float[cols*rows];
 		sflowx = new float[cols*rows];
@@ -99,30 +87,21 @@ class OpticalFlow {
 	}
 
 	// Calculate average pixel value (r,g,b) for rectangle region
-	void averagePixelsGrayscale(int x1, int y1, int x2, int y2) {
-		//float sumr,sumg,sumb;
-		float sumg;
-		color pix;
-		float g;
-		int n;
-
+	float averagePixelsGrayscale(int x1, int y1, int x2, int y2) {
 		if (x1 < 0)					x1 = 0;
 		if (x2 >= gKinectWidth)		x2 = gKinectWidth - 1;
 		if (y1 < 0)					y1 = 0;
 		if (y2 >= gKinectHeight)	y2 = gKinectHeight - 1;
 
-		//sumr=sumg=sumb=0.0;
-		sumg = 0.0;
+		float sum = 0.0;
 		for (int y = y1; y <= y2; y++) {
 			for (int i = gKinectWidth * y + x1; i <= gKinectWidth * y+x2; i++) {
-				 sumg += gNormalizedDepth[i];
+				 sum += gNormalizedDepth[i];
 			}
 		}
-		n = (x2-x1+1) * (y2-y1+1); // number of pixels
-		// the results are stored in static variables
-		ar = sumg / n;
-		ag = ar;
-		ab = ar;
+		int pixelCount = (x2-x1+1) * (y2-y1+1); // number of pixels
+
+		return sum / pixelCount;
 	}
 
 	// extract values from 9 neighbour grids
@@ -170,11 +149,11 @@ class OpticalFlow {
 				int y0 = row * resolution + resolution/2;
 				int index = row * cols + col;
 				// compute average pixel at (x0,y0)
-				averagePixelsGrayscale(x0-avSize, y0-avSize, x0+avSize, y0+avSize);
+				float avg = averagePixelsGrayscale(x0-avSize, y0-avSize, x0+avSize, y0+avSize);
 				// compute time difference
-				dtr[index] = ar-par[index]; // red
+				dtr[index] = avg - par[index]; // red
 				// save the pixel
-				par[index] = ar;
+				par[index] = avg;
 			}
 		}
 	}
@@ -197,6 +176,18 @@ class OpticalFlow {
 
 	// 3rd sweep : solving optical flow
 	void solveFlow() {
+		// get time distance between frames at current time
+		df = config.flowfieldPredictionTime * config.setupFPS;
+		color _lineColor = color(gConfig.flowLineColor, gConfig.flowLineAlpha);
+		color _red = color(255,0,0);
+		color _green = color(0,255,0);
+
+		// for kinect to window size mapping below
+		float normalizedKinectWidth   = 1.0f / ((float) gKinectWidth);
+		float normalizedKinectHeight  = 1.0f / ((float) gKinectHeight);
+		float kinectToWindowWidth  = ((float) width) * normalizedKinectWidth;
+		float kinectToWindowHeight = ((float) height) * normalizedKinectHeight;
+
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
 			for (int row = 1; row < rows-1; row++) {
@@ -204,9 +195,9 @@ class OpticalFlow {
 				int index = row * cols + col;
 
 				// prepare vectors fx, fy, ft
-				getNeigboringPixels(dxr, fx, index, 0); // dx red
-				getNeigboringPixels(dyr, fy, index, 0); // dy red
-				getNeigboringPixels(dtr, ft, index, 0); // dt red
+				getNeigboringPixels(dxr, fx, index, 0); // dx grey
+				getNeigboringPixels(dyr, fy, index, 0); // dy grey
+				getNeigboringPixels(dtr, ft, index, 0); // dt grey
 
 				// solve for (flowx, flowy) such that:
 				//	 fx flowx + fy flowy + ft = 0
@@ -219,6 +210,7 @@ class OpticalFlow {
 				float u = df * sflowx[index];
 				float v = df * sflowy[index];
 
+				// amplitude of the vector
 				float a = sqrt(u * u + v * v);
 
 //println ("distance 'a' between 'u' and 'v' = " + a);  //debug: all vectors flowing to the left
@@ -229,21 +221,28 @@ class OpticalFlow {
 
 					// show optical flow as lines in `flowLineColor`
 					if (config.showFlowLines) {
-						stroke(gConfig.flowLineColor, gConfig.flowLineAlpha);
-						float startX = width - (((float) x0) * gKinectToWindowWidth);
-						float startY = ((float) y0) * gKinectToWindowHeight;
-						float endX	 = width - (((float) (x0+u)) * gKinectToWindowWidth);
-						float endY	 = ((float) (y0+v)) * gKinectToWindowHeight;
+						stroke(_lineColor);
+						float startX = width - (((float) x0) * kinectToWindowWidth);
+						float startY = ((float) y0) * kinectToWindowHeight;
+						float endX	 = width - (((float) (x0+u)) * kinectToWindowWidth);
+						float endY	 = ((float) (y0+v)) * kinectToWindowHeight;
 //println(startX+","+startY+" : "+endX+","+endY);
 						line(startX, startY, endX, endY);
+
+						// draw a red dot at the start point
+						stroke(_red);
+						rect(startX-1, startY-1, 2, 2);
+						// draw a green dot at the end point
+						stroke(_green);
+						rect(endX-1, endY-1, 2, 2);
 					}
 
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
-					float mouseNormX = (x0+u) * gInvKWidth;
-					float mouseNormY = (y0+v) * gInvKHeight;
-					float mouseVelX	= ((x0+u) - x0) * gInvKWidth;
-					float mouseVelY	= ((y0+v) - y0) * gInvKHeight;
-					particles.addParticlesForForce(1-mouseNormX, mouseNormY, -mouseVelX, mouseVelY);
+					float normalizedX = (x0+u) * normalizedKinectWidth;
+					float normalizedY = (y0+v) * normalizedKinectHeight;
+					float velocityX	= ((x0+u) - x0) * normalizedKinectWidth;
+					float velocityY	= ((y0+v) - y0) * normalizedKinectHeight;
+					particles.addParticlesForForce(1-normalizedX, normalizedY, -velocityX, velocityY);
 				}
 			}
 		}
@@ -261,3 +260,6 @@ class OpticalFlow {
 
 }
 
+
+
+																																																									

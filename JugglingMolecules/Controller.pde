@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -37,6 +37,8 @@ class TouchOscController extends Controller {
 	float minValue = 0.0f;
 	float maxValue = 1.0f;
 
+	// have we been synced already
+	boolean synced = false;
 
 ////////////////////////////////////////////////////////////
 //	Initial setup.
@@ -58,6 +60,10 @@ class TouchOscController extends Controller {
 
 			// update the configuration
 			this.updateConfig(fieldName, message);
+
+			// tell the controller to save the "RESTART" config
+			//	which we'll use to come back to the same state on restart
+			gConfig.saveRestartState();
 		} catch (Exception e) {}
 	}
 
@@ -81,6 +87,15 @@ class TouchOscController extends Controller {
 		this.outboundAddresses.add(outboundAddress);
 		// tell the config to update all controllers (including us) with the current values
 		gConfig.syncControllers();
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Sync the current state with gConfig
+////////////////////////////////////////////////////////////
+	void sync() {
+		// override in your subclass to do anything special
+		gController.say("Synced");
 	}
 
 
@@ -135,6 +150,21 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
+	void sendInts(String fieldName, int value1, int value2) {
+		println("  setting controller "+fieldName+" to "+value1+"/"+value2);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value1);
+		message.add(value2);
+		this.sendMessage(message);
+	}
+
+	void sendString(String fieldName, String value) {
+		println("  setting controller "+fieldName+" to "+value);
+		OscMessage message = new OscMessage("/"+fieldName);
+		message.add(value);
+		this.sendMessage(message);
+	}
+
 	void sendFloat(String fieldName, float value) {
 		println("  setting controller "+fieldName+" to "+value);
 		OscMessage message = new OscMessage("/"+fieldName);
@@ -150,19 +180,19 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
-	// Send a series of messages for different choice values, from 0 - maxValue.
-	void sendChoice(String fieldName, float value, int maxValue) {
-		for (int i = 0; i <= maxValue; i++) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
+	// Send a series of messages for different choice values, from 0 - maxValues, inclusive.
+	void sendChoice(String fieldName, int value, int maxValues) {
+		for (int i = 0; i <= maxValues; i++) {
+			this.sendInt(fieldName+"-"+i, (value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
 	}
 
 	// Send a series of messages for different choice values,
 	//	with choices as an array of ints.
-	void sendChoice(String fieldName, float value, int[] choices) {
+	void sendChoice(String fieldName, int value, int[] choices) {
 		for (int i : choices) {
-			this.sendFloat(fieldName+"-"+i, ((int)value == i ? 1 : 0));
+			this.sendFloat(fieldName+"-"+i, (value == i ? 1 : 0));
 		}
 		this.sendFloat(fieldName, value);
 	}
@@ -191,7 +221,29 @@ class TouchOscController extends Controller {
 		this.sendMessage(message);
 	}
 
+	// Set color of a control.
+	// Valid colors are:
+	//		"red", "green", "blue", "yellow", "purple",
+	//		"gray", "orange", "brown", "pink"
+	void setColor(String fieldName, String value) {
+		OscMessage message = new OscMessage("/"+fieldName+"/color");
+		message.add(value);
+		this.sendMessage(message);
+	}
 
+	// Show a named control.
+	void showControl(String fieldName) {
+		OscMessage message = new OscMessage("/"+fieldName+"/visible");
+		message.add(1);
+		this.sendMessage(message);
+	}
+
+	// Hide a named control.
+	void hideControl(String fieldName) {
+		OscMessage message = new OscMessage("/"+fieldName+"/visible");
+		message.add(0);
+		this.sendMessage(message);
+	}
 
 
 ////////////////////////////////////////////////////////////
@@ -216,7 +268,6 @@ class TouchOscController extends Controller {
 	//			`int row = ROWCOUNT - (controller.getMultiToggleRow(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedRow(message, ROWCOUNT);`
-//UNTESTED
 	int getMultiToggleRow(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[2]);
@@ -229,7 +280,6 @@ class TouchOscController extends Controller {
 	//			`int row = COLCOUNT - (controller.getMultiToggleColumn(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedColumn(message, COLCOUNT);`
-//UNTESTED
 	int getMultiToggleColumn(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[3]);

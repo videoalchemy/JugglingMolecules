@@ -1,47 +1,49 @@
-###Juggling Molecules -- Documentation:
-- [images (screenshots and diagrams)](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
+###From Spirograph to Particle System Framework:
+- what started as a 3D Spirograph app is now a solid framework for precisely creating, controlling, and compiling particle system configurations.
+- The documentation contained in this README reflects this transition from simple project to powerful tool.
+
+
+###Documentation:
+- [images of user interaction, pre-event install, screenshots and diagrams from development ](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
-###OmiCron-SpiroLight
-- an interactive video installation designed for The Rhythm Society's EarthTones Retreat 2013.09.22
-- the interface is a combination of gesture controls from dancers and knob turning from participants.  The podium sized OmiCron Interface will sit somewhere on the edge of the dance floor enticing users with its large knobs and glowing buttons.  Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
+###Juggling Molecules
+- A responsive flow-field of illuminated particles designed for the Calistoga Springs' festival Luminescent Playground held Sept 20-23, 2013
+- the interface is a combination of gesture control supplied by a dancer's movement, and knob turning by participants using controls on an iPad.
+- The design originally called for the use of the podium sized OmiCron Interface, which would sit somewhere on the edge of the dance floor enticing users with its 7 large knobs and 4 glowing buttons.   
+- The original design also called for an iPad interface to control the remain 50 variables not intended for public consumption.
+- The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help users deal with the overwhelming number of variables, we created 100 presets, many pre-populated with configurations prior to the event. 
+- Original plans also included an semi-autonomous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
 
-###Requirements:
-- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
+###Hardware and Software required:
+- Mac Mini
 - Kinect Depth Sensor
 - Processing 2.0.3
 - SimpleOpenNI 1.96
+- iPad running TouchOSC
+- Projector
+- Rigging gear, power cables, VGA cables
+- Rubbermaid container to house the gear and keep it dry (outdoor event and it did rain)
+- 150 inch Portable rear projection screen
+- [Deprecated]:
+	- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
 
-###Interactions:**
+
+###Interactions:
 0. Dancer with OmiCron Controller
 1. Dancer with SpiroLight
 2. Dancer with Particles
 3. Particles with SpiroLight
 	- Autonomous Vehicles AVOID OR PURSUE SpiroLight (Omicron Control)
 	- When emerging from and avoiding spiroLight, particles steer toward Dancer
-	- When emerging from and avoiding dancer, particles steer toward Spirolight.  When within range of outter most arm, particles accelerate like additive flashes of light and disappear inside spirolight.  Born again from Dancer's movement (optical flow)
+	- When emerging from and avoiding dancer, particles steer toward Spirolight.  When within range of outer most arm, particles accelerate like additive flashes of light and disappear inside spirolight.  Born again from Dancer's movement (optical flow)
 4. OmiCron with SpiroLight
 5. OmiCron with Particles
 
 
-###Next Steps:
-- [] Setup OmiCron:
-	- [] Run Calibration with Processing.  Systems Check
-	- [] Tighten Bolts
-	- [] Study RotaDeva code for how inputs were passed around.
-	- [] Write the code that treats OmiCron as if it were a variety of forces.  
-	- ```omiCron.KnobLeftRed(); // returns a PVector reading for Magnitude, direction, velocity, etc```
-	- ```omiCron.lookup(KnobFoo); // returns an array of PVectors?????```
-	- [] study the code and see how Owen did it.
-	- [] then save this as it's own Tool for use anytime.
-	- [] make a version for SpiroLight
-- [] rewrite the centerPiece_SpiroLight to include OmiCron
-	- [] scale model using foam core or construction paper??
-	- [] get all the inputs with stationary SpiroLight first Tiers 1-3
-
-###OmiCron: Map Controls to SpiroLight:**
+###OmiCron: Map Controls to SpiroLight:
 - [] Button shuffles ratios for specified tier
-	- where on the circle is arm connected? (make that a perlin noise function where button down progresses through perlin noise for all variables.
+	- where on the circle is arm connected? (make that a Perlin Noise function where button down progresses through perlin noise for all variables.
 - [] First tier Red knobs control overall size of spiroLight, mass, and steering ability toward target.  Mass gets bigger, slower it moves, the larger the circle, the larger the entire spiroLight  (as opposed to following closest point, which changes the size of spiroLight because of perspective being further away, but does not change the mass or the periods)
 - [] Knobs control Magnitude of all the vectors, while buttons control location within each variables range
 - [] Snap Button = Reverse Emitter Location from Tier 3 to Dancer.
@@ -56,6 +58,7 @@
 - [] Knobs: Red(Left and Right) Green(L,R), Blue(L,R) control the rotational velocity and distance to next teir.
 - [] Ohmite Knob controls the parameters of the flow field (somehow) and/or z-axis rotation
 - [] Add remainder of tier 2 and 3
+- Omicrons controls are mapped to the parameters of a spirograph-like pattern projected on a rear projection screen.  Dancers control the location of the pattern by way of the closest point in a 3D point cloud (ie the pattern will follow their hand if their hand contains the point closest to the Kinect sensor.  Dancers can also interact with a particle system whose behavior is controlled by a depth informed flow field.  Dancer's distance and velocity determine the behavior of the particles.
 - Create SpiroLight structure from Fractal Recursion??
 	- [Fractal Recursion  |  Shiffman](https://vimeo.com/64424402) 
 - **OmiCron Structure:**
@@ -128,55 +131,57 @@
 
 ###SpiroLight + Dancer:
 - **Specific Arms Always remain in contact with the DANCER and EDGE DETECT PATH FOLLOW.**  
-		- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
-		- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
-			- AND the closer the arm, the greater the connetion, the brighter.
-			- Whichever arm is path following along body will have perlin noise generated organic branching.
-		- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
-		- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
-	- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
-		- Use the Frame Differencing already used to inform the particle system
-		- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
+	- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
+	- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
+		- AND the closer the arm, the greater the connetion, the brighter.
+		- Whichever arm is path following along body will have perlin noise generated organic branching.
+	- AND Particle System coming from dancer ALWAYS remains in contact with spiroLight
+	- where spiroLight is attracted to some point in the flow field that also guides the particles coming from Dancer
+- **Dancer's Movement Also Affects Size and Brightness of SpiroLight**
+	- Use the Frame Differencing already used to inform the particle system
+	- The same threshold velocity which triggers particles also brightens and expands the SpiroLight
 
 
-###Kinect + Dancer:
-- **Optical Flow:**
-	- Using Optical Flow:
-		- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
-		- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
-		- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
-		- [] If movement > threshold, calc magnitude and orientation of gradient, 
-		- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
-		- **Color Code the Optical Flow**
-			- see the UCF Computer Vision lect at minute 4.  Movement left to right right to left are different colors.  
-			- Method is known as color coding vectors when velocity is mapped to the color intensity
-		- Use Optical FLow to create Motion Based Segmentation (show me only what's moving)
+
+###Optical Flow:  (Kinect + Dancer)
+- **Using Optical Flow:**
+	- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
+	- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
+	- [] RealTime 3D Optical Flow on a point cloud (color = point velocity; or color denotes movement direction and alpha denotes point velocity)
+	- [] If movement > threshold, calc magnitude and orientation of gradient, 
+	- If movement > threshold, generate particle whose color equals the color of reference image and whose velocity is informed by the flow field.
+	- **Color Code the Optical Flow**
+		- see the UCF Computer Vision lect at minute 4.  Movement left to right right to left are different colors.  
+		- Method is known as color coding vectors when velocity is mapped to the color intensity
+	- Use Optical FLow to create Motion Based Segmentation (show me only what's moving)
+	- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
+
+- **Examples of Optical FLow:**
+	- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
+	- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
+	- [Structure From Motion Using Optical Flow  |  Shows Image, Smoothed Image, MotionVectors  YouTube](http://www.youtube.com/watch?v=qhoC-YetpnM)
+	- [UCF Computer Vision lect.6 Optical Flow](http://www.youtube.com/watch?v=5VyLAH8BhF8)
+	- [OpenCV Optical Flow Tutorial for the Lucas-Kanade Algorithm](http://dasl.mem.drexel.edu/~noahKuntz/openCVTut9.html)
+		- The LK tracker uses three assumptions, brightness constancy between the same pixels from one frame to the next, small movements between frames (requiring image pyramids to track larger movements), and spatial coherence, thats points near each other are on the same surface. Then the basic concept of the tracker is to estimate the velocity of a moving pixel by the ratio of the derivative of the intensity over time divided by the derivative of the intensity over space. 
+	- [Optical FLow Estimation Tutorial  |  pdf](http://www.cs.toronto.edu/pub/jepson/teaching/vision/2503/opticalFlow.pdf)
+	- [Computing Optical Flow with the OpenCV Library  |  Stavans, Stanford AI Lab](http://robots.stanford.edu/cs223b05/notes/CS%20223-B%20T1%20stavens_opencv_optical_flow.pdf)
+	- [Calculating Small Optical Flow  |  tutorial pdf](http://www.cs.umd.edu/~djacobs/CMSC426/OpticalFlow.pdf)
+	- [SimpleFlow: A Non-iterative, Sublinear Optical Flow Algorithm  |  Computer Graphics UC Berkeley](http://graphics.berkeley.edu/papers/Tao-SAN-2012-05/)
+	- [Optical FLow and the Methods of Calculating  |  wikipedia](http://en.wikipedia.org/wiki/Optical_flow)
+	- [Images of Optical FLow](https://www.google.com/search?q=optical+flow&safe=off&tbm=isch&tbo=u&source=univ&sa=X&ei=3lcxUrneJeqWigLPxICADg&ved=0CEUQsAQ&biw=2128&bih=1203&sei=HFgxUsvZKOfgiALE9ICwBw#imgdii=_)
+
+
+- **Pseudo Code for Optical Flow:**
+	- Horn & Shunck Optical Flow Algorithm
 		- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
-	
-	- Examples of Optical FLow:
-		- [Optical Flow Field + FLocking + Reference Image  |  YouTube](http://www.youtube.com/watch?v=2xs0fcmgKC0)
-		- [Optical Flow Field - handForce affects an object's velocity  |  YouTube](http://www.youtube.com/watch?v=Edl6aWL1pjo)
-		- [Structure From Motion Using Optical Flow  |  Shows Image, Smoothed Image, MotionVectors  YouTube](http://www.youtube.com/watch?v=qhoC-YetpnM)
-		- [UCF Computer Vision lect.6 Optical Flow](http://www.youtube.com/watch?v=5VyLAH8BhF8)
-		- [OpenCV Optical Flow Tutorial for the Lucas-Kanade Algorithm](http://dasl.mem.drexel.edu/~noahKuntz/openCVTut9.html)
-			- The LK tracker uses three assumptions, brightness constancy between the same pixels from one frame to the next, small movements between frames (requiring image pyramids to track larger movements), and spatial coherence, thats points near each other are on the same surface. Then the basic concept of the tracker is to estimate the velocity of a moving pixel by the ratio of the derivative of the intensity over time divided by the derivative of the intensity over space. 
-		- [Optical FLow Estimation Tutorial  |  pdf](http://www.cs.toronto.edu/pub/jepson/teaching/vision/2503/opticalFlow.pdf)
-		- [Computing Optical Flow with the OpenCV Library  |  Stavans, Stanford AI Lab](http://robots.stanford.edu/cs223b05/notes/CS%20223-B%20T1%20stavens_opencv_optical_flow.pdf)
-		- [Calculating Small Optical Flow  |  tutorial pdf](http://www.cs.umd.edu/~djacobs/CMSC426/OpticalFlow.pdf)
-		- [SimpleFlow: A Non-iterative, Sublinear Optical Flow Algorithm  |  Computer Graphics UC Berkeley](http://graphics.berkeley.edu/papers/Tao-SAN-2012-05/)
-		- [Optical FLow and the Methods of Calculating  |  wikipedia](http://en.wikipedia.org/wiki/Optical_flow)
-		- [Images of Optical FLow](https://www.google.com/search?q=optical+flow&safe=off&tbm=isch&tbo=u&source=univ&sa=X&ei=3lcxUrneJeqWigLPxICADg&ved=0CEUQsAQ&biw=2128&bih=1203&sei=HFgxUsvZKOfgiALE9ICwBw#imgdii=_)
+		- Taylor Series
+	1. Smooth Image with gausian blur
+	2. Compute derivative of filtered image
+	3. Find magnitude and orientation of gradient
+	4. Apply 'non-maximum' suppression
 
+____________________________
 
-
-	- Pseudo Code for Optical Flow:
-		- Horn & Shunck Optical Flow Algorithm
-			- Brightness Constancy Assumption f(x,y,z) = f(x + dx, y + dy, t + dt)
-			- Taylor Series
-		1. Smooth Image with gausian blur
-		2. Compute derivative of filtered image
-		3. Find magnitude and orientation of gradient
-		4. Apply 'non-maximum' suppression
 
 - **Point Cloud:**
 	- We may keep the 2D world by pulling the 3D info from Kinect but projeting into 2D world.  Z-axis can convert to size instead of distance. 
@@ -347,6 +352,7 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 		- Turns out, this was way more work than I needed. Instead, I should simply apply the Perlin noise data directly to my object’s velocity vectors and voila, done and done. And without needing to worry about placing thousands of vector arrows into a space that simply didnt need it. In a way, the Perlin noise data can represent an infinite space with an infinite number of vector arrows, and for cheap too.
 - [Flocking in 3D  |  Flight 404 for Eyeo 2012 Festival](https://vimeo.com/43802463)
 - [Shockwave |  Flight 404](https://vimeo.com/43802127)
+- [Benjamin Moore Commercial  |  rotating paint buckets](http://www.youtube.com/watch?v=i_kCJe_VZ-E)
 
 
 ####FlowMaps, Reference Images:
@@ -370,3 +376,20 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 	- then fill that shape with a texture randomly selected from an Emblem
 
 - **FLOW MAPS**
+	- use SNAPS from OmiCron in addition to perlin noise field
+	- **use RVL video archives to inform flow field**
+
+_____________________
+
+###Next Steps:
+- [] Setup OmiCron:
+	- [x] Run Calibration with Processing.  Systems Check
+	- [x] Tighten bolts on OmiCron pedestal
+	- [x] review RotaDeva code for input flow.
+	- [] Write the code that treats OmiCron as if it were a variety of forces.  
+	- ```omiCron.KnobLeftRed(); // returns a PVector reading for Magnitude, direction, velocity, etc```
+	- ```omiCron.lookup(KnobFoo); // returns an array of PVectors?????```
+	- [] make a version for SpiroLight
+- [] rewrite the centerPiece_SpiroLight to include OmiCron
+	- [] scale model using foam core or construction paper??
+	- [] get all the inputs with stationary SpiroLight first Tiers 1-3

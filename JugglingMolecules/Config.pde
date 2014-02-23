@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -12,12 +12,13 @@
 //
 //  We can load and save these to disk to restore "interesting" states to play with.
 //
-//	Configurations are stored in ".config" files in Tab-Separated-Value format.
-//		We have a header row as 		field<tab>value
-//		and then each row of data is 	<field><tab><value>
-//										<field><tab><value>
+//	Configurations are stored in ".tsv" files in Tab-Separated-Value format.
+//		We have a header row as 		type<TAB>field<TAB>value
+//		and then each row of data is 	<type><TAB><field><TAB><value>
+//										<type><TAB><field><TAB><value>
 //
 //	We can auto-parse these config files using reflection.
+//		TODOC... more details
 //
 ////////////////////////////////////////////////////////////
 
@@ -40,13 +41,21 @@ class Config {
 	//	which would normally be swallowed silently.
 	boolean debugging = true;
 
+	String restartConfigFile = "RESTART";
+
+	// Default config file to load if "RESTART" config not found.
+	String defaultConfigFile = "PS01";
+
 	// Name of the last config file we loaded.
-	String setupLastConfigFile = "PS01";
+	String lastConfigFileSaved;
 
 	// constructor
 	public Config() {
 println("CONFIG INIT");
 		this.controllers = new ArrayList<Controller>();
+
+		// Set up our file existance map.
+		this.initConfigExistsMap();
 	}
 
 ////////////////////////////////////////////////////////////
@@ -55,7 +64,7 @@ println("CONFIG INIT");
 	ArrayList<Controller> controllers;
 
 ////////////////////////////////////////////////////////////
-//	Fields that we manage
+//	Sets of fields that we manage
 ////////////////////////////////////////////////////////////
 
 	// List of "setup" fields.
@@ -85,26 +94,52 @@ println("CONFIG INIT");
 	String filepath = "config/";
 
 
-	// Extension (including period) for all files of this type.
-	String extension = ".tsv";
+	// Prefix for "normal" config files.
+	String normalFilePrefix = "PS";
 
+	// Extension (including period) for all files of this type.
+	String configExtension = ".tsv";
+
+	// Number of "normal" configs we support in this config.
+	int maxNormalConfigCount = 100;
 
 	// Return the full path for a given config file instance.
 	// If you pass `_fileName`, we'll use that.
-	// Otherwise we'll use our internal `setupLastConfigFile` (but won't set it).
 	// Returns `null` if no filename specified.
 	String getFilePath() {
 		return this.getFilePath(null);
 	}
 	String getFilePath(String _fileName) {
-		if (_fileName == null) _fileName = this.setupLastConfigFile;
+		if (_fileName == null) _fileName = this.defaultConfigFile;
 		if (_fileName == null) {
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
 		}
-		return filepath + _fileName + extension;
+		return filepath + _fileName + configExtension;
 	}
 
+	// Return the full path to a "normal" file given an integer index.
+	String getFilePath(int configFileIndex) {
+		String fileName = this.getFileName(configFileIndex);
+		return this.getFilePath(fileName);
+	}
+
+	// Return the FILE NAME to a "normal" file given an integer index
+	//	WITHOUT THE EXTENSION!!!
+	// NOTE: the base implementation assumes we have 2-digit file indexing.
+	//			override this in your subclass if that's not the case!
+	String getFileName(int configFileIndex) {
+		return normalFilePrefix + String.format("%02d", configFileIndex);
+	}
+
+	// Return the index associated with a "normal" config file name.
+	// Returns -1 if it doesn't match our normal config naming pattern.
+	int getFileIndex(String fileName) {
+		if (!fileName.startsWith(normalFilePrefix)) return -1;
+		// reduce down to just numbers
+		String stringValue = fileName.replaceAll( "[^\\d]", "" );
+		return Integer.parseInt(stringValue, 10);
+	}
 
 ////////////////////////////////////////////////////////////
 //	Dealing with change.
@@ -112,6 +147,9 @@ println("CONFIG INIT");
 
 	// Tell the controller(s) about the state of all of our FIELDs.
 	void syncControllers() {
+		println("-------------------------");
+		println("SYNC");
+		println("-------------------------");
 		// get normal fields
 		Table table = this.getFieldsAsTable(FIELDS);
 		// add setup fields as well
@@ -119,7 +157,9 @@ println("CONFIG INIT");
 		// now signal that all of those fields have changed
 		this.fieldsChanged(table);
 		// Notify that we're synchronized.
-		if (gController != null) gController.say("Synced");
+		if (gController != null) {
+			gController.sync();
+		}
 	}
 
 	// One of our fields has changed.
@@ -258,7 +298,14 @@ println("CONFIG INIT");
 		if (field == null) return;
 		float theHue = map(controllerValue, controllerMin, controllerMax, 0, 1);
 		color newValue = this.colorFromHue(theHue);
-		this.debug("setBooleanFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.setColor(field, newValue);
+	}
+
+	void setColorFromController(String fieldName, color newValue) {
+		Field field = this.getField(fieldName, "setColorFromController({{fieldName}}): field not found");
+		if (field == null) return;
+		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
 		this.setColor(field, newValue);
 	}
 
@@ -326,7 +373,7 @@ println("CONFIG INIT");
 	// Return internal color field value as a float, scaled for our controller.
 	float colorForController(Field field, float controllerMin, float controllerMax) throws Exception {
 		color clr = this.getColor(field);
-		return (float) this.hueFromColor(clr);
+		return this.hueFromColor(clr);
 	}
 
 
@@ -340,12 +387,17 @@ println("CONFIG INIT");
 		this.loadSetup();
 
 		// load our defaults
-		this.loadDefaults();
+// MOW: NOTE -- there's no reason to load/save defaults to a file
+//				as we can just
+//		this.loadDefaults();
 
-		// if our .setupAutoLoadLast is true, load our last config file
-		if (this.setupLastConfigFile != null) {
-			return this.load(this.setupLastConfigFile);
+		// attempt to load our "RESTART" file if it exists
+		if (this.configFileExists(this.restartConfigFile)) {
+			this.load(this.restartConfigFile);
+		} else {
+			this.load(this.defaultConfigFile);
 		}
+
 		return null;
 	}
 
@@ -359,21 +411,16 @@ println("CONFIG INIT");
 	Table load(String _fileName) {
 		// remember filename if passed in
 		if (_fileName != null) {
-			// turn off old button
-			if (gController != null) gController.togglePresetButton(this.setupLastConfigFile, false);
-			this.setupLastConfigFile = _fileName;
 			// save current setup config
 			this.saveSetup();
 		}
-		// turn on new button
-		if (gController != null) gController.togglePresetButton(_fileName, true);
 		return this.loadFromFile(_fileName);
 	}
 
 	// Load our setup file from disk.
-	Table loadDefaults() {
-		return this.loadFromFile("defaults");
-	}
+//	Table loadDefaults() {
+//		return this.loadFromFile("defaults");
+//	}
 
 	// Load our defaults from disk.
 	Table loadSetup() {
@@ -452,6 +499,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setInt(String fieldName, String stringValue) { this.setInt(fieldName, stringValue, null); }
 	void setInt(Field field, int newValue) { this.setInt(field, newValue, null); }
+	void setInt(String fieldName, int newValue) {
+		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
+		this.setInt(field, newValue, null);
+	}
 	void setInt(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
 		this.setInt(field, stringValue, changeLog);
@@ -467,6 +518,18 @@ println("CONFIG INIT");
 	void setInt(Field field, int newValue, Table changeLog) {
 		if (field == null) return;
 		try {
+			// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
+			try {
+				int configMin = this.getInt("MIN_"+field.getName());
+				if (newValue < configMin) newValue = configMin;
+			} catch (Exception e){}
+			// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+			try {
+				int configMax = this.getInt("MAX_"+field.getName());
+				if (newValue > configMax) newValue = configMax;
+			} catch (Exception e){}
+
+			// only continue if we're actually changing the value
 			int oldValue = this.getInt(field);
 			if (oldValue != newValue) {
 				field.setInt(this, newValue);
@@ -484,6 +547,10 @@ println("CONFIG INIT");
 	// Otherwise we'll call `fieldChanged()`.
 	void setFloat(String fieldName, String stringValue) { this.setFloat(fieldName, stringValue, null); }
 	void setFloat(Field field, float newValue) { this.setFloat(field, newValue, null); }
+	void setFloat(String fieldName, float newValue) {
+		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
+		this.setFloat(field, newValue, null);
+	}
 	void setFloat(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
 		this.setFloat(field, stringValue, changeLog);
@@ -499,6 +566,18 @@ println("CONFIG INIT");
 	void setFloat(Field field, float newValue, Table changeLog) {
 		if (field == null) return;
 		try {
+			// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
+			try {
+				float configMin = this.getFloat("MIN_"+field.getName());
+				if (newValue < configMin) newValue = configMin;
+			} catch (Exception e){}
+			// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+			try {
+				float configMax = this.getFloat("MAX_"+field.getName());
+				if (newValue > configMax) newValue = configMax;
+			} catch (Exception e){}
+
+			// only record a change if the value is actually different
 			float oldValue = this.getFloat(field);
 			if (oldValue != newValue) {
 				field.setFloat(this, newValue);
@@ -511,12 +590,16 @@ println("CONFIG INIT");
 
 
 
-	// Set an boolean field to a string value or an boolean value.
+	// Set a boolean field to a string value or an boolean value.
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	void setBoolean(String fieldName, String stringValue) { this.setBoolean(fieldName, stringValue, null); }
 	void setBoolean(Field field, boolean newValue) { this.setBoolean(field, newValue, null); }
+	void setBoolean(String fieldName, boolean newValue) {
+		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
+		this.setBoolean(field, newValue, null);
+	}
 	void setBoolean(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
 		this.setBoolean(field, stringValue, changeLog);
@@ -543,12 +626,16 @@ println("CONFIG INIT");
 	}
 
 
-	// Set an color field to a string value or an color value.
+	// Set a color field to a string value or an color value.
 	// Returns `true` if we actually changed the value.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	void setColor(String fieldName, String stringValue) { this.setColor(fieldName, stringValue, null); }
 	void setColor(Field field, color newValue) { this.setColor(field, newValue, null); }
+	void setColor(String fieldName, color newValue) {
+		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
+		this.setColor(field, newValue, null);
+	}
 	void setColor(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
 		this.setColor(field, stringValue, changeLog);
@@ -611,8 +698,15 @@ println("CONFIG INIT");
 		return this.save(null);
 	}
 	Table save(String _fileName) {
-		if (_fileName != null) this.setupLastConfigFile = _fileName;
-		return this.saveToFile(this.setupLastConfigFile, this.FIELDS);
+		if (_fileName != null) this.lastConfigFileSaved = _fileName;
+//println("SAVING "+_fileName);
+		return this.saveToFile(this.lastConfigFileSaved, this.FIELDS);
+	}
+
+	// Save our current state so we'll restart in the same place.
+	Table saveRestartState() {
+//println("SAVING RESTART STATE");
+		return this.saveToFile(this.restartConfigFile, this.FIELDS);
 	}
 
 	// Load our defaults from disk.
@@ -621,9 +715,9 @@ println("CONFIG INIT");
 	}
 
 	// Load our setup file from disk.
-	Table saveDefaults() {
-		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
-	}
+//	Table saveDefaults() {
+//		return this.saveToFile("defaults", this.DEFAULT_FIELDS);
+//	}
 
 	// Save an arbitrary set of fields in our current config to a file.
 	// You must pass `_fileName`.
@@ -634,6 +728,16 @@ println("CONFIG INIT");
 			return null;
 		}
 		this.debug("Saving to '"+path+"'");
+
+		// update our configExistsMap for this file if it maps to a "normal" file
+		int fileIndex = this.getFileIndex(_fileName);
+		if (fileIndex > -1) {
+			if (fileIndex >= maxNormalConfigCount) {
+				println("Warning: saving '"+_fileName+"' which returned index of "+fileIndex);
+			} else {
+				configExistsMap[fileIndex] = true;
+			}
+		}
 
 		// Get the data as a table
 		Table table = getFieldsAsTable(fields);
@@ -1139,6 +1243,36 @@ println("CONFIG INIT");
 
 
 
+////////////////////////////////////////////////////////////
+//	Reflection for our config files on disk.
+////////////////////////////////////////////////////////////
+	// Array of boolean values for whether config files actually exist on disk.
+	boolean[] configExistsMap;
+
+	// Initialize our configExistsMap map.
+	void initConfigExistsMap() {
+		configExistsMap = new boolean[maxNormalConfigCount];
+		for (int i = 0; i < this.maxNormalConfigCount; i++) {
+			configExistsMap[i] = this.configFileExists(i);
+		}
+	}
+
+	boolean configFileExists(int index) {
+		// get local path (relative to sketch)
+		String localPath = this.getFilePath(index);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configFileExists(String name) {
+		String localPath = this.getFilePath(name);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configPathExists(String localPath) {
+		// use sketchPath to convert to full path
+		String path = sketchPath(localPath);
+		return new File(path).exists();
+	}
 
 ////////////////////////////////////////////////////////////
 //	Debugging and error handling.

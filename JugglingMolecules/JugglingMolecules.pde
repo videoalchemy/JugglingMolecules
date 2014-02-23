@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -45,7 +45,8 @@ import java.util.Iterator;
 	PImage gDepthImg;
 
 
-// Load our config object on start()
+// Start() is the very first thing that's run, then setup().
+// Load our config object first thing!
 void start() {
 	// create the config object
 	gConfig = new MolecularConfig();
@@ -62,8 +63,6 @@ void start() {
 //
 void setup() {
 	// window size comes from config
-	// TODO: well, ideally window size would come from config,
-	//		 but when we call size() it re-runs setup, which messes things up.
 	size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
@@ -74,7 +73,7 @@ void setup() {
 	gConfig.addController(gController);
 
 	// set up display parametets
-	background(gConfig.windowBgColor);
+	background(gConfig.fadeColor);
 
 	// set up noise seed
 	noiseSeed(gConfig.setupNoiseSeed);
@@ -103,8 +102,9 @@ void setup() {
 
 	// save our startup state
 	gConfig.saveSetup();
-	gConfig.saveDefaults();
-	gConfig.save();
+// MOW: NOTE - no need to save defaults, just pull them from the config variables directly
+//	gConfig.saveDefaults();
+//	gConfig.saveRestartState();
 
 
 /*	print out the blendModes...
@@ -128,24 +128,22 @@ void draw() {
 	pushStyle();
 	pushMatrix();
 
-	// partially fade the screen by drawing a semi-opaque rectangle over everything
-	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayAlpha);
-
 	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
 	gKinecter.updateKinectDepth();
+
+	// draw the depth image underneath the particles
+	if (gConfig.showDepthImage) drawDepthImage();
 
 	// update the optical flow vectors from the gKinecter depth image
 	// NOTE: also draws the force vectors if `showFlowLines` is true
 	gFlowfield.update();
 
-	// draw raw depth pixels
-	if (gConfig.showDepthPixels) drawDepthPixels();
-
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();
 
-	// draw the depth image over the particles
-	if (gConfig.showDepthImage) drawDepthImage();
+	// apply a full-screen color overlay
+	// NOTE: this is where the blend mode is applied!
+	if (gConfig.showFade) fadeScreen(gConfig.fadeColor, gConfig.fadeAlpha);
 
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();
@@ -168,6 +166,11 @@ void oscEvent(OscMessage message) {
 	} catch (Exception e) {
 		println("ERROR processing oscEvent: "+e);
 	}
+}
+
+// Take a picture, fool!
+void snapshot() {
+	println("TAKE A PICTURE, FOOL!!!!");
 }
 
 

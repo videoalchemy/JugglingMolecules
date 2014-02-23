@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -13,13 +13,10 @@ import org.openkinect.processing.*;
 ////////////////////////////////////////////////////////////
 //	Kinect setup (constant for all configs)
 ////////////////////////////////////////////////////////////
-	// size of the kinect
-	int	 gKinectWidth=640, gKinectHeight = 480;		 // use by optical flow and particles
-	float gInvKWidth = 1.0f/(float)gKinectWidth;		 // inverse of screen dimensions
-	float gInvKHeight = 1.0f/(float)gKinectHeight;	 	 // inverse of screen dimensions
-	// set in constructor below
-	float gKinectToWindowWidth	= 0;			 		// multiplier for kinect size to window size
-	float gKinectToWindowHeight = 0;			 		// multiplier for kinect size to window size
+
+	// size of the kinect, use by optical flow and particles
+	int	gKinectWidth=640;
+	int gKinectHeight = 480;
 
 
 class Kinecter {
@@ -30,16 +27,13 @@ class Kinecter {
 	int thresholdRange = 2047;
 
 	public Kinecter(PApplet parent) {
-		// multiplier for kinect size to window size
-		gKinectToWindowWidth  = ((float) width)	* gInvKWidth;
-		gKinectToWindowHeight = ((float) height) * gInvKHeight;
-
 		try {
 			kinect = new Kinect(parent);
 			kinect.start();
 			kinect.enableDepth(true);
 			kinect.tilt(kAngle);
 
+			// the below makes getRawDepth() faster
 			kinect.processDepthImage(false);
 
 			isKinected = true;
@@ -48,24 +42,38 @@ class Kinecter {
 		catch (Throwable t) {
 			isKinected = false;
 			println("KINECT NOT INITIALISED");
+			println(t);
 		}
 	}
 
+	int lowestMin = 2047;
+	int highestMax = 0;
 	public void updateKinectDepth() {
 		if (!isKinected) return;
 
 		// checks raw depth of kinect: if within certain depth range - color everything white, else black
 		gRawDepth = kinect.getRawDepth();
-		for (int i=0; i < gKinectWidth*gKinectHeight; i++) {
-			if (gRawDepth[i] >= gConfig.kinectMinDepth && gRawDepth[i] <= gConfig.kinectMaxDepth) {
-				int greyScale = (int)map((float)gRawDepth[i], gConfig.kinectMinDepth, gConfig.kinectMaxDepth, 255, 0);
-//TODO: use depthImageColor
-				gDepthImg.pixels[i] = color(greyScale, gConfig.depthImageAlpha);//color(0, greyScale, greyScale, 0);
+		int lastPixel = gRawDepth.length;
+		for (int i=0; i < lastPixel; i++) {
+			int depth = gRawDepth[i];
+
+			// if less than min, make it white
+			if (depth <= gConfig.kinectMinDepth) {
+				gDepthImg.pixels[i] = color(255);	// solid white
 				gNormalizedDepth[i] = 255;
-			}
-			else {
+
+			} else if (depth >= gConfig.kinectMaxDepth) {
 				gDepthImg.pixels[i] = 0;	// transparent black
 				gNormalizedDepth[i] = 0;
+
+			} else {
+				int greyScale = (int)map((float)depth, gConfig.kinectMinDepth, gConfig.kinectMaxDepth, 255, 0);
+
+//				if (depth < lowestMin) println("LOWEST: "+(lowestMin = depth)+"::"+greyScale);
+//				if (depth > highestMax) println("HIGHEST: "+(highestMax = depth)+"::"+greyScale);
+
+				gDepthImg.pixels[i] = (gConfig.depthImageAsGreyscale ? color(greyScale) : 255);
+				gNormalizedDepth[i] = 255;
 			}
 		}
 

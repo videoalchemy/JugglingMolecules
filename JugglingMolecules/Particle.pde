@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -41,15 +41,6 @@ class Particle {
 	PVector flowFieldLocation;
 
 
-// J :: adding experimental variables
-        int particleWidth;    // strokeWeight;
-        
-        PVector depthImageTheta; // to save the angle change vector:
-        float theta;  // hold  the angle for use with depth Image
-        int depthImageResolution; //  How large is each 'cell' of the depthImage
-        int cols, rows; // columns and rows for the depthImage
-
-
 
 	// Particle constructor.
 	// NOTE: you can count on the particle being `reset()` before it will be drawn.
@@ -64,13 +55,6 @@ class Particle {
 		acceleration 		= new PVector(0, 0);
 		velocity 			= new PVector(0, 0);
 		flowFieldLocation 	= new PVector(0, 0);
-
-// J :: experiments*************************
-                particleWidth = 2;
-                depthImageResolution = 25;
-                //cols = 
-                
-//*****************************************
 	}
 
 
@@ -88,25 +72,35 @@ class Particle {
 		// randomize step size each time we're reset
 		stepSize = random(config.particleMinStepSize, config.particleMaxStepSize);
 
-// J ::  add REFERENCE IMAGE COLOR HERE -->>*******************************
 		// set up now if we're basing particle color on its initial x/y coordinate
 		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
 			int r = (int) map(_x, 0, width, 0, 255);
 			int g = (int) map(_y, 0, width, 0, 255);	// NOTE: this is nice w/ Y plotted to width
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
 			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_YX) {
-			int r = (int) map(_x + _y, 0, width+height, 0, 255);
-			int g = (int) map(_x, 0, width, 0, 255);
-			int b = (int) map(_y, 0, height, 0, 255);
-			clr = color(r, g, b, config.particleAlpha);
-		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XYX) {
+		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
 			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
-			clr = color(colorFromHue(nextHue), config.particleAlpha);
+// NOTE: brightness of .7 so we get jewel tones rather than neon
+			clr = colorFromHue(nextHue, 1, .7);
+			clr = color(clr, config.particleAlpha);
+		} else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
+			clr = getParticleImageColor(_x, _y);
 		} else {	//if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
 			clr = color(config.particleColor, config.particleAlpha);
 		}
+	}
+
+	color getParticleImageColor(float _x, float _y) {
+		PImage particleImage = gConfig.getParticleImage();
+		// figure out index for this pixel
+		int col = (int) map(constrain(_x, 0, width-1), 0, width, 0, particleImage.width);
+		int row = (int) map(constrain(_y, 0, height-1), 0, height, 0, particleImage.height);
+		int index = (row * particleImage.width) + col;
+		// extract the color from the image, which is opaque
+		clr = particleImage.pixels[index];
+		// add the current alpha
+		return addAlphaToColor(clr, config.particleAlpha);
 	}
 
 	// Is this particle still alive?
@@ -114,90 +108,29 @@ class Particle {
 		return (life > 0);
 	}
 
-// J :: add depthIMAGEFLOW code HERE (or at the Flow Field creation point??) ---->>*************** 
-
 	// Update this particle's position.
 	public void update() {
 		prevLocation = location.get();
-    /*          
+
 		if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
-
-// J :: experiment with adding to user's depth info to the particles angle/////////////////
-                        // look up the pixel info from the depth Image at pixel's location.  problem is that PImage gDepthImg is different size than particle screen
-                        // may have to put dDepthImg pixels into different size
-                        //color gDepthImgColor = gDepthImg.get(location.x, location.y); // get the pixel color at this locatoin
-                        
-                        // try extracting pixel info from the main draw screen
-                       // color mainScreenPixel = get(int(location.x), int(location.y));
-                     //   angle =  map(brightness(mainScreenPixel), 0, 255, 0, 10*TWO_PI);
-                       
-                       
-                       
-                        //original//////////////////////
-                        //angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
-			//angle *= (float)config.noiseStrength;
-                        //original//////////////////////
-// J :: ///////////////////////////////////////////////////////////////////////////
-
+			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+			angle *= (float)config.noiseStrength;
 
 //EXTRA CODE HERE
 
-// J :: swap velocity's x and y experiment.  
-                        velocity.x = cos(angle); // original = velocity.x
-			velocity.y = sin(angle); // original = velocity.y
+			velocity.x = cos(angle);
+			velocity.y = sin(angle);
 			velocity.mult(stepSize);
-
 
 		}
 		else {
-*/
-
-                        // this lookup code is now calculated everytime and is used for either the flowfield or for the depthImage
 			// normalise an invert particle position for lookup in flowfield
-			// flowFieldLocation.x = norm(width-location.x, 0, width);		// width-location.x flips the x-axis.
-			// flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
-			// flowFieldLocation.y = norm(location.y, 0, height);
-			// flowFieldLocation.y *= gKinectHeight;
+			flowFieldLocation.x = norm(width-location.x, 0, width);		// width-location.x flips the x-axis.
+			flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
+			flowFieldLocation.y = norm(location.y, 0, height);
+			flowFieldLocation.y *= gKinectHeight;
 
-//create a new lookup using depthImage
-                if (acceleration.mag() < config.particleAccelerationLimiter) {
-                      life--;
-                      
-                      flowFieldLocation.x = norm(location.x, 0, gDepthImg.width);    // width-location.x flips the x-axis, which we don't want here
-                      flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
-                      flowFieldLocation.y = norm(location.y, 0, gDepthImg.height);
-                      flowFieldLocation.y *= gKinectHeight;
-                      
-                      //  !!!!!!!!!!!!!!!!!!!!!!  THIS ISN"T FUCKING WORKING
-                      // giving up
-                      
-                      
-                      
-                      //use pixel array to look up color at specific pixel instead of the slow get() to find pixel color
-                      int gDepthImgIndex = int(flowFieldLocation.x + flowFieldLocation.y * gDepthImg.width);
-                      int gDepthImgColor = gDepthImg.pixels[gDepthImgIndex-1];
-                      
-                      // dont use the folloing get method....too slow
-                      //color gDepthImgColor = gDepthImg.get(location.x, location.y); // get the pixel color at this locatoin
-                     
-                     // now use the brightness from the pixel and map to theta
-                      angle = map(brightness(gDepthImgColor), 0, 255, 0, TWO_PI);
-                      angle += noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
-                      angle *= (float)config.noiseStrength;
-                      
-                      velocity.x = cos(angle); // original = velocity.x
-                      velocity.y = sin(angle); // original = velocity.y
-                      velocity.mult(stepSize);
-////////////////////////////////////////////////////////
-                      
-                }
-                else {
-                      flowFieldLocation.x = norm(width-location.x, 0, width);    // width-location.x flips the x-axis.
-                      flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
-                      flowFieldLocation.y = norm(location.y, 0, height);
-                      flowFieldLocation.y *= gKinectHeight;
-                  
 			desired = manager.flowfield.lookup(flowFieldLocation);
 			desired.x *= -1;	// TODO??? WHAT'S THIS?
 
@@ -210,7 +143,6 @@ class Particle {
 
 // TODO:  HERE IS THE PLACE TO CHANGE ACCELERATION, BEFORE IT IS APPLIED.   ???
 
-// J :: adding steering force of depthImageTheta
 
 // END ACCELERATION
 
@@ -228,11 +160,12 @@ class Particle {
 
 	// 2-d render using processing OPENGL rendering context
 	void render() {
+		// apply image color at draw time?
+		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE && gConfig.applyParticleImageColorAtDrawTime) {
+			clr = getParticleImageColor(location.x, location.y);
+		}
 
-// J :: experiments ***************
-                strokeWeight(particleWidth);	
-//*********************************  
-        	stroke(clr);
+		stroke(clr);
 		line(prevLocation.x, prevLocation.y, location.x, location.y);
 	}
 }

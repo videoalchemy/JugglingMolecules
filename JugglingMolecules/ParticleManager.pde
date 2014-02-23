@@ -1,6 +1,6 @@
 /*******************************************************************
  *	VideoAlchemy "Juggling Molecules" Interactive Light Sculpture
- *	(c) 2011-2013 Jason Stephens & VideoAlchemy Collective
+ *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
  *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
@@ -25,7 +25,7 @@ class ParticleManager {
 		config = _config;
 
 		// pre-create all particles for efficiency when drawing.
-		int particleCount = config.particleMaxCount;
+		int particleCount = config.MAX_particleMaxCount;
 		particles = new Particle[particleCount];
 		for (int i=0; i < particleCount; i++) {
 			// initialise maximum particles
@@ -62,6 +62,7 @@ class ParticleManager {
 			float originX = startX + random(-config.particleGenerateSpread, config.particleGenerateSpread);
 			float originY = startY + random(-config.particleGenerateSpread, config.particleGenerateSpread);
 			float noiseZ = particleId/float(config.particleMaxCount);
+
 			particles[particleId].reset(originX, originY, noiseZ, forceX, forceY);
 
 			// increment counter -- go back to 0 if we're past the end
