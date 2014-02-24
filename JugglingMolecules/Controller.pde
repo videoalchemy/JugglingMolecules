@@ -49,6 +49,9 @@ class OscController extends Controller {
 	// Map of flags which are turned on/off by FlagControls.
 	HashMap<String, Boolean> flags;
 
+	// have we been synced already
+	boolean synced = false;
+
 ////////////////////////////////////////////////////////////
 //	Initial setup.
 ////////////////////////////////////////////////////////////
@@ -68,6 +71,10 @@ class OscController extends Controller {
 		try {
 			// update the configuration
 			this.parseMessage(message);
+
+			// tell the controller to save the "RESTART" config
+			//	which we'll use to come back to the same state on restart
+			gConfig.saveRestartState();
 		} catch (Exception e) {}
 	}
 
@@ -279,6 +286,15 @@ class OscController extends Controller {
 
 
 ////////////////////////////////////////////////////////////
+//	Sync the current state with gConfig
+////////////////////////////////////////////////////////////
+	void sync() {
+		// override in your subclass to do anything special
+		gController.say("Synced");
+	}
+
+
+////////////////////////////////////////////////////////////
 //	Send messages to all known controllers.
 ////////////////////////////////////////////////////////////
 
@@ -299,6 +315,7 @@ class OscController extends Controller {
 		}
 	}
 
+	// send a single boolean
 	void send(String fieldName, boolean value) {
 		println("  sending boolean "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
@@ -306,6 +323,8 @@ class OscController extends Controller {
 		this.send(message);
 	}
 
+
+	// send up to 3 ints
 	void send(String fieldName, int value) {
 		println("  sending int "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
@@ -330,6 +349,7 @@ class OscController extends Controller {
 		this.send(message);
 	}
 
+	// send up to 3 floats
 	void send(String fieldName, float value) {
 		println("  sending float "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName);
@@ -355,12 +375,8 @@ class OscController extends Controller {
 	}
 
 
-	void togglePresetButton(String presetName, boolean turnOn) {
-		this.send("/"+presetName, turnOn ? 1 : 0);
-//		this.send("/Load/"+presetName, turnOn ? 1 : 0);
-//		this.send("/Save/"+presetName, turnOn ? 1 : 0);
-	}
-
+	// Send a label
+//TOOD:  do label as "-label"
 	void sendLabel(String fieldName, String value) {
 		println("  sending label "+fieldName+"="+value);
 		OscMessage message = new OscMessage("/"+fieldName+"Label");
@@ -393,7 +409,6 @@ class OscController extends Controller {
 	}
 
 
-
 ////////////////////////////////////////////////////////////
 //	Talk-back to the user
 ////////////////////////////////////////////////////////////
@@ -416,7 +431,6 @@ class OscController extends Controller {
 	//			`int row = ROWCOUNT - (controller.getMultiToggleRow(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedRow(message, ROWCOUNT);`
-//UNTESTED
 	int getMultiToggleRow(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[2]);
@@ -429,7 +443,6 @@ class OscController extends Controller {
 	//			`int row = COLCOUNT - (controller.getMultiToggleColumn(message) - 1);`
 	//		 or use:
 	//			`int row = controller.getZeroBasedColumn(message, COLCOUNT);`
-//UNTESTED
 	int getMultiToggleColumn(OscMessage message) throws Exception {
 		String[] msgName = message.addrPattern().split("/");
 		return int(msgName[3]);

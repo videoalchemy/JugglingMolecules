@@ -65,6 +65,7 @@ class ParticleManager {
 			float originX = startX + random(-config.particleGenerateSpread, config.particleGenerateSpread);
 			float originY = startY + random(-config.particleGenerateSpread, config.particleGenerateSpread);
 			float noiseZ = particleId/float(config.particleMaxCount);
+
 			particles[particleId].reset(originX, originY, noiseZ, forceX, forceY);
 
 			// increment counter -- go back to 0 if we're past the end

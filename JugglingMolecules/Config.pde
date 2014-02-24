@@ -41,8 +41,13 @@ class Config {
 	//	which would normally be swallowed silently.
 	boolean debugging = true;
 
+	String restartConfigFile = "RESTART";
+
+	// Default config file to load if "RESTART" config not found.
+	String defaultConfigFile = "PS01";
+
 	// Name of the last config file we loaded.
-	String setupLastConfigFile = "PS01";
+	String lastConfigFileSaved;
 
 	// constructor
 	public Config() {
@@ -94,13 +99,12 @@ println("CONFIG INIT");
 
 	// Return the full path for a given config file instance.
 	// If you pass `_fileName`, we'll use that.
-	// Otherwise we'll use our internal `setupLastConfigFile` (but won't set it).
 	// Returns `null` if no filename specified.
 	String getFilePath() {
 		return this.getFilePath(null);
 	}
 	String getFilePath(String _fileName) {
-		if (_fileName == null) _fileName = this.setupLastConfigFile;
+		if (_fileName == null) _fileName = this.defaultConfigFile;
 		if (_fileName == null) {
 			this.error("ERROR in config.getFilePath(): no filename specified.");
 			return null;
@@ -125,7 +129,7 @@ println("CONFIG INIT");
 	// Return the index associated with a "normal" config file name.
 	// Returns -1 if it doesn't match our normal config naming pattern.
 	int getFileIndex(String fileName) {
-		if (!fileName.startsWith(normalFilePrefix)) return -1;
+		if (fileName == null || !fileName.startsWith(normalFilePrefix)) return -1;
 		// reduce down to just numbers
 		String stringValue = fileName.replaceAll( "[^\\d]", "" );
 		return Integer.parseInt(stringValue, 10);
@@ -147,7 +151,9 @@ println("CONFIG INIT");
 		// now signal that all of those fields have changed
 		this.fieldsChanged(table);
 		// Notify that we're synchronized.
-		if (gController != null) gController.say("Synced");
+		if (gController != null) {
+			gController.sync();
+		}
 	}
 
 	// One of our fields has changed.
@@ -259,7 +265,7 @@ println("CONFIG INIT");
 			newValue = (int) controllerValue;
 		}
 		this.debug("setIntFromController("+field.getName()+"): setting to "+newValue);
-		this.setInt(field, newValue);
+		this.setInt(field, newValue, null);
 	}
 
 
@@ -273,12 +279,12 @@ println("CONFIG INIT");
 			configMax = this.getFloat("MAX_"+field.getName());
 			newValue = map(controllerValue, controllerMin, controllerMax, configMin, configMax);
 		}
-		// if that didn't work, just coerce to an int
+		// if that didn't work, just use the value as a raw float
 		catch (Exception e) {
 			newValue = controllerValue;
 		}
 		this.debug("setFloatFromController("+field.getName()+"): setting to "+newValue);
-		this.setFloat(field, newValue);
+		this.setFloat(field, newValue, null);
 	}
 
 	// Set internal boolean value from controller value.
@@ -286,7 +292,7 @@ println("CONFIG INIT");
 		if (field == null) return;
 		boolean newValue = controllerValue != 0;
 		this.debug("setBooleanFromController("+field.getName()+"): setting to "+newValue);
-		this.setBoolean(field, newValue);
+		this.setBoolean(field, newValue, null);
 	}
 
 	// Set internal color value from controller value.
@@ -296,8 +302,8 @@ println("CONFIG INIT");
 		if (field == null) return;
 		float theHue = map(controllerValue, controllerMin, controllerMax, 0, 1);
 		color newValue = this.colorFromHue(theHue);
-		this.debug("setBooleanFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
-		this.setColor(field, newValue);
+		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		this.setColor(field, newValue, null);
 	}
 
 
@@ -377,10 +383,14 @@ println("CONFIG INIT");
 		// load our setup fields
 		this.loadSetup();
 
-		// if our .setupAutoLoadLast is true, load our last config file
-		if (this.setupLastConfigFile != null) {
-			return this.load(this.setupLastConfigFile);
+
+		// attempt to load our "RESTART" file if it exists
+		if (this.configFileExists(this.restartConfigFile)) {
+			this.load(this.restartConfigFile);
+		} else {
+			this.load(this.defaultConfigFile);
 		}
+
 		return null;
 	}
 
@@ -402,15 +412,9 @@ println("CONFIG INIT");
 	Table load(String _fileName) {
 		// remember filename if passed in
 		if (_fileName != null) {
-			// turn off old button
-// TODO: breaks encapsulation???
-			if (gController != null) gController.togglePresetButton(this.setupLastConfigFile, false);
-			this.setupLastConfigFile = _fileName;
 			// save current setup config
 			this.saveSetup();
 		}
-		// turn on new button
-		if (gController != null) gController.togglePresetButton(_fileName, true);
 		return this.loadFromFile(_fileName);
 	}
 
@@ -466,193 +470,222 @@ println("CONFIG INIT");
 	void setField(String fieldName, String stringValue) { this.setField(fieldName, stringValue, null, null); }
 	void setField(String fieldName, String stringValue, String typeHint) { this.setField(fieldName, stringValue, typeHint, null); }
 	void setField(String fieldName, String stringValue, String typeHint, Table changeLog) {
-		Field field = this.getField(fieldName, "setField({{fieldName}}): field not found");
+		Field field = this.getField(fieldName, "config.setField("+fieldName+"): field not found.");
+		if (field == null) return;
 		this.setField(field, stringValue, typeHint, changeLog);
 	}
 
 	void setField(Field field, String stringValue) { this.setField(field, stringValue, null, null);	}
 	void setField(Field field, String stringValue, String typeHint) { this.setField(field, stringValue, null, null);	}
 	void setField(Field field, String stringValue, String typeHint, Table changeLog) {
+		if (field == null) {
+			this.warn("config.setField() called with null field");
+			return;
+		}
+
+		String messagePrefix = "config.setField("+field.getName()+", '"+stringValue+"', "+typeHint+"): ";
 		int type = this.getType(field, typeHint);
 		switch (type) {
-			case _INT_TYPE:		this.setInt(field, stringValue, changeLog); return;
-			case _FLOAT_TYPE:	this.setFloat(field, stringValue, changeLog); return;
-			case _BOOLEAN_TYPE:	this.setBoolean(field, stringValue, changeLog); return;
-			case _COLOR_TYPE:	this.setColor(field, stringValue, changeLog); return;
-			case _STRING_TYPE:	this.setString(field, stringValue, changeLog); return;
-			default:			break;
+			case _INT_TYPE:
+				try {
+					int newValue = this.stringToInt(stringValue);
+					this.setInt(field, newValue, changeLog);
+				} catch (Exception e)	{
+					this.warn(messagePrefix+" couldn't convert string value to int");
+				}
+				break;
+
+			case _FLOAT_TYPE:
+				try {
+					float newValue = this.stringToFloat(stringValue);
+					this.setFloat(field, newValue, changeLog);
+				} catch (Exception e)	{
+					this.warn(messagePrefix+" couldn't convert string value to float");
+				}
+				break;
+
+			case _BOOLEAN_TYPE:
+				try {
+					boolean newValue = this.stringToBoolean(stringValue);
+					this.setBoolean(field, newValue, changeLog);
+				} catch (Exception e)	{
+					this.warn(messagePrefix+" couldn't convert string value to boolean");
+				}
+				break;
+
+			case _COLOR_TYPE:
+				try {
+					color newValue = this.stringToColor(stringValue);
+					this.setColor(field, newValue, changeLog);
+				} catch (Exception e)	{
+					this.warn(messagePrefix+" couldn't convert string value to color");
+				}
+				break;
+
+
+			case _STRING_TYPE:
+				this.setString(field, stringValue, changeLog);
+				break;
+
+			default:
+				break;
 		}
 	}
 
 
 	// Set an integer field to a string value or an integer value.
-	// Returns `true` if we actually changed the value.
+	// Returns the value actually set to, or -1 if couldn't do it for some reason.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	int setInt(String fieldName, String stringValue) { return this.setInt(fieldName, stringValue, null); }
-	int setInt(Field field, int newValue) { return this.setInt(field, newValue, null); }
-	int setInt(String fieldName, String stringValue, Table changeLog) {
-		Field field = this.getField(fieldName, "setInt({{fieldName}}): field not found.");
-		return this.setInt(field, stringValue, changeLog);
-	}
-	int setInt(Field field, String stringValue, Table changeLog) {
-		try {
-			int newValue = this.stringToInt(stringValue);
-			return this.setInt(field, newValue, changeLog);
-		} catch (Exception e) {
-			this.warn("setInt("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
-			return -1;
-		}
+	int setInt(String fieldName, int newValue) {
+		Field field = this.getField(fieldName, "config.setInt("+fieldName+"): field not found.  Returning -1.");
+		if (field == null) return -1;
+		return this.setInt(field, newValue, null);
 	}
 	int setInt(Field field, int newValue, Table changeLog) {
-		if (field != null) {
-			try {
-				int oldValue = this.getInt(field);
-				if (oldValue != newValue) {
-					field.setInt(this, newValue);
-					this.recordChange(field,  this.getTypeName(_INT_TYPE), this.intFieldToString(field), changeLog);
-				}
-				return newValue;
-			} catch (Exception e) {
-				this.warn("setInt("+field.getName()+"): exception setting value '"+newValue+"'", e);
-			}
+		if (field == null) {
+			this.warn("setInt(null): field is null!.  Returning -1");
+			return -1;	// ????
 		}
-		return -1;
+
+		// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
+		try {
+			int configMin = this.getInt("MIN_"+field.getName());
+			if (newValue < configMin) newValue = configMin;
+		} catch (Exception e){}
+
+		// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+		try {
+			int configMax = this.getInt("MAX_"+field.getName());
+			if (newValue > configMax) newValue = configMax;
+		} catch (Exception e){}
+
+		// actually set it and record the change
+		try {
+			field.setInt(this, newValue);
+			this.recordChange(field, this.getTypeName(_INT_TYPE), this.intFieldToString(field), changeLog);
+			return newValue;
+		} catch (Exception e){
+			this.warn("setInt("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1");
+			return -1;
+		}
 	}
 
 
 	// Set an float field to a string value or an float value.
-	// Returns `true` if we actually changed the value.
+	// Returns the new value we changed to, or -1 if couldn't do it for some reason.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	float setFloat(String fieldName, String stringValue) { return this.setFloat(fieldName, stringValue, null); }
-	float setFloat(Field field, float newValue) { return this.setFloat(field, newValue, null); }
-	float setFloat(String fieldName, String stringValue, Table changeLog) {
-		Field field = this.getField(fieldName, "setFloat({{fieldName}}): field not found.");
-		return this.setFloat(field, stringValue, changeLog);
+	float setFloat(String fieldName, float newValue) {
+		Field field = this.getField(fieldName, "config.setFloat("+fieldName+"): field not found.  Returning -1.");
+		if (field == null) return -1;
+		return this.setFloat(field, newValue, null);
 	}
-	float setFloat(Field field, String stringValue, Table changeLog) {
+
+	float setFloat(Field field, float newValue, Table changeLog) {
+		if (field == null) {
+			this.warn("setFloat(null): field is null!.  Returning -1.");
+			return -1;
+		}
+
+		// attempt to pin to min value but ignore it if we can't find a MIN_XXX field
 		try {
-			float newValue = this.stringToFloat(stringValue);
-			return this.setFloat(field, newValue, changeLog);
-		} catch (Exception e) {
-			this.warn("setFloat("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
+			float configMin = this.getFloat("MIN_"+field.getName());
+			if (newValue < configMin) newValue = configMin;
+		} catch (Exception e){}
+		// attempt to pin to max value but ignore it if we can't find a MAX_XXX field
+		try {
+			float configMax = this.getFloat("MAX_"+field.getName());
+			if (newValue > configMax) newValue = configMax;
+		} catch (Exception e){}
+
+		// actually set it and record the change
+		try {
+			field.setFloat(this, newValue);
+			this.recordChange(field,  this.getTypeName(_FLOAT_TYPE), this.floatFieldToString(field), changeLog);
+			return newValue;
+		} catch (Exception e){
+			this.warn("setFloat("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1.");
 			return -1;
 		}
 	}
-	float setFloat(Field field, float newValue, Table changeLog) {
-		if (field != null) {
-			try {
-				float oldValue = this.getFloat(field);
-				if (oldValue != newValue) {
-					field.setFloat(this, newValue);
-					this.recordChange(field,  this.getTypeName(_FLOAT_TYPE), this.floatFieldToString(field), changeLog);
-				}
-				return newValue;
-			} catch (Exception e) {
-				this.warn("setFloat("+field.getName()+"): exception setting value '"+newValue+"'", e);
-			}
-		}
-		return -1;
-	}
 
 
 
-	// Set a boolean field to a string value or an boolean value.
-	// Returns `true` if we actually changed the value.
+	// Set a boolean field to a string value or a boolean value.
+	// Returns value actually set to, or false if something goes wrong.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	boolean setBoolean(String fieldName, String stringValue) { return this.setBoolean(fieldName, stringValue, null); }
-	boolean setBoolean(Field field, boolean newValue) { return this.setBoolean(field, newValue, null); }
-	boolean setBoolean(String fieldName, String stringValue, Table changeLog) {
-		Field field = this.getField(fieldName, "setBoolean({{fieldName}}): field not found.");
-		return this.setBoolean(field, stringValue, changeLog);
-	}
-	boolean setBoolean(Field field, String stringValue, Table changeLog) {
-		try {
-			boolean newValue = this.stringToBoolean(stringValue);
-			return this.setBoolean(field, newValue, changeLog);
-		} catch (Exception e) {
-			this.warn("setBoolean("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
-			return false;
-		}
+	boolean setBoolean(String fieldName, boolean newValue) {
+		Field field = this.getField(fieldName, "config.setBoolean("+fieldName+"): field not found.  Returning false.");
+		if (field == null) return false;
+		return this.setBoolean(field, newValue, null);
 	}
 	boolean setBoolean(Field field, boolean newValue, Table changeLog) {
-		if (field != null) {
-			try {
-				boolean oldValue = this.getBoolean(field);
-				if (oldValue != newValue) {
-					field.setBoolean(this, newValue);
-					this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.booleanFieldToString(field), changeLog);
-				}
-				return newValue;
-			} catch (Exception e) {
-				this.warn("setBoolean("+field.getName()+"): exception setting value '"+newValue+"'", e);
-			}
+		if (field == null) {
+			this.warn("setBoolean(null): field is null!.  Returning False");
+			return false;
 		}
-		return false;
+		try {
+			field.setBoolean(this, newValue);
+			this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.booleanFieldToString(field), changeLog);
+			return newValue;
+		} catch (Exception e){
+			this.warn("setBoolean("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning false.");
+			return false;
+		}
 	}
 
 
 	// Set a color field to a string value or an color value.
-	// Returns `true` if we actually changed the value.
+	// Returns the color actually set to, or black if something goes wrong.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	color setColor(String fieldName, String stringValue) { return this.setColor(fieldName, stringValue, null); }
 	color setColor(String fieldName, color newValue) {
-		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
+		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.  Returning black.");
+		if (field == null) return color(0);
 		return this.setColor(field, newValue, null);
 	}
-	color setColor(Field field, color newValue) { return this.setColor(field, newValue, null); }
-	color setColor(String fieldName, String stringValue, Table changeLog) {
-		Field field = this.getField(fieldName, "setColor({{fieldName}}): field not found.");
-		return this.setColor(field, stringValue, changeLog);
-	}
-	color setColor(Field field, String stringValue, Table changeLog) {
-		try {
-			color newValue = this.stringToColor(stringValue);
-			return this.setColor(field, newValue, changeLog);
-		} catch (Exception e) {
-			this.warn("setColor("+field.getName()+"): exception converting string value '"+stringValue+"'", e);
-			return color(0);
-		}
-	}
 	color setColor(Field field, color newValue, Table changeLog) {
-		if (field != null) {
-			try {
-				color oldValue = this.getColor(field);
-				if (oldValue != newValue) {
-					field.setInt(this, (int)newValue);
-					this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.colorFieldToString(field), changeLog);
-				}
-				return newValue;
-			} catch (Exception e) {
-				this.warn("setColor("+field.getName()+"): exception setting value '"+newValue+"'", e);
-			}
+		println("setting "+field.getName()+" to "+gConfig.colorToString(newValue)+")");
+		color black = color(0);
+		if (field == null) {
+			this.warn("setColor(null): field is null!.  Returning black.");
+			return black;
 		}
-		return color(0);
+		try {
+			field.setInt(this, (int)newValue);
+			this.recordChange(field,  this.getTypeName(_COLOR_TYPE), this.colorFieldToString(field), changeLog);
+			return newValue;
+		} catch (Exception e){
+			this.warn("setColor("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning black.");
+			return black;
+		}
 	}
 
 
 
 	// Set a String field to a string value or an String value.
-	// Returns `true` if we actually changed the value.
+	// Returns string actually set to, or null if something goes wrong.
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
-	void setString(String fieldName, String stringValue, Table changeLog) {
+	String setString(String fieldName, String stringValue, Table changeLog) {
 		Field field = this.getField(fieldName, "setString({{fieldName}}): field not found.");
-		this.setString(field, stringValue, changeLog);
+		if (field == null) return null;
+		return this.setString(field, stringValue, changeLog);
 	}
-	void setString(Field field, String newValue, Table changeLog) {
-		if (field == null) return;
+	String setString(Field field, String newValue, Table changeLog) {
+		if (field == null) {
+			this.warn("setString(null): field is null!.  Returning null.");
+			return null;
+		}
 		try {
-			String oldValue = this.getString(field);
-			if (oldValue != newValue) {
-				field.set(this, newValue);
-				this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.stringFieldToString(field), changeLog);
-			}
-		} catch (Exception e) {
-			this.warn("setString("+field.getName()+"): exception setting value '"+newValue+"'", e);
+			field.set(this, newValue);
+			this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.stringFieldToString(field), changeLog);
+			return newValue;
+		} catch (Exception e){
+			this.warn("setString("+field.getName()+", '"+newValue+"'): something went wrong! "+e+"  Returning null.");
+			return null;
 		}
 	}
 
@@ -677,8 +710,15 @@ println("CONFIG INIT");
 	}
 
 	Table save(String _fileName) {
-		if (_fileName != null) this.setupLastConfigFile = _fileName;
-		return this.saveToFile(this.setupLastConfigFile, this.FIELDS);
+		if (_fileName != null) this.lastConfigFileSaved = _fileName;
+//println("SAVING "+_fileName);
+		return this.saveToFile(this.lastConfigFileSaved, this.FIELDS);
+	}
+
+	// Save our current state so we'll restart in the same place.
+	Table saveRestartState() {
+//println("SAVING RESTART STATE");
+		return this.saveToFile(this.restartConfigFile, this.FIELDS);
 	}
 
 	// Load our defaults from disk.
@@ -1244,9 +1284,38 @@ println("CONFIG INIT");
 	boolean configFileExists(int index) {
 		// get local path (relative to sketch)
 		String localPath = this.getFilePath(index);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configFileExists(String name) {
+		String localPath = this.getFilePath(name);
+		return this.configPathExists(localPath);
+	}
+
+	boolean configPathExists(String localPath) {
 		// use sketchPath to convert to full path
 		String path = sketchPath(localPath);
 		return new File(path).exists();
+	}
+
+
+////////////////////////////////////////////////////////////
+//	Dealing with window size.
+//	Save window size as, eg: "640x480"
+////////////////////////////////////////////////////////////
+	void initWindowSize(String wdSize) {
+		if (wdSize == null) {
+			this.warn("config.initWindowSize(): size is null!");
+			return;
+		}
+		String[] sizes = wdSize.split("x");
+		try {
+			int wdWidth = Integer.parseInt(sizes[0], 10);
+			int wdHeight = Integer.parseInt(sizes[1], 10);
+			size(wdWidth, wdHeight);
+		} catch (Exception e) {
+			this.warn("config.initWindowSize("+wdSize+"): exception parsing size "+e);
+		}
 	}
 
 ////////////////////////////////////////////////////////////

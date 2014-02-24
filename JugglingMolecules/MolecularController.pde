@@ -20,18 +20,18 @@ class MolecularController extends OscController {
 		super();
 
 		// create special controls as necessary, everything else will just get a normal Control
-
 		new OscXYControl(this, "particleGenerate", "particleGenerateSpread", "particleGenerateRate");
+// TODO: check X/Y axis for this!
 		new OscXYControl(this, "noise", "noiseStrength", "noiseScale");
 
 		new OscChoiceControl(this, "particleColorScheme", 4);
-		new OscChoiceControl(this, "depthImageBlendMode", new int[] {0,1,2,4,8,16,32,64,128,256});
+		new OscChoiceControl(this, "blendMode", new int[] {0,1,2,4,8,16,32,64,128,256});
 
 		new OscButton(this, "sync");
 		new OscButton(this, "snapshot");
 
 		new OscGridControl(this, "particleImage", 4, 3);
-		new OscGridControl(this, "setupWindowSize", 3, 2);
+		new OscGridControl(this, "windowSize", 3, 2);
 
 //		Loader = new OscGridControl(this, "Loader", 10, 10, true);
 //		Saver  = new OscMultiGridControl(this, "Saver", 10, 10, false);
@@ -55,13 +55,17 @@ class MolecularController extends OscController {
 		snapshot();
 	}
 
-	// When window size is changed from the controller, notify them they'll have to restart.
-	void onSetupWindowSize(OscControl control, OscMessage message) {
+	// When window size is changed from the controller,
+	//	update the string
+	//	notify them they'll have to restart.
+	void onWindowSize(OscControl control, OscMessage message) {
+		// actually update the config string value
+		int index = ((OscGridControl) control).index(message);
+		gConfig.setupWindowSize = WINDOW_SIZES[index];
+		println("onWindowSize "+index+" " + gConfig.setupWindowSize);
+
 		// notify about new size on restart
-		int wdSize	 = gConfig.setupWindowSize;
-		int wdWidth  = gConfig.windowWidths[wdSize];
-		int wdHeight = gConfig.windowHeights[wdSize];
-		this.say("Restart for "+wdWidth+"x"+wdHeight);
+		this.say("Restart for "+gConfig.setupWindowSize);
 	}
 
 	// When kinect angle is changed, actually move the kinect!
@@ -73,6 +77,7 @@ class MolecularController extends OscController {
 			println("Exception updating kinect angle: "+e);
 		}
 	}
+
 
 /*
 
@@ -104,7 +109,6 @@ class MolecularController extends OscController {
 	}
 
 
-
 	// Update the "Saver" grid with the set of configs which already exist.
 	void updateSaverFileGrid() {
 		Saver.updateStates(gConfig.configExistsMap);
@@ -117,20 +121,26 @@ class MolecularController extends OscController {
 		float value = message.get(0).floatValue();
 
 		// Window background hue/greyscale toggle.
-		if (fieldName.startsWith("windowBg")) {
+		if (fieldName.startsWith("fade")) {
+			if (fieldName.startsWith("fadeAlpha")) {
+				gConfig.setFromController("fadeAlpha", value, this.minValue, this.maxValue);
+				return;
+			}
+
 			float _hue;
-			if (fieldName.equals("windowBgGreyscale")) {
+			if (fieldName.equals("fadeGreyscale")) {
 				gConfig.setFromController(fieldName, value, this.minValue, this.maxValue);
-				_hue = gConfig.hueFromColor(gConfig.windowBgColor);
+				_hue = gConfig.hueFromColor(gConfig.fadeColor);
 			} else {
 				_hue = value;
 			}
 
-			if (gConfig.windowBgGreyscale) {
+			color clr;
+			if (gConfig.fadeGreyscale) {
 				int _grey = (int)map(_hue, 0, 1, 0, 255);
-				gConfig.windowBgColor = color(_grey);
+				gConfig.fadeColor = color(_grey);
 			} else {
-				gConfig.windowBgColor = colorFromHue(_hue);
+				gConfig.fadeColor = colorFromHue(_hue);
 			}
 			return;
 		}
@@ -158,20 +168,22 @@ class MolecularController extends OscController {
 			this.sendBoolean("windowBgGreyscale", gConfig.windowBgGreyscale);
 			float hueValue;
 			try {
-				if (gConfig.windowBgGreyscale) {
+				if (gConfig.fadeGreyscale) {
 					println("GREYSCALE");
 // TODO...
-					hueValue = this.getFieldValue("windowBgColor");
+					hueValue = this.getFieldValue("fadeColor");
 				} else{
 					println("COLOR");
-					hueValue = this.getFieldValue("windowBgColor");
+					hueValue = this.getFieldValue("fadeColor");
 				}
-				this.sendFloat("windowBgHue", hueValue);
+				this.sendFloat("fadeHue", hueValue);
 			} catch (Exception e) {
-				println("Exception setting windowBgHue: "+e);
+				println("Exception setting fadeHue: "+e);
 			}
 		}
 
+		// send the raw value if we haven't returned above
+		this.sendFloat(fieldName, controllerValue);
 	}
 */
 }

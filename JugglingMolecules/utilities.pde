@@ -15,32 +15,10 @@
 	void drawDepthImage() {
 		pushStyle();
 		pushMatrix();
-//TODO...
-//		tint(depthImageColor);
-//		tint(256,128);
+		tint(gConfig.depthImageColor);
 		scale(-1,1);	// reverse image to mirrored direction
-		blendMode(gConfig.depthImageBlendMode);
 		image(gDepthImg, 0, 0, -width, height);
-		blendMode(BLEND);	// NOTE: things don't look good if you don't restore this!
 		popMatrix();
-		popStyle();
-	}
-
-	// Draw the raw depth info as a pixel at each coordinate.
-	void drawDepthPixels() {
-		pushStyle();
-		int delta = 2;//gConfig.flowfieldResolution;	// 1;
-		for (int row = 0; row < gKinectHeight; row += delta) {
-			for (int col = 0; col < gKinectWidth; col += delta) {
-				int index = col + (row*gKinectWidth);
-				int zAlpha = (int) map((float) gRawDepth[index],0,2047,0,128);
-// green
-				stroke(0, 128, 0, zAlpha);
-				int x = width - (int) map((float)col, 0, gKinectWidth, 0, width);
-				int y = 		(int) map((float)row, 0, gKinectHeight, 0, height);
-				point(x, y);
-			}
-		}
 		popStyle();
 	}
 
@@ -50,11 +28,14 @@
 ////////////////////////////////////////////////////////////
 
 	// Partially fade the screen by drawing a translucent black rectangle over everything.
-	void fadeScreen(color bgColor, int opacity) {
+	// NOTE: this applies the current blendMode all over everything
+	void fadeScreen(color bgColor) {
 		pushStyle();
+		blendMode(gConfig.blendMode);
 		noStroke();
-		fill(bgColor, opacity);
+		fill(bgColor);
 		rect(0, 0, width, height);
+		blendMode(BLEND);
 		popStyle();
 	}
 
@@ -133,6 +114,12 @@
 	}
 
 
+	color addAlphaToColor(color clr, int alfa) {
+		return (clr & 0x00FFFFFF) + (alfa << 24);
+	}
+
+
+
 
 
 ////////////////////////////////////////////////////////////
@@ -149,4 +136,6 @@
 		if (bool) return "true";
 		return "false";
 	}
+
+
 

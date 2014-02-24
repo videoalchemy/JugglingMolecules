@@ -170,7 +170,7 @@ class OscXYControl extends OscControl {
 ////////////////////////
 //
 //	OscChoiceControl class
-// 	A bunch of buttons which act as radio buttons for a set of choices.
+// 	A bunch of buttons which act as radio buttons for a set of choices as integers.
 //
 ////////////////////////
 class OscChoiceControl extends OscControl {
@@ -194,6 +194,7 @@ class OscChoiceControl extends OscControl {
 		this.choices = _choices;
 		this.addControlsForChoices();
 	}
+
 	void addControlsForChoices() {
 		// add to controller under all choice indexes
 		for (int i = 0; i < choices.length; i++) {
@@ -211,7 +212,8 @@ class OscChoiceControl extends OscControl {
 						+"value must start with '-'");
 			throw new Exception("OscChoiceControl('"+name+"): can't parse value out of message name");
 		}
-		return (float) gConfig.setInt(fieldName, stringValue);
+		int intValue = Integer.parseInt(stringValue, 10);
+		return (float) gConfig.setInt(fieldName, intValue);
 	}
 
 	// Turn each button on or off as appropriate when the config value changes.
@@ -321,7 +323,6 @@ class OscGridControl extends OscControl {
 		}
 	}
 
-
 	// Given a message, return the index which it corresponds to.
 	// Returns -1 if message doesn't conform to expected format.
 	int index(OscMessage message) {
@@ -405,19 +406,19 @@ class OscColorControl extends OscControl {
 
 		this.updateColorControls(endColor);
 
-	println("");
-	println("");
-	println("");
-
 		String fieldName = this.controller.getMessageNamePrefix(message);
 		gConfig.setColor(fieldName, endColor);
+
+	println("");
+	println("");
+	println("");
 
 		return -1;
 	}
 
 	void onConfigColorChanged(color _color) {
 		// set our various controls according to the value
-		println("OscColorControl.onConfigColorChanged("+_color+")");
+		println("OscColorControl.onConfigColorChanged("+gConfig.colorToString(_color)+")");
 
 		this.updateColorControls(_color);
 	}

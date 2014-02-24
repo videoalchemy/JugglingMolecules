@@ -74,48 +74,48 @@
 		gConfig.showDepthImage = !gConfig.showDepthImage;
 		println("showing depth image: " + gConfig.showDepthImage);
 	  }
-	  // toggle showDepthPixels on/off
+	  // toggle showFade on/off
 	  else if (key == 'r') {
-		gConfig.showDepthPixels = !gConfig.showDepthPixels;
-		println("showing depth pixels: " + gConfig.showDepthPixels);
+		gConfig.showFade = !gConfig.showFade;
+		println("showing depth pixels: " + gConfig.showFade);
 	  }
 
 
 	// different blend modes
 	  else if (key == '1') {
-		gConfig.depthImageBlendMode = BLEND;
+		gConfig.blendMode = BLEND;
 		println("Blend mode: BLEND");
 	  }
 	  else if (key == '2') {
-		gConfig.depthImageBlendMode = ADD;
+		gConfig.blendMode = ADD;
 		println("Blend mode: ADD");
 	  }
 	  else if (key == '3') {
-		gConfig.depthImageBlendMode = SUBTRACT;
+		gConfig.blendMode = SUBTRACT;
 		println("Blend mode: SUBTRACT");
 	  }
 	  else if (key == '4') {
-		gConfig.depthImageBlendMode = DARKEST;
+		gConfig.blendMode = DARKEST;
 		println("Blend mode: DARKEST");
 	  }
 	  else if (key == '5') {
-		gConfig.depthImageBlendMode = LIGHTEST;
+		gConfig.blendMode = LIGHTEST;
 		println("Blend mode: LIGHTEST");
 	  }
 	  else if (key == '6') {
-		gConfig.depthImageBlendMode = DIFFERENCE;
+		gConfig.blendMode = DIFFERENCE;
 		println("Blend mode: DIFFERENCE");
 	  }
 	  else if (key == '7') {
-		gConfig.depthImageBlendMode = EXCLUSION;
+		gConfig.blendMode = EXCLUSION;
 		println("Blend mode: EXCLUSION");
 	  }
 	  else if (key == '7') {
-		gConfig.depthImageBlendMode = MULTIPLY;
+		gConfig.blendMode = MULTIPLY;
 		println("Blend mode: MULTIPLY");
 	  }
 	  else if (key == '8') {
-		gConfig.depthImageBlendMode = SCREEN;
+		gConfig.blendMode = SCREEN;
 		println("Blend mode: SCREEN");
 	  }
 	}

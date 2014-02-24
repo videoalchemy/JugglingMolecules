@@ -45,7 +45,8 @@ import java.util.Iterator;
 	PImage gDepthImg;
 
 
-// Load our config object on start()
+// Start() is the very first thing that's run, then setup().
+// Load our config object first thing!
 void start() {
 	// create the config object
 	gConfig = new MolecularConfig();
@@ -62,9 +63,7 @@ void start() {
 //
 void setup() {
 	// window size comes from config
-	int wdWidth  = gConfig.windowWidths[gConfig.setupWindowSize];
-	int wdHeight = gConfig.windowHeights[gConfig.setupWindowSize];
-	size(wdWidth, wdHeight, OPENGL);
+	gConfig.initWindowSize(gConfig.setupWindowSize);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
 	gOscMaster = new OscP5(this, 8000);
@@ -74,7 +73,7 @@ void setup() {
 	gConfig.addController(gController);
 
 	// set up display parametets
-	background(gConfig.windowBgColor);
+	background(gConfig.fadeColor);
 
 	// set up noise seed
 	noiseSeed(gConfig.setupNoiseSeed);
@@ -104,21 +103,6 @@ void setup() {
 	// save our startup state
 	gConfig.saveSetup();
 	gConfig.save();
-
-
-/*	print out the blendModes...
-
-	println("	BLEND:       "+BLEND);
-	println("	ADD:         "+ADD);
-	println("	SUBTRACT:    "+SUBTRACT);
-	println("	DARKEST:     "+DARKEST);
-	println("	LIGHTEST:    "+LIGHTEST);
-	println("	DIFFERENCE:  "+DIFFERENCE);
-	println("	EXCLUSION:   "+EXCLUSION);
-	println("	MULTIPLY:    "+MULTIPLY);
-	println("	SCREEN:      "+SCREEN);
-	println("	REPLACE:     "+ REPLACE);
-*/
 }
 
 
@@ -127,24 +111,22 @@ void draw() {
 	pushStyle();
 	pushMatrix();
 
-	// partially fade the screen by drawing a semi-opaque rectangle over everything
-	fadeScreen(gConfig.windowBgColor, gConfig.windowOverlayAlpha);
-
 	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
 	gKinecter.updateKinectDepth();
+
+	// draw the depth image underneath the particles
+	if (gConfig.showDepthImage) drawDepthImage();
 
 	// update the optical flow vectors from the gKinecter depth image
 	// NOTE: also draws the force vectors if `showFlowLines` is true
 	gFlowfield.update();
 
-	// draw raw depth pixels
-	if (gConfig.showDepthPixels) drawDepthPixels();
-
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();
 
-	// draw the depth image over the particles
-	if (gConfig.showDepthImage) drawDepthImage();
+	// apply a full-screen color overlay
+	// NOTE: this is where the blend mode is applied!
+	if (gConfig.showFade) fadeScreen(gConfig.fadeColor);
 
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();
