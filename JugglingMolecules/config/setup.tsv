@@ -5,6 +5,6 @@ int	setupNoiseSeed	26103
 int	setupOscInboundPort	8000
 int	setupOscOutboundPort	9000
 int	setupFlowFieldResolution	15
-int	kinectMinDepth	237
-int	kinectMaxDepth	870
+int	kinectMinDepth	0
+int	kinectMaxDepth	929
 int	kinectAngle	19

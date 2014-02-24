@@ -8,9 +8,6 @@
  *******************************************************************/
 
 class ParticleManager {
-	// Current configuration.
-	MolecularConfig config;		// set DURING init
-
 	// flowfield which influences our drawing.
 	OpticalFlow flowfield;		// set AFTER init
 
@@ -21,18 +18,15 @@ class ParticleManager {
 	int particleId = 0;
 
 
-	public ParticleManager(MolecularConfig _config) {
-		// remember our configuration object.
-		config = _config;
-
+	public ParticleManager() {
 		// pre-create all particles for efficiency when drawing.
 		// NOTE: We pre-create the total maximum possible, even though we may be showing less right now.
 		//		 This allows us to dynamically change the particleMaxCount range fully.
-		int particleCount = config.MAX_particleMaxCount;
+		int particleCount = gConfig.MAX_particleMaxCount;
 		particles = new Particle[particleCount];
 		for (int i=0; i < particleCount; i++) {
 			// initialise maximum particles
-			particles[i] = new Particle(this, config);
+			particles[i] = new Particle(this);
 		}
 	}
 
@@ -40,7 +34,7 @@ class ParticleManager {
 		// NOTE: doing pushStyle()/popStyle() on the outside of the loop makes this much much faster
 		pushStyle();
 		// loop through all particles
-		int particleCount = config.particleMaxCount;
+		int particleCount = gConfig.particleMaxCount;
 		for (int i = 0; i < particleCount; i++) {
 			Particle particle = particles[i];
 			if (particle.isAlive()) {
@@ -53,24 +47,24 @@ class ParticleManager {
 
 	// Add a bunch of particles to represent a new vector in the flow field
 	public void addParticlesForForce(float x, float y, float dx, float dy) {
-		regenerateParticles(x * width, y * height, dx * config.particleForceMultiplier, dy * config.particleForceMultiplier);
+		regenerateParticles(x * width, y * height, dx * gConfig.particleForceMultiplier, dy * gConfig.particleForceMultiplier);
 	}
 
 	// Update a set of particles based on a force vector.
 	// NOTE: We re-use particles created at construction time.
 	//		 `particleId` is a global index of the next particles to take over when it's time to "make" some new particles.
-	// NOTE: With a small `config.particleMaxCount`, we'll re-use particles before they've fully decayed.
+	// NOTE: With a small `gConfig.particleMaxCount`, we'll re-use particles before they've fully decayed.
 	public void regenerateParticles(float startX, float startY, float forceX, float forceY) {
-		for (int i = 0; i < config.particleGenerateRate; i++) {
-			float originX = startX + random(-config.particleGenerateSpread, config.particleGenerateSpread);
-			float originY = startY + random(-config.particleGenerateSpread, config.particleGenerateSpread);
-			float noiseZ = particleId/float(config.particleMaxCount);
+		for (int i = 0; i < gConfig.particleGenerateRate; i++) {
+			float originX = startX + random(-gConfig.particleGenerateSpread, gConfig.particleGenerateSpread);
+			float originY = startY + random(-gConfig.particleGenerateSpread, gConfig.particleGenerateSpread);
+			float noiseZ = particleId/float(gConfig.particleMaxCount);
 
 			particles[particleId].reset(originX, originY, noiseZ, forceX, forceY);
 
 			// increment counter -- go back to 0 if we're past the end
 			particleId++;
-			if (particleId >= config.particleMaxCount) particleId = 0;
+			if (particleId >= gConfig.particleMaxCount) particleId = 0;
 		}
 	}
 

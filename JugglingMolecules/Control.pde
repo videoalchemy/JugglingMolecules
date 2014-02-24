@@ -365,7 +365,7 @@ class OscColorControl extends OscControl {
 		int _alpha = (int)alpha(startColor);
 
 		String msgPrefix = "OscColorControl.parseMessage(" + this.controller.getMessageName(message)+"): ";
-		println(msgPrefix + "value = "+controllerValue+" start color = "+gConfig.colorToString(startColor));
+		println(msgPrefix + "value = "+controllerValue+" start color = "+colorToString(startColor));
 
 		// figure out which sub-control was activated
 		String controlName = controller.getMessageNameSuffix(message);
@@ -391,7 +391,7 @@ class OscColorControl extends OscControl {
 				endColor = color(grey, _alpha);
 
 			} else {
-				endColor = colorFromHue(controllerValue, _alpha);
+				endColor = color(colorFromHue(controllerValue), _alpha);
 				println(msgPrefix + "hue changed to "+hue(endColor));
 			}
 
@@ -418,13 +418,13 @@ class OscColorControl extends OscControl {
 
 	void onConfigColorChanged(color _color) {
 		// set our various controls according to the value
-		println("OscColorControl.onConfigColorChanged("+gConfig.colorToString(_color)+")");
+		println("OscColorControl.onConfigColorChanged("+colorToString(_color)+")");
 
 		this.updateColorControls(_color);
 	}
 
 	void updateColorControls(color _color) {
-		println("OscColorControl.updateColorControls("+gConfig.colorToString(_color)+")");
+		println("OscColorControl.updateColorControls("+colorToString(_color)+")");
 
 		// send greyscale flag
 		this.controller.send(this.fieldName+"-greyscale", this.greyscale);

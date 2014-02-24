@@ -106,7 +106,7 @@ println("CONFIG INIT");
 	String getFilePath(String _fileName) {
 		if (_fileName == null) _fileName = this.defaultConfigFile;
 		if (_fileName == null) {
-			this.error("ERROR in config.getFilePath(): no filename specified.");
+			logError("ERROR in gConfig.getFilePath(): no filename specified.");
 			return null;
 		}
 		return filepath + _fileName + configExtension;
@@ -179,7 +179,7 @@ println("CONFIG INIT");
 					controller.onConfigFieldChanged(fieldName, controllerValue, typeName, currentValueString);
 				}
 			} catch (Exception e) {
-				this.warn("fieldChanged("+fieldName+") exception setting controller value", e);
+				logWarning("fieldChanged("+fieldName+") exception setting controller value", e);
 			}
 		}
 	}
@@ -246,7 +246,7 @@ println("CONFIG INIT");
 				default:			break;
 			}
 		} catch (Exception e) {
-			this.warn("setFromController("+field.getName()+"): exception setting field value", e);
+			logWarning("setFromController("+field.getName()+"): exception setting field value", e);
 		}
 	}
 
@@ -264,7 +264,7 @@ println("CONFIG INIT");
 		catch (Exception e) {
 			newValue = (int) controllerValue;
 		}
-		this.debug("setIntFromController("+field.getName()+"): setting to "+newValue);
+		logDebug("setIntFromController("+field.getName()+"): setting to "+newValue);
 		this.setInt(field, newValue, null);
 	}
 
@@ -283,7 +283,7 @@ println("CONFIG INIT");
 		catch (Exception e) {
 			newValue = controllerValue;
 		}
-		this.debug("setFloatFromController("+field.getName()+"): setting to "+newValue);
+		logDebug("setFloatFromController("+field.getName()+"): setting to "+newValue);
 		this.setFloat(field, newValue, null);
 	}
 
@@ -291,7 +291,7 @@ println("CONFIG INIT");
 	void setBooleanFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
 		if (field == null) return;
 		boolean newValue = controllerValue != 0;
-		this.debug("setBooleanFromController("+field.getName()+"): setting to "+newValue);
+		logDebug("setBooleanFromController("+field.getName()+"): setting to "+newValue);
 		this.setBoolean(field, newValue, null);
 	}
 
@@ -300,9 +300,10 @@ println("CONFIG INIT");
 //TODO: split into r,g,b etc
 	void setColorFromController(Field field, float controllerValue, float controllerMin, float controllerMax) {
 		if (field == null) return;
+println("==============> Config.setColorFromController("+field.getName()+")");
 		float theHue = map(controllerValue, controllerMin, controllerMax, 0, 1);
-		color newValue = this.colorFromHue(theHue);
-		this.debug("setColorFromController("+field.getName()+"): setting to "+this.colorToString(newValue));
+		color newValue = colorFromHue(theHue);
+		logDebug("setColorFromController("+field.getName()+"): setting to "+colorToString(newValue));
 		this.setColor(field, newValue, null);
 	}
 
@@ -324,7 +325,7 @@ println("CONFIG INIT");
 			case _FLOAT_TYPE:	return this.floatForController(field, controllerMin, controllerMax);
 			case _BOOLEAN_TYPE:	return this.booleanForController(field, controllerMin, controllerMax);
 			case _COLOR_TYPE:	return this.colorForController(field, controllerMin, controllerMax);
-			default:			this.warn("valueForController("+field.getName()+"): type not understood");
+			default:			logWarning("valueForController("+field.getName()+"): type not understood");
 		}
 		throw new NoSuchFieldException();
 	}
@@ -370,7 +371,7 @@ println("CONFIG INIT");
 	// Return internal color field value as a float, scaled for our controller.
 	float colorForController(Field field, float controllerMin, float controllerMax) throws Exception {
 		color clr = this.getColor(field);
-		return this.hueFromColor(clr);
+		return hueFromColor(clr);
 	}
 
 
@@ -429,21 +430,21 @@ println("CONFIG INIT");
 	Table loadFromFile(String _fileName) {
 		String path = this.getFilePath(_fileName);
 		if (path == null) {
-			this.error("ERROR in config.loadFromConfigFile(): no filename specified");
+			logError("ERROR in gConfig.loadFromConfigFile(): no filename specified");
 			return null;
 		}
 
-		this.debug("Loading from '"+path+"'");
+		logDebug("Loading from '"+path+"'");
 		// load as a .tsv file with loadTable()
 		Table inputTable;
 		try {
 			inputTable = loadTable(path, "header,tsv");
 		} catch (Exception e) {
-			this.warn("loadFromFile('"+path+"'): couldn't load table file.  Does it exist?", e);
+			logWarning("loadFromFile('"+path+"'): couldn't load table file.  Does it exist?", e);
 			return null;
 		}
 
-//		this.debug("Values before load:");
+//		logDebug("Values before load:");
 //		if (this.debugging) this.echo();
 
 		// make a table to hold changes found while setting values
@@ -470,7 +471,7 @@ println("CONFIG INIT");
 	void setField(String fieldName, String stringValue) { this.setField(fieldName, stringValue, null, null); }
 	void setField(String fieldName, String stringValue, String typeHint) { this.setField(fieldName, stringValue, typeHint, null); }
 	void setField(String fieldName, String stringValue, String typeHint, Table changeLog) {
-		Field field = this.getField(fieldName, "config.setField("+fieldName+"): field not found.");
+		Field field = this.getField(fieldName, "gConfig.setField("+fieldName+"): field not found.");
 		if (field == null) return;
 		this.setField(field, stringValue, typeHint, changeLog);
 	}
@@ -479,46 +480,46 @@ println("CONFIG INIT");
 	void setField(Field field, String stringValue, String typeHint) { this.setField(field, stringValue, null, null);	}
 	void setField(Field field, String stringValue, String typeHint, Table changeLog) {
 		if (field == null) {
-			this.warn("config.setField() called with null field");
+			logWarning("gConfig.setField() called with null field");
 			return;
 		}
 
-		String messagePrefix = "config.setField("+field.getName()+", '"+stringValue+"', "+typeHint+"): ";
+		String messagePrefix = "gConfig.setField("+field.getName()+", '"+stringValue+"', "+typeHint+"): ";
 		int type = this.getType(field, typeHint);
 		switch (type) {
 			case _INT_TYPE:
 				try {
-					int newValue = this.stringToInt(stringValue);
+					int newValue = stringToInt(stringValue);
 					this.setInt(field, newValue, changeLog);
 				} catch (Exception e)	{
-					this.warn(messagePrefix+" couldn't convert string value to int");
+					logWarning(messagePrefix+" couldn't convert string value to int");
 				}
 				break;
 
 			case _FLOAT_TYPE:
 				try {
-					float newValue = this.stringToFloat(stringValue);
+					float newValue = stringToFloat(stringValue);
 					this.setFloat(field, newValue, changeLog);
 				} catch (Exception e)	{
-					this.warn(messagePrefix+" couldn't convert string value to float");
+					logWarning(messagePrefix+" couldn't convert string value to float");
 				}
 				break;
 
 			case _BOOLEAN_TYPE:
 				try {
-					boolean newValue = this.stringToBoolean(stringValue);
+					boolean newValue = stringToBoolean(stringValue);
 					this.setBoolean(field, newValue, changeLog);
 				} catch (Exception e)	{
-					this.warn(messagePrefix+" couldn't convert string value to boolean");
+					logWarning(messagePrefix+" couldn't convert string value to boolean");
 				}
 				break;
 
 			case _COLOR_TYPE:
 				try {
-					color newValue = this.stringToColor(stringValue);
+					color newValue = stringToColor(stringValue);
 					this.setColor(field, newValue, changeLog);
 				} catch (Exception e)	{
-					this.warn(messagePrefix+" couldn't convert string value to color");
+					logWarning(messagePrefix+" couldn't convert string value to color");
 				}
 				break;
 
@@ -538,13 +539,13 @@ println("CONFIG INIT");
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	int setInt(String fieldName, int newValue) {
-		Field field = this.getField(fieldName, "config.setInt("+fieldName+"): field not found.  Returning -1.");
+		Field field = this.getField(fieldName, "gConfig.setInt("+fieldName+"): field not found.  Returning -1.");
 		if (field == null) return -1;
 		return this.setInt(field, newValue, null);
 	}
 	int setInt(Field field, int newValue, Table changeLog) {
 		if (field == null) {
-			this.warn("setInt(null): field is null!.  Returning -1");
+			logWarning("setInt(null): field is null!.  Returning -1");
 			return -1;	// ????
 		}
 
@@ -566,7 +567,7 @@ println("CONFIG INIT");
 			this.recordChange(field, this.getTypeName(_INT_TYPE), this.intFieldToString(field), changeLog);
 			return newValue;
 		} catch (Exception e){
-			this.warn("setInt("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1");
+			logWarning("setInt("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1");
 			return -1;
 		}
 	}
@@ -577,14 +578,14 @@ println("CONFIG INIT");
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	float setFloat(String fieldName, float newValue) {
-		Field field = this.getField(fieldName, "config.setFloat("+fieldName+"): field not found.  Returning -1.");
+		Field field = this.getField(fieldName, "gConfig.setFloat("+fieldName+"): field not found.  Returning -1.");
 		if (field == null) return -1;
 		return this.setFloat(field, newValue, null);
 	}
 
 	float setFloat(Field field, float newValue, Table changeLog) {
 		if (field == null) {
-			this.warn("setFloat(null): field is null!.  Returning -1.");
+			logWarning("setFloat(null): field is null!.  Returning -1.");
 			return -1;
 		}
 
@@ -605,7 +606,7 @@ println("CONFIG INIT");
 			this.recordChange(field,  this.getTypeName(_FLOAT_TYPE), this.floatFieldToString(field), changeLog);
 			return newValue;
 		} catch (Exception e){
-			this.warn("setFloat("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1.");
+			logWarning("setFloat("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning -1.");
 			return -1;
 		}
 	}
@@ -617,13 +618,13 @@ println("CONFIG INIT");
 	// If you pass a changeLog, we'll write the results to that.
 	// Otherwise we'll call `fieldChanged()`.
 	boolean setBoolean(String fieldName, boolean newValue) {
-		Field field = this.getField(fieldName, "config.setBoolean("+fieldName+"): field not found.  Returning false.");
+		Field field = this.getField(fieldName, "gConfig.setBoolean("+fieldName+"): field not found.  Returning false.");
 		if (field == null) return false;
 		return this.setBoolean(field, newValue, null);
 	}
 	boolean setBoolean(Field field, boolean newValue, Table changeLog) {
 		if (field == null) {
-			this.warn("setBoolean(null): field is null!.  Returning False");
+			logWarning("setBoolean(null): field is null!.  Returning False");
 			return false;
 		}
 		try {
@@ -631,7 +632,7 @@ println("CONFIG INIT");
 			this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.booleanFieldToString(field), changeLog);
 			return newValue;
 		} catch (Exception e){
-			this.warn("setBoolean("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning false.");
+			logWarning("setBoolean("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning false.");
 			return false;
 		}
 	}
@@ -647,10 +648,10 @@ println("CONFIG INIT");
 		return this.setColor(field, newValue, null);
 	}
 	color setColor(Field field, color newValue, Table changeLog) {
-		println("setting "+field.getName()+" to "+gConfig.colorToString(newValue)+")");
+		println("setting "+field.getName()+" to "+colorToString(newValue)+")");
 		color black = color(0);
 		if (field == null) {
-			this.warn("setColor(null): field is null!.  Returning black.");
+			logWarning("setColor(null): field is null!.  Returning black.");
 			return black;
 		}
 		try {
@@ -658,7 +659,7 @@ println("CONFIG INIT");
 			this.recordChange(field,  this.getTypeName(_COLOR_TYPE), this.colorFieldToString(field), changeLog);
 			return newValue;
 		} catch (Exception e){
-			this.warn("setColor("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning black.");
+			logWarning("setColor("+field.getName()+", "+newValue+"): something went wrong! "+e+"  Returning black.");
 			return black;
 		}
 	}
@@ -676,7 +677,7 @@ println("CONFIG INIT");
 	}
 	String setString(Field field, String newValue, Table changeLog) {
 		if (field == null) {
-			this.warn("setString(null): field is null!.  Returning null.");
+			logWarning("setString(null): field is null!.  Returning null.");
 			return null;
 		}
 		try {
@@ -684,7 +685,7 @@ println("CONFIG INIT");
 			this.recordChange(field,  this.getTypeName(_BOOLEAN_TYPE), this.stringFieldToString(field), changeLog);
 			return newValue;
 		} catch (Exception e){
-			this.warn("setString("+field.getName()+", '"+newValue+"'): something went wrong! "+e+"  Returning null.");
+			logWarning("setString("+field.getName()+", '"+newValue+"'): something went wrong! "+e+"  Returning null.");
 			return null;
 		}
 	}
@@ -731,10 +732,10 @@ println("CONFIG INIT");
 	Table saveToFile(String _fileName, String[] fields) {
 		String path = getFilePath(_fileName);
 		if (path == null) {
-			this.error("ERROR in config.saveToFile(): no filename specified");
+			logError("ERROR in gConfig.saveToFile(): no filename specified");
 			return null;
 		}
-		this.debug("Saving to '"+path+"'");
+		logDebug("Saving to '"+path+"'");
 
 		// update our configExistsMap for this file if it maps to a "normal" file
 		int fileIndex = this.getFileIndex(_fileName);
@@ -797,7 +798,7 @@ println("CONFIG INIT");
 				value = this.typedFieldToString(field, type);
 
 			} catch (Exception e) {
-				this.warn("getFieldsAsTable(): error processing field "+fieldName, e);
+				logWarning("getFieldsAsTable(): error processing field "+fieldName, e);
 				continue;
 			}
 
@@ -839,7 +840,7 @@ println("CONFIG INIT");
 	Field getField(String fieldName, String message) {
 		Field field = this.getField(fieldName);
 		if (field == null && message != null) {
-			this.debug(message.replace("{{fieldName}}", fieldName));
+			logDebug(message.replace("{{fieldName}}", fieldName));
 		}
 		return field;
 	}
@@ -978,7 +979,7 @@ println("CONFIG INIT");
 		try {
 			return field.getInt(this);
 		} catch (Exception e) {
-			this.warn("getInt("+field.getName()+"): error getting int value.  Returning default "+defaultValue, e);
+			logWarning("getInt("+field.getName()+"): error getting int value.  Returning default "+defaultValue, e);
 			return defaultValue;
 		}
 	}
@@ -993,7 +994,7 @@ println("CONFIG INIT");
 		try {
 			return field.getFloat(this);
 		} catch (Exception e) {
-			this.warn("getFloat("+field.getName()+"): error getting float value.  Returning default "+defaultValue, e);
+			logWarning("getFloat("+field.getName()+"): error getting float value.  Returning default "+defaultValue, e);
 			return defaultValue;
 		}
 	}
@@ -1008,7 +1009,7 @@ println("CONFIG INIT");
 		try {
 			return field.getBoolean(this);
 		} catch (Exception e) {
-			this.warn("getBoolean("+field.getName()+"): error getting boolean value.  Returning default "+defaultValue, e);
+			logWarning("getBoolean("+field.getName()+"): error getting boolean value.  Returning default "+defaultValue, e);
 			return defaultValue;
 		}
 	}
@@ -1023,7 +1024,7 @@ println("CONFIG INIT");
 		try {
 			return (color) field.getInt(this);
 		} catch (Exception e) {
-			this.warn("getColor("+field.getName()+"): error getting color value.  Returning default "+defaultValue, e);
+			logWarning("getColor("+field.getName()+"): error getting color value.  Returning default "+defaultValue, e);
 			return defaultValue;
 		}
 	}
@@ -1038,7 +1039,7 @@ println("CONFIG INIT");
 		try {
 			return (String) field.get(this);
 		} catch (Exception e) {
-			this.warn("getString("+field.getName()+"): error getting String value.  Returning default "+defaultValue, e);
+			logWarning("getString("+field.getName()+"): error getting String value.  Returning default "+defaultValue, e);
 			return defaultValue;
 		}
 	}
@@ -1075,7 +1076,7 @@ println("CONFIG INIT");
 			case _COLOR_TYPE:	return this.colorFieldToString(field);
 			case _STRING_TYPE:	return this.stringFieldToString(field);
 			default:
-				this.warn("typedFieldToString(field "+field.getName()+" field type '"+type+"' not understood");
+				logWarning("typedFieldToString(field "+field.getName()+" field type '"+type+"' not understood");
 		}
 		return null;
 	}
@@ -1092,9 +1093,9 @@ println("CONFIG INIT");
 	}
 	String intFieldToString(Field field) {
 		try {
-			return this.intToString(this.getInt(field));
+			return intToString(this.getInt(field));
 		} catch (Exception e) {
-			this.warn("intFieldToString(field "+field.getName()+"): returning null", e);
+			logWarning("intFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
@@ -1106,9 +1107,9 @@ println("CONFIG INIT");
 	}
 	String floatFieldToString(Field field) {
 		try {
-			return this.floatToString(this.getFloat(field));
+			return floatToString(this.getFloat(field));
 		} catch (Exception e) {
-			this.warn("floatFieldToString(field "+field.getName()+"): returning null", e);
+			logWarning("floatFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
@@ -1120,9 +1121,9 @@ println("CONFIG INIT");
 	}
 	String booleanFieldToString(Field field) {
 		try {
-			return this.booleanToString(this.getBoolean(field));
+			return booleanToString(this.getBoolean(field));
 		} catch (Exception e) {
-			this.warn("booleanFieldToString(field "+field.getName()+"): returning null", e);
+			logWarning("booleanFieldToString(field "+field.getName()+"): returning null", e);
 			return null;
 		}
 	}
@@ -1134,9 +1135,9 @@ println("CONFIG INIT");
 	}
 	String colorFieldToString(Field field) {
 		try {
-			return this.colorToString(this.getColor(field));
+			return colorToString(this.getColor(field));
 		} catch (Exception e) {
-			this.warn("colorFieldToString(field "+field.getName()+"): returning null");
+			logWarning("colorFieldToString(field "+field.getName()+"): returning null");
 			return null;
 		}
 	}
@@ -1150,119 +1151,9 @@ println("CONFIG INIT");
 		try {
 			return this.getString(field);
 		} catch (Exception e) {
-			this.warn("stringFieldToString("+field.getName()+"): returning null");
+			logWarning("stringFieldToString("+field.getName()+"): returning null");
 			return null;
 		}
-	}
-
-
-
-
-////////////////////////////////////////////////////////////
-//	Given a native data type, return the equivalent String value.
-//	Returns null on exception.
-////////////////////////////////////////////////////////////
-
-	// Return string value for integer.
-	String intToString(int value) {
-		return ""+value;
-	}
-
-	// Return string value for float field.
-	String floatToString(float value) {
-		return ""+value;
-	}
-
-	// Return string value for boolean value.
-	String booleanToString(boolean value) {
-		return (value ? "true" : "false");
-	}
-
-	// Return string value for color value.
-	String colorToString(color value) {
-		try {
-			return "color("+(int)red(value)+","+(int)green(value)+","+(int)blue(value)+","+(int)alpha(value)+")";
-		} catch (Exception e) {
-			this.warn("ERROR in colorToString("+value+"): returning null", e);
-			return null;
-		}
-	}
-
-	// Return string value for string (base case).
-	String stringToString(String string) {
-		return string;
-	}
-
-
-
-
-
-////////////////////////////////////////////////////////////
-//	Given a String representation of a native data type,
-//		return the equivalent data type.
-//	Returns throws on exception.
-////////////////////////////////////////////////////////////
-
-	int stringToInt(String stringValue) throws Exception {
-		return int(stringValue);
-	}
-
-	float stringToFloat(String stringValue) throws Exception {
-		return float(stringValue);
-	}
-
-	boolean stringToBoolean(String stringValue) throws Exception {
-		return (stringValue.equals("true") ? true : false);
-	}
-
-	color stringToColor(String stringValue) throws Exception {
-		String[] colorMatch = match(stringValue, "[color|rgba]\\((\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\s*,\\s*(\\d+?)\\)");
-		if (colorMatch == null) throw new Exception();	// TODO: more specific...
-// TODO: variable # of arguments
-// TODO: #FFCCAA
-		int r = int(colorMatch[1]);
-		int g = int(colorMatch[2]);
-		int b = int(colorMatch[3]);
-		int a = int(colorMatch[4]);
-//		this.debug("parsed color color("+r+","+g+","+b+","+a+")");
-		return color(r,g,b,a);
-	}
-
-
-
-////////////////////////////////////////////////////////////
-//	Color utilities.
-////////////////////////////////////////////////////////////
-
-	// Given a hue of 0..1, return a fully saturated color().
-	// NOTE: assumes we're normally in RGB mode
-	color colorFromHue(float _hue) {
-		return colorFromHue(_hue, 1);
-	}
-	// Same as above, but you can set alpha of 0..255
-	color colorFromHue(float _hue, int _alpha) {
-		float _floatAlpha = map(_alpha, 0, 255, 0, 1);
-		return colorFromHue(_hue, _floatAlpha);
-	}
-	// Same as above, but you can set alpha of 0..1
-	color colorFromHue(float _hue, float _alpha) {
-		// switch to HSB color mode
-		colorMode(HSB, 1.0);
-		color clr = color(_hue, 1, 1, _alpha);
-		// restore RGB color mode
-		colorMode(RGB, 255);
-		return clr;
-	}
-
-	// Given a color, return its _hue as 0..1.
-	// NOTE: assumes we're normally in RGB mode
-	float hueFromColor(color clr) {
-		// switch to HSB color mode
-		colorMode(HSB, 1.0);
-		float result = hue(clr);
-		// restore RGB color mode
-		colorMode(RGB, 255);
-		return result;
 	}
 
 
@@ -1305,7 +1196,7 @@ println("CONFIG INIT");
 ////////////////////////////////////////////////////////////
 	void initWindowSize(String wdSize) {
 		if (wdSize == null) {
-			this.warn("config.initWindowSize(): size is null!");
+			logWarning("gConfig.initWindowSize(): size is null!");
 			return;
 		}
 		String[] sizes = wdSize.split("x");
@@ -1314,45 +1205,8 @@ println("CONFIG INIT");
 			int wdHeight = Integer.parseInt(sizes[1], 10);
 			size(wdWidth, wdHeight);
 		} catch (Exception e) {
-			this.warn("config.initWindowSize("+wdSize+"): exception parsing size "+e);
+			logWarning("gConfig.initWindowSize("+wdSize+"): exception parsing size "+e);
 		}
 	}
-
-////////////////////////////////////////////////////////////
-//	Debugging and error handling.
-////////////////////////////////////////////////////////////
-
-	// Log a debug message -- something unexpected happened, but no biggie.
-	void debug(String message) {
-		if (this.debugging) println(message);
-	}
-
-
-	// Log a warning message -- something unexpected happened, but it's not fatal.
-	void warn(String message) {
-		this.warn(message, null);
-	}
-
-	void warn(String message, Exception e) {
-		if (!this.debugging) return;
-		println("--------------------------------------------------------------------------------------------");
-		println("--  WARNING: " + message);
-		if (e != null) println(e);
-		println("--------------------------------------------------------------------------------------------");
-	}
-
-	// Log an error message -- something unexpected happened, and it's pretty bad.
-	void error(String message) {
-		this.error(message, null);
-	}
-
-	void error(String message, Exception e) {
-		if (!this.debugging) return;
-		println("--------------------------------------------------------------------------------------------");
-		println("--  ERROR!!:   " + message);
-		if (e != null) println(e);
-		println("--------------------------------------------------------------------------------------------");
-	}
-
 
 }

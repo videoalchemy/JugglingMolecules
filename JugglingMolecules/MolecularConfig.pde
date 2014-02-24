@@ -222,7 +222,7 @@ println("MolecularConfig INIT");
 
 	// if we're in PARTICLE_COLOR_SCHEME_IMAGE, does the color get applied
 	//	when the particle is created, or when it's drawn?
-	boolean applyParticleImageColorAtDrawTime = true;
+	boolean applyParticleImageColorAtDrawTime = false;
 
 /*
 	// Opacity for all particle lines, used for all color schemes.
@@ -231,7 +231,7 @@ println("MolecularConfig INIT");
 	int MAX_particleAlpha 	= 255;
 */
 	// Color for particles iff `PARTICLE_COLOR_SCHEME_SAME_COLOR` color scheme in use.
-	color particleColor		= color(255);
+	color particleColor		= color(255,255);
 
 
 
@@ -292,7 +292,7 @@ println("MolecularConfig INIT");
 	color depthImageColor = color(0,255,0,255);
 
 	// show depth image as black/white or greyscale?
-	boolean depthImageAsGreyscale = false;
+	boolean depthImageAsGreyscale = true;
 
 	// Depth image blend mode constants.
 	//	REPLACE:     0

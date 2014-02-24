@@ -48,6 +48,9 @@ import java.util.Iterator;
 // Start() is the very first thing that's run, then setup().
 // Load our config object first thing!
 void start() {
+	// set up utility stuff
+	initHueColors();
+
 	// create the config object
 	gConfig = new MolecularConfig();
 	// Load setup, defaults and the last config automatically
@@ -88,10 +91,10 @@ void setup() {
     gDepthImg = new PImage(gKinectWidth, gKinectHeight);
 
 	// Create the particle manager.
-	gParticleManager = new ParticleManager(gConfig);
+	gParticleManager = new ParticleManager();
 
 	// Create the flowfield
-	gFlowfield = new OpticalFlow(gConfig, gParticleManager);
+	gFlowfield = new OpticalFlow(gParticleManager);
 
 	// Tell the particleManager about the flowfield
 	gParticleManager.flowfield = gFlowfield;
@@ -111,8 +114,14 @@ void draw() {
 	pushStyle();
 	pushMatrix();
 
+	colorMode(RGB, 255);
+
 	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
 	gKinecter.updateKinectDepth();
+
+	// apply a full-screen color overlay
+	// NOTE: this is where the blend mode is applied!
+	if (gConfig.showFade) fadeScreen(gConfig.fadeColor);
 
 	// draw the depth image underneath the particles
 	if (gConfig.showDepthImage) drawDepthImage();
@@ -123,10 +132,6 @@ void draw() {
 
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();
-
-	// apply a full-screen color overlay
-	// NOTE: this is where the blend mode is applied!
-	if (gConfig.showFade) fadeScreen(gConfig.fadeColor);
 
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();

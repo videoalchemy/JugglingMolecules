@@ -44,14 +44,13 @@ class OpticalFlow {
 	float[] sflowx, sflowy; 	// slowly changing version of the flow
 
 
-	OpticalFlow(MolecularConfig _config, ParticleManager _particles) {
-		// remember our configuration object & particle manager
-		config = _config;
+	OpticalFlow(ParticleManager _particles) {
+		// remember our particle manager
 		particles = _particles;
 
 		// set up resolution of the flow field.
 		// NOTE: requires a restart or at least a re-initialization to change this.
-		resolution = config.setupFlowFieldResolution;
+		resolution = gConfig.setupFlowFieldResolution;
 
 		// Determine the number of columns and rows based on sketch's width and height
 		cols = gKinectWidth/resolution;
@@ -133,7 +132,7 @@ class OpticalFlow {
 		}
 
 		// least squares computation
-		a = xx*yy - xy*xy + config.flowfieldRegularization;
+		a = xx*yy - xy*xy + gConfig.flowfieldRegularization;
 		u = yy*xt - xy*yt; // x direction
 		v = xx*yt - xy*xt; // y direction
 
@@ -177,7 +176,7 @@ class OpticalFlow {
 	// 3rd sweep : solving optical flow
 	void solveFlow() {
 		// get time distance between frames at current time
-		df = config.flowfieldPredictionTime * config.setupFPS;
+		df = gConfig.flowfieldPredictionTime * gConfig.setupFPS;
 		color _lineColor = color(gConfig.flowLineColor);
 		color _red = color(255,0,0);
 		color _green = color(0,255,0);
@@ -204,8 +203,8 @@ class OpticalFlow {
 				solveFlowForIndex(index);
 
 				// smoothing
-				sflowx[index] += (flowx[index] - sflowx[index]) * config.flowfieldSmoothing;
-				sflowy[index] += (flowy[index] - sflowy[index]) * config.flowfieldSmoothing;
+				sflowx[index] += (flowx[index] - sflowx[index]) * gConfig.flowfieldSmoothing;
+				sflowy[index] += (flowy[index] - sflowy[index]) * gConfig.flowfieldSmoothing;
 
 				float u = df * sflowx[index];
 				float v = df * sflowy[index];
@@ -220,7 +219,7 @@ class OpticalFlow {
 					field[col][row] = new PVector(u,v);
 
 					// show optical flow as lines in `flowLineColor`
-					if (config.showFlowLines) {
+					if (gConfig.showFlowLines) {
 						stroke(_lineColor);
 						float startX = width - (((float) x0) * kinectToWindowWidth);
 						float startY = ((float) y0) * kinectToWindowHeight;

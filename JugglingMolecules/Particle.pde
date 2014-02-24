@@ -7,7 +7,7 @@
  *		            http://creativecommons.org/licenses/by-sa/3.0/
  *******************************************************************/
 
-float gLastParticleHue = 0;
+int gLastParticleHue = 0;
 
 ////////////////////////////////////////////////////////////
 //	Particle class
@@ -16,16 +16,13 @@ class Particle {
 	// ParticleManager we interact with, set in our constructor.
 	ParticleManager manager;
 
-	// Our configuration object, set in our constructor.
-	MolecularConfig config;
-
 	// set on `reset()`
 	PVector location;
 	PVector prevLocation;
 	PVector acceleration;
 	float zNoise;
 	int life;					// lifetime of this particle
-	color particleColor;
+	color pColor;
 
 	// randomized on `reset()`
 	float stepSize;
@@ -44,10 +41,9 @@ class Particle {
 
 	// Particle constructor.
 	// NOTE: you can count on the particle being `reset()` before it will be drawn.
-	public Particle(ParticleManager _manager, MolecularConfig _config) {
+	public Particle(ParticleManager _manager) {
 		// remember our configuration object & particle manager
 		manager = _manager;
-		config  = _config;
 
 		// initialize data structures
 		location 			= new PVector(0, 0);
@@ -67,34 +63,34 @@ class Particle {
 		acceleration.y = _dy;
 
 		// reset lifetime
-		life = config.particleLifetime;
+		life = gConfig.particleLifetime;
 
 		// randomize step size each time we're reset
-		stepSize = random(config.particleMinStepSize, config.particleMaxStepSize);
+		stepSize = random(gConfig.particleMinStepSize, gConfig.particleMaxStepSize);
 
 		// get alpha from current color
-		int _alpha = (int)alpha(config.particleColor);
-
+		int _alpha = (int)alpha(gConfig.particleColor);
 		// "spring" color scheme according to x/y coordinate
-		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
+		if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
 			int r = (int) map(_x, 0, width, 0, 255);
 			int g = (int) map(_y, 0, width, 0, 255);	// NOTE: this is nice w/ Y plotted to width
 			int b = (int) map(_x + _y, 0, width+height, 0, 255);
-			particleColor = color(r, g, b, _alpha);
+			pColor = color(r, g, b, _alpha);
 		}
 		// rainbow color scheme
-		else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
+		else if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
+			pColor = gConfig.particleColor;
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
-			float nextHue = map(gLastParticleHue, 0, 360, 0, 1);
-			particleColor = colorFromHue(nextHue, _alpha);
+			pColor = color(colorFromHue(gLastParticleHue), _alpha);
+//			println(gLastParticleHue+":"+colorToString(pColor));
 		}
 		// derive color from image
-		else if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
-			particleColor = getParticleImageColor(_x, _y);
+		else if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
+			pColor = getParticleImageColor(_x, _y);
 		}
 		// monochrome
-		else {	//if (config.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
-			particleColor = config.particleColor;
+		else {	//if (gConfig.particleColorScheme == gConfig.PARTICLE_COLOR_SCHEME_SAME_COLOR) {
+			pColor = gConfig.particleColor;
 		}
 	}
 
@@ -106,8 +102,9 @@ class Particle {
 		int index = (row * particleImage.width) + col;
 		// extract the color from the image, which is opaque
 		color clr = particleImage.pixels[index];
+		return clr;
 		// add the current alpha
-		return addAlphaToColor(clr, (int)alpha(config.particleColor));
+//		return addAlphaToColor(clr, (int)alpha(gConfig.particleColor));
 	}
 
 	// Is this particle still alive?
@@ -119,10 +116,10 @@ class Particle {
 	public void update() {
 		prevLocation = location.get();
 
-		if (acceleration.mag() < config.particleAccelerationLimiter) {
+		if (acceleration.mag() < gConfig.particleAccelerationLimiter) {
 			life--;
-			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
-			angle *= (float)config.noiseStrength;
+			angle = noise(location.x / (float)gConfig.noiseScale, location.y / (float)gConfig.noiseScale, zNoise);
+			angle *= (float)gConfig.noiseStrength;
 
 //EXTRA CODE HERE
 
@@ -146,7 +143,7 @@ class Particle {
 			acceleration.add(steer);
 		}
 
-		acceleration.mult(config.particleAccelerationFriction);
+		acceleration.mult(gConfig.particleAccelerationFriction);
 
 // TODO:  HERE IS THE PLACE TO CHANGE ACCELERATION, BEFORE IT IS APPLIED.   ???
 
@@ -157,22 +154,23 @@ class Particle {
 		location.add(velocity);
 
 		// apply exponential (*=) friction or normal (+=) ? zNoise *= 1.02;//.95;//+= zNoiseVelocity;
-		zNoise += config.particleNoiseVelocity;
+		zNoise += gConfig.particleNoiseVelocity;
 
 		// slow down the Z noise??? Dissipative Force, viscosity
 		//Friction Force = -c * (velocity unit vector) //stepSize = constrain(stepSize - .05, 0,10);
 		//Viscous Force = -c * (velocity vector)
-		stepSize *= config.particleViscocity;
+		stepSize *= gConfig.particleViscocity;
 	}
 
 	// 2-d render using processing OPENGL rendering context
 	void render() {
 		// apply image color at draw time?
-		if (config.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE && gConfig.applyParticleImageColorAtDrawTime) {
-			particleColor = getParticleImageColor(location.x, location.y);
+		if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE && gConfig.applyParticleImageColorAtDrawTime) {
+			pColor = getParticleImageColor(location.x, location.y);
 		}
 
-		stroke(particleColor);
+//println(colorToString(pColor));
+		stroke(pColor);
 		line(prevLocation.x, prevLocation.y, location.x, location.y);
 	}
 }
