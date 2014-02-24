@@ -34,7 +34,7 @@
 		blendMode(gConfig.blendMode);
 		noStroke();
 		fill(gConfig.fadeColor);
-println("blendMode: "+gConfig.blendMode+"  color:"+colorToString(gConfig.fadeColor));
+// println("blendMode: "+gConfig.blendMode+"  color:"+colorToString(gConfig.fadeColor));
 		rect(0, 0, width, height);
 		blendMode(BLEND);
 		popStyle();
