@@ -119,10 +119,6 @@ void draw() {
 	// updates the kinect gRawDepth, gNormalizedDepth & gDepthImg variables
 	gKinecter.updateKinectDepth();
 
-	// apply a full-screen color overlay
-	// NOTE: this is where the blend mode is applied!
-	if (gConfig.showFade) fadeScreen(gConfig.fadeColor);
-
 	// draw the depth image underneath the particles
 	if (gConfig.showDepthImage) drawDepthImage();
 
@@ -132,6 +128,10 @@ void draw() {
 
 	// show the flowfield particles
 	if (gConfig.showParticles) gParticleManager.updateAndRender();
+
+	// apply a full-screen color overlay
+	// NOTE: this is where the blend mode is applied!
+	if (gConfig.showFade) fadeScreen();
 
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();

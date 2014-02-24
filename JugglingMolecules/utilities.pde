@@ -29,11 +29,12 @@
 
 	// Partially fade the screen by drawing a translucent black rectangle over everything.
 	// NOTE: this applies the current blendMode all over everything
-	void fadeScreen(color bgColor) {
+	void fadeScreen() {
 		pushStyle();
 		blendMode(gConfig.blendMode);
 		noStroke();
-		fill(bgColor);
+		fill(gConfig.fadeColor);
+println("blendMode: "+gConfig.blendMode+"  color:"+colorToString(gConfig.fadeColor));
 		rect(0, 0, width, height);
 		blendMode(BLEND);
 		popStyle();

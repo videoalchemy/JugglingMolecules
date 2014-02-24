@@ -70,6 +70,7 @@ class Particle {
 
 		// get alpha from current color
 		int _alpha = (int)alpha(gConfig.particleColor);
+
 		// "spring" color scheme according to x/y coordinate
 		if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_XY) {
 			int r = (int) map(_x, 0, width, 0, 255);
@@ -79,10 +80,8 @@ class Particle {
 		}
 		// rainbow color scheme
 		else if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_RAINBOW) {
-			pColor = gConfig.particleColor;
 			if (++gLastParticleHue > 360) gLastParticleHue = 0;
 			pColor = color(colorFromHue(gLastParticleHue), _alpha);
-//			println(gLastParticleHue+":"+colorToString(pColor));
 		}
 		// derive color from image
 		else if (gConfig.particleColorScheme == PARTICLE_COLOR_SCHEME_IMAGE) {
@@ -102,9 +101,8 @@ class Particle {
 		int index = (row * particleImage.width) + col;
 		// extract the color from the image, which is opaque
 		color clr = particleImage.pixels[index];
-		return clr;
 		// add the current alpha
-//		return addAlphaToColor(clr, (int)alpha(gConfig.particleColor));
+		return color(clr, (int)alpha(gConfig.particleColor));
 	}
 
 	// Is this particle still alive?
