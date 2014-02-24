@@ -187,6 +187,7 @@ class OpticalFlow {
 		float kinectToWindowWidth  = ((float) width) * normalizedKinectWidth;
 		float kinectToWindowHeight = ((float) height) * normalizedKinectHeight;
 
+		pushStyle();
 		for (int col = 1; col < cols-1; col++) {
 			int x0 = col * resolution + resolution/2;
 			for (int row = 1; row < rows-1; row++) {
@@ -220,20 +221,21 @@ class OpticalFlow {
 
 					// show optical flow as lines in `flowLineColor`
 					if (gConfig.showFlowLines) {
-						stroke(_lineColor);
 						float startX = width - (((float) x0) * kinectToWindowWidth);
 						float startY = ((float) y0) * kinectToWindowHeight;
 						float endX	 = width - (((float) (x0+u)) * kinectToWindowWidth);
 						float endY	 = ((float) (y0+v)) * kinectToWindowHeight;
 //println(startX+","+startY+" : "+endX+","+endY);
+						stroke(_lineColor);
 						line(startX, startY, endX, endY);
-
+/*
 						// draw a red dot at the start point
 						stroke(_red);
 						rect(startX-1, startY-1, 2, 2);
 						// draw a green dot at the end point
 						stroke(_green);
 						rect(endX-1, endY-1, 2, 2);
+*/
 					}
 
 					// same syntax as memo's fluid solver (http://memo.tv/msafluid_for_processing)
@@ -245,6 +247,7 @@ class OpticalFlow {
 				}
 			}
 		}
+		popStyle();
 	}
 
 
