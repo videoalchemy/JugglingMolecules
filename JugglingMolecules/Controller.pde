@@ -103,7 +103,7 @@ class OscController extends Controller {
 	OscControl getOrCreateControl(String fieldName) {
 		OscControl control = this.getControl(fieldName);
 		if (control == null) {
-			control = this.makeBasicControl(fieldName);
+			control = this.createControl(fieldName);
 		}
 		return control;
 	}
@@ -115,10 +115,18 @@ class OscController extends Controller {
 	}
 
 	// Make a generic control for the specified field.
-	OscControl makeBasicControl(String fieldName) {
-		if (fieldName.endsWith("Color")) {
+	OscControl createControl(String fieldName) {
+		// figure out what type of config value we're dealing with
+		int type = _FLOAT_TYPE;
+		Field field = gConfig.getField(fieldName, "Controller.createControl("+fieldName+"): field not found");
+		if (field != null) type = gConfig.getType(field);
+
+		// handle colors specially
+		if (type == _COLOR_TYPE) {
 			return new OscColorControl(this, fieldName);
-		} else {
+		}
+		// treat all others as basic controls
+		else {
 			return new OscControl(this, fieldName);
 		}
 	}
@@ -254,28 +262,6 @@ class OscController extends Controller {
 	float getMessageValue(OscMessage message, int valueIndex) {
 		return message.get(valueIndex).floatValue();
 	}
-
-/*
-	// Return the first "value" of a message as an int.
-	int getMessageValue(OscMessage message) {
-		return this.getMessageValue(message, 0);
-	}
-
-	// Return an arbitrarily-indexed "value" of a message as an int.
-	int getMessageValue(OscMessage message, int valueIndex) {
-		return (int) message.get(valueIndex).floatValue();
-	}
-
-	// Return the first "value" of a message as a boolean.
-	boolean getMessageValue(OscMessage message) {
-		return this.getMessageValue(message, 0);
-	}
-
-	// Return an arbitrarily-indexed "value" of a message as a boolean.
-	boolean getMessageValue(OscMessage message, int valueIndex) {
-		return (message.get(valueIndex).floatValue() != 0);
-	}
-*/
 
 
 ////////////////////////////////////////////////////////////

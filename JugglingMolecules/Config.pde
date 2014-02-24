@@ -160,12 +160,15 @@ println("CONFIG INIT");
 		if (field == null) return;
 		for (OscController controller : this.controllers) {
 			String fieldName = field.getName();
+			int type = this.getType(field);
 			try {
 				// handle colors specially
-				if (fieldName.endsWith("Color")) {
+				if (type == _COLOR_TYPE) {
 					color controllerValue = this.getColor(field);
 					controller.onConfigColorChanged(fieldName, controllerValue, currentValueString);
-				} else {
+				}
+				// treat everything else as a float
+				else {
 					float controllerValue = this.valueForController(field, controller.minValue, controller.maxValue);
 					controller.onConfigFieldChanged(fieldName, controllerValue, typeName, currentValueString);
 				}
