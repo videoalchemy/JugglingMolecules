@@ -3,7 +3,7 @@
  *	(c) 2011-2014 Jason Stephens, Owen Williams & VideoAlchemy Collective
  *
  *	See `credits.txt` for base work and shouts out.
- *	Published under CC Attrbution-ShareAlike 3.0 (CC BY-SA 3.0)
+ *	Published under CC Attribution-ShareAlike 3.0 (CC BY-SA 3.0)
  *								http://creativecommons.org/licenses/by-sa/3.0/
  *******************************************************************/
 
