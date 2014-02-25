@@ -82,10 +82,10 @@
 
 
 ////////////////////////////////////////////////////////////
-//	Generic math-ey utilities.
+//	Vector Field Constructors (Noise, Depth, Reference Image)
 ////////////////////////////////////////////////////////////
 
-	// Return a Perlin noise vector field, size of `rows` x `columns`.
+	// NOISE:  Return a Perlin noise vector field, size of `rows` x `columns`.
 	PVector[][] makePerlinNoiseField(int rows, int cols) {
 	  //noiseSeed((int)random(10000));  // TODO???
 	  PVector[][] field = new PVector[cols][rows];
@@ -104,7 +104,60 @@
 	  return field;
 	}
 
-	// Renders a vector object 'v' as an arrow and a location 'x,y'
+	/*
+	// DEPTH:  Return a Depth Informed Vector Field size of 'rows' x 'cols'
+	// use the function getParticleImageColor(x,y)
+	
+	PVector[][] makeDepthInformedFlowField(int rows, int cols) {
+	  PVector[][] field = new PVector[cols][rows];
+	  float xOffset = 0;
+	  for (int col = 0; col < cols; col++) {
+		float yOffset = 0;
+		for (int row = 0; row < rows; row++) {
+		  // Use perlin noise to get an angle between 0 and 2 PI
+		  float theta = map(noise(xOffset,yOffset),0,1,0,TWO_PI);
+		  // Polar to cartesian coordinate transformation to get x and y components of the vector
+		  field[col][row] = new PVector(cos(theta),sin(theta));
+		  yOffset += 0.1;
+		}
+		xOffset += 0.1;
+	  }
+	  return field;
+	}
+	
+	
+	// REF IMAGE:  Returns Reference Image Vector Field, size 'rows' x 'colm'
+	PVector[][] makeReferenceImageField(int rows, int cols) {}
+
+// *********************************
+
+
+////////////////////////////////////////////////////////////
+//	Vector Field Visualizer
+////////////////////////////////////////////////////////////
+
+	// Draw arrows to visualize vector field
+	void displayVectors() {
+		for (int i = 0; i < cols; i++){
+			for (int j = 0; j < rows; j++){
+				drawVector(field[i][j], i*resolution, j*resolution, resolution-2);
+			}
+		}
+
+	}
+
+	//Algorithm particles use to determine their direction at any given location
+	//This results of these calculations should be consistent no matter where they're calculated
+
+	angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
+	angle *= (float)config.noiseStrength;
+
+//ToDO:  use the lookup(PVector worldLocation) to return field[i][j]
+
+// then cacluate their angles	
+// use makeNoise
+
+	// Renders a vector object 'v' as an arrow at a location 'x,y'
 	void drawVector(PVector v, float x, float y, float scayl) {
 		pushMatrix();
 		float arrowsize = 4;
@@ -123,6 +176,13 @@
         //line(len,0,len-arrowsize,-arrowsize/2);
         popMatrix();
 	}
+
+*/
+
+
+////////////////////////////////////////////////////////////
+//	Generic math-ey utilities.
+////////////////////////////////////////////////////////////
 
 
 	// Given a hue of 0..1, return a fully saturated color().

@@ -114,8 +114,12 @@ class Particle {
 
 		if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
+
+			// Each Particle Calculates its own velocity vector (without using a flow field)
+//consider incrementing the zNoise argument
 			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
 			angle *= (float)config.noiseStrength;
+			
 
 //EXTRA CODE HERE
 
@@ -130,9 +134,9 @@ class Particle {
 			flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
 			flowFieldLocation.y = norm(location.y, 0, height);
 			flowFieldLocation.y *= gKinectHeight;
-
+// FLOW FIELD LOOKUP CALL
 			desired = manager.flowfield.lookup(flowFieldLocation);
-			desired.x *= -1;	// TODO??? WHAT'S THIS?
+			desired.x *= -1;	// TODO??? WHAT'S THIS?  <-- un-invert particle position on x-axis after lookup
 
 			steer = PVector.sub(desired, velocity);
 			steer.limit(stepSize);	// Limit to maximum steering force

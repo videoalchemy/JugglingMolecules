@@ -148,6 +148,10 @@ void draw() {
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();
 
+	// show the flowfield vector arrows for Noise Field
+	//if (gConfig.showNoise) displayVectors();
+
+
 
 	popStyle();
 	popMatrix();

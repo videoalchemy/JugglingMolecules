@@ -176,6 +176,10 @@ public void draw() {
 	// display instructions for adjusting kinect depth image on top of everything else
 	if (gConfig.showSettings) drawInstructionScreen();
 
+	// show the flowfield vector arrows for Noise Field
+	//if (gConfig.showNoise) displayVectors();
+
+
 
 	popStyle();
 	popMatrix();
@@ -2174,6 +2178,8 @@ println("MolecularConfig INIT");
 	boolean showSettings = false;
 
 
+
+
 ////////////////////////////////////////////////////////////
 //	OpticalFlow field parameters
 ////////////////////////////////////////////////////////////
@@ -3086,8 +3092,12 @@ class Particle {
 
 		if (acceleration.mag() < config.particleAccelerationLimiter) {
 			life--;
+
+			// Each Particle Calculates its own velocity vector (without using a flow field)
+//consider incrementing the zNoise argument
 			angle = noise(location.x / (float)config.noiseScale, location.y / (float)config.noiseScale, zNoise);
 			angle *= (float)config.noiseStrength;
+			print(angle);
 
 //EXTRA CODE HERE
 
@@ -3102,9 +3112,9 @@ class Particle {
 			flowFieldLocation.x *= gKinectWidth; // - (test.x * wscreen);
 			flowFieldLocation.y = norm(location.y, 0, height);
 			flowFieldLocation.y *= gKinectHeight;
-
+// FLOW FIELD LOOKUP CALL
 			desired = manager.flowfield.lookup(flowFieldLocation);
-			desired.x *= -1;	// TODO??? WHAT'S THIS?
+			desired.x *= -1;	// TODO??? WHAT'S THIS?  <-- un-invert particle position on x-axis after lookup
 
 			steer = PVector.sub(desired, velocity);
 			steer.limit(stepSize);	// Limit to maximum steering force
@@ -3300,10 +3310,10 @@ class ParticleManager {
 
 
 ////////////////////////////////////////////////////////////
-//	Generic math-ey utilities.
+//	Vector Field Constructors (Noise, Depth, Reference Image)
 ////////////////////////////////////////////////////////////
 
-	// Return a Perlin noise vector field, size of `rows` x `columns`.
+	// NOISE:  Return a Perlin noise vector field, size of `rows` x `columns`.
 	public PVector[][] makePerlinNoiseField(int rows, int cols) {
 	  //noiseSeed((int)random(10000));  // TODO???
 	  PVector[][] field = new PVector[cols][rows];
@@ -3321,6 +3331,77 @@ class ParticleManager {
 	  }
 	  return field;
 	}
+
+	/*
+	// DEPTH:  Return a Depth Informed Vector Field size of 'rows' x 'cols'
+	// use the function getParticleImageColor(x,y)
+	
+	PVector[][] makeDepthInformedFlowField(int rows, int cols) {
+	  PVector[][] field = new PVector[cols][rows];
+	  float xOffset = 0;
+	  for (int col = 0; col < cols; col++) {
+		float yOffset = 0;
+		for (int row = 0; row < rows; row++) {
+		  // Use perlin noise to get an angle between 0 and 2 PI
+		  float theta = map(noise(xOffset,yOffset),0,1,0,TWO_PI);
+		  // Polar to cartesian coordinate transformation to get x and y components of the vector
+		  field[col][row] = new PVector(cos(theta),sin(theta));
+		  yOffset += 0.1;
+		}
+		xOffset += 0.1;
+	  }
+	  return field;
+	}
+	
+	
+	// REF IMAGE:  Returns Reference Image Vector Field, size 'rows' x 'colm'
+	PVector[][] makeReferenceImageField(int rows, int cols) {}
+
+// *********************************
+
+
+////////////////////////////////////////////////////////////
+//	Vector Field Visualizer
+////////////////////////////////////////////////////////////
+
+	// Draw arrows to visualize vector field
+	void displayVectors() {
+	
+		for (int i = 0; i < cols; i++){
+			for (int j = 0; j < rows; j++){
+				drawVector(field[i][j], i*resolution, j*resolution, resolution-2);
+			}
+		}
+
+	}
+
+
+	// Renders a vector object 'v' as an arrow at a location 'x,y'
+	void drawVector(PVector v, float x, float y, float scayl) {
+		pushMatrix();
+		float arrowsize = 4;
+		//Translate the location to render vector
+		translate(x,y);
+		stroke (0,155);
+		//Call vector heading function to get direction, then rotate in that direction
+		//note: heading 0 = up
+		rotate(v.heading2D());
+		//calculate length of vector & scale it to be bigger or smaller if necessary
+		float len = v.mag()*scaly;
+		// Draw three lines to make an arrow 
+		// (draw with heading 0 pointing up since image already rotated in correct)
+		line(0,0,len,0);
+		//line(len,0,len-arrowsize,+arrowsize/2);
+        //line(len,0,len-arrowsize,-arrowsize/2);
+        popMatrix();
+	}
+
+*/
+
+
+////////////////////////////////////////////////////////////
+//	Generic math-ey utilities.
+////////////////////////////////////////////////////////////
 
 
 	// Given a hue of 0..1, return a fully saturated color().
