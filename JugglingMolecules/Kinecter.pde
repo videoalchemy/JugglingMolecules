@@ -7,7 +7,6 @@
  *								http://creativecommons.org/licenses/by-sa/3.0/
  *******************************************************************/
 
-import org.openkinect.*;
 import org.openkinect.processing.*;
 
 ////////////////////////////////////////////////////////////
@@ -29,12 +28,13 @@ class Kinecter {
 	public Kinecter(PApplet parent) {
 		try {
 			kinect = new Kinect(parent);
-			kinect.start();
-			kinect.enableDepth(true);
-			kinect.tilt(kAngle);
+      kinect.initDepth();
+      kinect.initVideo();
+			kinect.enableIR(true);
+			kinect.setTilt(kAngle);
 
 			// the below makes getRawDepth() faster
-			kinect.processDepthImage(false);
+			//kinect.processDepthImage(false);
 
 			isKinected = true;
 			println("KINECT IS INITIALISED");
@@ -83,6 +83,6 @@ class Kinecter {
 
 
 	public void quit() {
-		if (isKinected) kinect.quit();
+	//	if (isKinected) kinect.quit();
 	}
 }

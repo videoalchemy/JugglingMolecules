@@ -330,4 +330,3 @@ println("MolecularConfig INIT");
 		return _particleImage;
 	}
 }
-

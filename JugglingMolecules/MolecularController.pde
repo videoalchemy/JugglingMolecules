@@ -227,7 +227,7 @@ println(message);
 			if (fieldName.equals("kinectAngle")) {
 				try {
 					int angle = gConfig.getInt("kinectAngle");
-					gKinecter.kinect.tilt(angle);
+					gKinecter.kinect.setTilt(angle);
 
 					// remember angle on restart
 					gConfig.saveSetup();

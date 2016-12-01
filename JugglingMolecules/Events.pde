@@ -16,13 +16,13 @@
 	  // up arrow to move kinect down
 	  if (keyCode == UP) {
 		gConfig.kinectAngle = constrain(++gConfig.kinectAngle, 0, 30);
-		gKinecter.kinect.tilt(gConfig.kinectAngle);
+		gKinecter.kinect.setTilt(gConfig.kinectAngle);
 		gConfig.saveSetup();
 	  }
 	  // down arrow to move kinect down
 	  else if (keyCode == DOWN) {
 		gConfig.kinectAngle = constrain(--gConfig.kinectAngle, 0, 30);
-		gKinecter.kinect.tilt(gConfig.kinectAngle);
+		gKinecter.kinect.setTilt(gConfig.kinectAngle);
 		gConfig.saveSetup();
 	  }
 	  // space bar for settings to adjust kinect depth

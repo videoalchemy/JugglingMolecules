@@ -11,7 +11,7 @@ import oscP5.*;	// TouchOSC
 import netP5.*;
 import processing.video.*;
 import processing.opengl.*;
-import javax.media.opengl.*;
+//import javax.media.opengl.*;
 import java.util.Iterator;
 
 ////////////////////////////////////////////////////////////
@@ -63,7 +63,8 @@ void start() {
 //
 void setup() {
 	// window size comes from config
-	size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
+	//size(gConfig.setupWindowWidth, gConfig.setupWindowHeight, OPENGL);
+  size(1024, 768, OPENGL);
 
 	// Initialize TouchOSC control bridge and start it listening on port 8000
 	gOscMaster = new OscP5(this, 8000);
@@ -178,4 +179,3 @@ void stop() {
   gKinecter.quit();
   super.stop();
 }
-
