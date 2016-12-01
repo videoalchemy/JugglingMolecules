@@ -8,4 +8,4 @@ int	setupOscOutboundPort	9000
 int	setupFlowFieldResolution	15
 int	kinectMinDepth	237
 int	kinectMaxDepth	870
-int	kinectAngle	19
+int	kinectAngle	0
