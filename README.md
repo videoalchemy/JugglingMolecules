@@ -1,13 +1,13 @@
-###From Spirograph to Particle System Framework:
+### From Spirograph to Particle System Framework:
 - what started as a 3D Spirograph app is now a solid framework for precisely creating, controlling, and compiling particle system configurations.
 - The documentation contained in this README reflects this transition from simple project to powerful tool.
 
 
-###Documentation:
+### Documentation:
 - [images of user interaction, pre-event install, screenshots and diagrams from development ](http://www.flickr.com/photos/jaycody9/sets/72157635574816773/)
 - [vids (screen recordings and tests)](http://youtu.be/oneMByLSmEg)
 
-###Juggling Molecules
+### Juggling Molecules
 - A responsive flow-field of illuminated particles designed for the Calistoga Springs' festival Luminescent Playground held Sept 20-23, 2013
 - the interface is a combination of gesture control supplied by a dancer's movement, and knob turning by participants using controls on an iPad.
 - The design originally called for the use of the podium sized OmiCron Interface, which would sit somewhere on the edge of the dance floor enticing users with its 7 large knobs and 4 glowing buttons.   
@@ -15,7 +15,7 @@
 - The OmiCron controls were scrapped, and we ended up designing the iPad controls for public use.  For the event, we attached the iPad to a clamp and attached the clamp to a tripod which presented the iPad for the user at about chest height. To help users deal with the overwhelming number of variables, we created 100 presets, many pre-populated with configurations prior to the event. 
 - Original plans also included an semi-autonomous 3D spirograph pattern called a SpiroLight.  We were interested in expressing lifelike spontaneous behavior, something that would act as if it were aware of the dancers and their movements.  The documentation that follows includes ideas and strategies for this feature.
 
-###Hardware and Software required:
+### Hardware and Software required:
 - Mac Mini
 - Kinect Depth Sensor
 - Processing 2.0.3
@@ -29,7 +29,7 @@
 	- [OmiCron The Interface](http://www.flickr.com/photos/jaycody9/sets/72157632699562712/)
 
 
-###Interactions:
+### Interactions:
 0. Dancer with OmiCron Controller
 1. Dancer with SpiroLight
 2. Dancer with Particles
@@ -41,7 +41,7 @@
 5. OmiCron with Particles
 
 
-###OmiCron: Map Controls to SpiroLight:
+### OmiCron: Map Controls to SpiroLight:
 - [] Button shuffles ratios for specified tier
 	- where on the circle is arm connected? (make that a Perlin Noise function where button down progresses through perlin noise for all variables.
 - [] First tier Red knobs control overall size of spiroLight, mass, and steering ability toward target.  Mass gets bigger, slower it moves, the larger the circle, the larger the entire spiroLight  (as opposed to following closest point, which changes the size of spiroLight because of perspective being further away, but does not change the mass or the periods)
@@ -70,7 +70,7 @@
 	- [] bring Blue Tooth
 
 
-###SpiroLight:
+### SpiroLight:
 - **SpiroLight Forces:**
 	- AstralLines (rotating arms):
 		- arm length mapped to Velocity's Magnitude such that arms stretch when accelerating and shrink when decelerating (or vice versa).
@@ -129,7 +129,7 @@
 		- http://mathworld.wolfram.com/Epitrochoid.html
 		- Coin outside of ring; tracing a point either inside or outside the perimeter of coin
 
-###SpiroLight + Dancer:
+### SpiroLight + Dancer:
 - **Specific Arms Always remain in contact with the DANCER and EDGE DETECT PATH FOLLOW.**  
 	- **arrives and path follows along the edge of dancer's body with one of it's arms (or 2)!!**  The SpiroLight follows the dancer and when it arrives, it's arms lock on to the edges and path follow.  Could cover and encircle the dancer like an octopus.  OR it grows NEW arms that remain in constant contact with user as the rest of the SpiroLight floats around.  Instead of harmonic monition, the arm follows the outline of the user.  see PATHFOLLOWING using the DOT PRODUCT
 	- Some parts of the SpiroLight seek the dancer and some parts evade the dancer, so the thing is constantly investigating AND keeping it's distance.  If the Tier 1 Location Vector brings spiro closer to dancer, then arms that are repelled with flock together and move away while arms that are attracted will get closer.
@@ -143,7 +143,7 @@
 
 
 
-###Optical Flow:  (Kinect + Dancer)
+### Optical Flow:  (Kinect + Dancer)
 - **Using Optical Flow:**
 	- with change in depth, not just change in frame!!!  Frame differencing in the z-axis!!**  
 	- Frame AND GreyScale Differencing for Depth Changes that are not along the x,y, but are instead, back and forth from the sensor.
@@ -204,7 +204,7 @@ ____________________________
 	- [Background Replacement with Kinect](http://vimeo.com/17270320)
 	- [Augmented Reality and Information Visualization](http://www.youtube.com/watch?v=z-aBUyrhcj0&feature=related)
 
-###FlowField Calculation:
+### FlowField Calculation:
 - accumulate forces from a variety of causes:  **spiroLight-Field**, **dancer-Field**, **noise-Field**
 	1. **(spiroLight-Field)**  SpiroLight's Affect on the Flow Field:
 		- affects the flowfield like iron flakes in a magnetic field.  
@@ -246,7 +246,7 @@ ____________________________
 - [] flow field vectors increase in magnitude as they approach spirolight such that particles accelerate toward the light
 - [] particle steering force and maxspeed change relative to their proximity to spirolight
 
-###Feedback Loop as PGraphic Layer
+### Feedback Loop as PGraphic Layer
 - Frame Difference Seeds Feedback Loop
 	- create new Pgraphic to hold only the frame differencing information such that currentPgraphic - previousPGraphic = differencePGraphic.  Then get() pixels from this layer and updatePixels with itself, creating a feedback loop
 	- assign noise as velocity of Feedback Layer
@@ -259,7 +259,7 @@ ____________________________
 
 
 
-###Code:
+### Code:
 - Use createGraphics() to return a PGraphics object.  Unlike the main drawing surface, this surface retains transparency!  That means SpiroLight can fade without fading the particle system
 
 - **ToDo(Owen):**
@@ -269,7 +269,7 @@ ____________________________
 
 - **ToDo(Installation):**
 
-###Code Snippets:
+### Code Snippets:
 
 ```spiroLight.applyForce(force);
 ``` 
@@ -329,8 +329,8 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 >```spirograph(53, -29, 40, 30, gray)```
 
 
-###Examples:
-####Spirograph Examples:
+### Examples:
+#### Spirograph Examples:
 - [Spirograph Web App worth checking out](http://www.benjoffe.com/code/toys/spirograph)
 - [Epicycles On Epicycles, Cable Knots on Cable Knots | vimeo](https://vimeo.com/7757058)
 - [The 3D Spirograph Project | vimeo](https://vimeo.com/2228788)
@@ -345,7 +345,7 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 - [Mathiversity | Spirograph Web App](http://mathiversity.com/Spirograph)
 - [Spirograph Web App](http://www.eddaardvark.co.uk/nc/sprog/index.html#x)
 
-####FlowField Examples:
+#### FlowField Examples:
 - [Flocking in FlowField  |  Flight 404 on Vimeo](https://vimeo.com/153453#)
 	- [Flight 404 blog post about the Flocking Behaviors in a Flow Field](http://www.flight404.com/blog/?p=66)
 		- In the original version, for some reason, I decided the best way to deal with the flowfield was to make a ton of vectors and stick them in the space. These vectors are stationary and only contain velocity information. I would use Perlin noise to adjust each vector’s velocity and just leave them there. Pretty much an invisible 3D array of floating arrows. I would then throw a bunch of objects in this 3D array and have each object check the nearest vector for its velocity information and apply this information to the objects own velocity.
@@ -355,13 +355,13 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 - [Benjamin Moore Commercial  |  rotating paint buckets](http://www.youtube.com/watch?v=i_kCJe_VZ-E)
 
 
-####FlowMaps, Reference Images:
+#### FlowMaps, Reference Images:
 - [] add a method for 
 
-####Theta as a function of Depth:
+#### Theta as a function of Depth:
 
 
-###Future:
+### Future:
 - [] toxilib
 - [Flow no.1 The Kinect Projector Dance](http://princemio.net/portfolio/flow-1-kinect-projector-dance/)
 	- Software Used for the project:
@@ -381,7 +381,7 @@ spirograph = function (v_R, v_r, v_p, v_nRotations, s_color)
 
 _____________________
 
-###Next Steps:
+### Next Steps:
 - [] Setup OmiCron:
 	- [x] Run Calibration with Processing.  Systems Check
 	- [x] Tighten bolts on OmiCron pedestal
